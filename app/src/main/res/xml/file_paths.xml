@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <root-path
+        path=""
+        name="camera_photos" />
+
+    <external-path name="my_images" path="Android/data/com.gsoft.inventory/files/zcAppTempPic" />
+</paths>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--<color name="colorPrimary">#3F51B5</color>-->
+    <!--<color name="colorPrimaryDark">#303F9F</color>-->
+    <!--<color name="colorAccent">#FF4081</color>-->
+    <color name="primary_color">#2196F3</color>
+    <color name="success_color">#4CAF50</color>
+    <color name="white">#FFFFFF</color>
+    <color name="primary_text">#212121</color>
+
+    <color name="colorControlNormal">#F5F5F5</color>
+
+    <color name="window_background">#F5F5F5</color>
+    <color name="form_label">#616161</color>
+    <color name="hint_text">#9E9E9E</color>
+    <color name="edittext_stroke">#BDBDBD</color>
+    <color name="edittext_focused">#2196F3</color>
+
+
+
+    <color name="colorWhite">#F5F5F5</color>
+    <color name="colorDivider">#55F5F5F5</color>
+    <color name="colorGray">#D3D3D3</color>
+    <color name="colorPrimary">#A8B4C2</color>
+    <color name="colorDark">#CCCCCC</color>
+    <color name="colorPrimaryTxt">#aaaaaa</color>
+    <color name="colorYellow">#ffeb3b</color>
+    <color name="colorZong">#f4951b</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorRed">#FF0000</color>
+    <color name="colorText">#142635</color>
+    <color name="colorFootMenuBackground">#142635</color>
+    <color name="colorFootMenuChecked">#0E1B24</color>
+    <color name="colorFootMenu_text">#A8B4C2</color>
+    <color name="colorFootMenu_text_checked">#268081</color>
+    <color name="colorTaplayout_bg">#218482</color>
+    <color name="colorGreen">#45d59e</color>
+    <color name="colorSkeyBlue">#1E90FF</color>
+    <!-- common -->
+    <color name="app_color_blue">#00A8E1</color>
+    <color name="app_color_blue_disabled">#8000A8E1</color>
+    <color name="app_color_blue_pressed">#c000A8E1</color>
+
+    <color name="app_color_blue_2">#31BDF3</color>
+    <color name="app_color_blue_2_disabled">#7F31BDF3</color>
+    <color name="app_color_blue_2_pressed">#7F31BDF3</color>
+
+    <color name="app_color_theme_1">#EF5362</color> <!-- Grapefruit -->
+    <color name="app_color_theme_2">#FE6D4B</color> <!-- Bittersweet -->
+    <color name="app_color_theme_3">#FFCF47</color> <!-- Sunflower -->
+    <color name="app_color_theme_4">#9FD661</color> <!-- Grass -->
+    <color name="app_color_theme_5">#3FD0AD</color> <!-- Mint -->
+    <color name="app_color_theme_6">#2BBDF3</color> <!-- Aqua -->
+    <color name="app_color_theme_7">#5A9AEF</color> <!-- Blue Jeans -->
+    <color name="app_color_theme_8">#AC8FEF</color> <!-- Lavender -->
+    <color name="app_color_theme_9">#EE85C1</color> <!-- Pink Rose -->
+
+    <color name="app_color_description">@color/qmui_config_color_gray_5</color>
+
+    <color name="bar_divider">#D4D6D8</color>
+    <color name="tab_panel_bg">#ffffff</color>
+    <color name="tab_panel_divider">@color/bar_divider</color>
+
+    <!-- Components 组件 -->
+    <color name="radiusImageView_border_color">@color/app_color_theme_2</color>
+    <color name="radiusImageView_selected_border_color">@color/app_color_theme_1</color>
+    <color name="radiusImageView_selected_mask_color">#7FEF5362</color>
+
+    <!-- Helper 系列界面 -->
+
+    <!-- ColorHelper 颜色工具 -->
+    <color name="colorHelper_square_alpha_background">@color/app_color_theme_4</color>
+    <color name="colorHelper_square_from_ratio_background">@color/app_color_blue</color>
+    <color name="colorHelper_square_to_ratio_background">@color/app_color_theme_3</color>
+</resources>

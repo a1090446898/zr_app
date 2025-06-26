@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".DisposeAssetsActivity">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height"
+            android:layout_alignParentTop="true" />
+
+
+    <LinearLayout
+            android:id="@+id/lyscrollhead"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/topbar"
+            android:orientation="vertical"
+            >
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_gravity="center_horizontal" />
+
+        <include
+                android:id="@+id/head"
+                layout="@layout/dispose_assets_list_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/lyscrollhead"
+            app:srlEnableFooterFollowWhenLoadFinished="true"
+            app:srlEnableScrollContentWhenLoaded="true">
+
+        <ListView
+                android:id="@+id/listAssets"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@android:color/transparent"
+                android:dividerHeight="1px"
+                android:overScrollMode="never" />
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+</RelativeLayout>

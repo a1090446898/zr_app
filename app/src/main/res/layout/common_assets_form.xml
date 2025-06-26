@@ -1,0 +1,1449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/assets_form_layout"
+        android:background="@color/white"
+        android:padding="8dp"
+        android:orientation="vertical">
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="账套编号：" />
+
+        <EditText
+                style="@style/from_value"
+                android:id="@+id/editACCTSUITEID"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="账套编号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="资产类别：" />
+
+        <EditText
+                android:id="@+id/editASSETSTYPE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="资产类别" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="资产分类：" />
+
+        <EditText
+                android:id="@+id/editASSETSSORTCODE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="资产分类代码" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="资产名称：" />
+
+        <EditText
+                android:id="@+id/editASSETSNAME"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="资产名称" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="品&#12288;&#12288;牌：" />
+
+        <EditText
+                android:id="@+id/editBRAND"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="品牌" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="规&#12288;&#12288;格：" />
+
+        <EditText
+                android:id="@+id/editASSETSMODEL"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="规格" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="型&#12288;&#12288;号：" />
+
+        <EditText
+                android:id="@+id/editASSETSSTANDARD"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="型号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="计量单位：" />
+
+        <EditText
+                android:id="@+id/editASSETSMEASURE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="计量单位" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="数&#12288;&#12288;量：" />
+
+        <EditText
+                android:id="@+id/editASSETSNUM"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="数量" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="使&#8194;用&#8194;人：" />
+
+        <AutoCompleteTextView
+                android:id="@+id/editASSETSUSER"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:completionThreshold="1"
+                android:hint="使用人" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="管&#8194;理&#8194;人：" />
+
+        <AutoCompleteTextView
+                android:id="@+id/editCUSTODIAN"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:completionThreshold="1"
+                android:hint="管理人" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="使用部门：" />
+
+        <AutoCompleteTextView
+                android:id="@+id/editASSETSDEPT"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:completionThreshold="1"
+                android:hint="使用部门" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="存放地点：" />
+
+        <EditText
+                android:id="@+id/editASSETSLAYADD"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="存放地点" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="管理部门：" />
+
+        <EditText
+                android:id="@+id/editGROUNDMANAGEDEPT"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="管理部门" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="卡片编号：" />
+
+        <EditText
+                android:id="@+id/editSERIALCODE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="同条码编号或输入" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="条码编号：" />
+
+        <EditText
+                android:id="@+id/editBARCODEID"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="条码编号自动生产" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="备&#12288;&#12288;注：" />
+
+        <EditText
+                android:id="@+id/editREMARKS"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="盘实" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="资产原值：" />
+
+        <EditText
+                android:id="@+id/editASSETSCURRPRICE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="资产原值" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="净&#12288;&#12288;值：" />
+
+        <TextView
+                android:id="@+id/editLEFTPRICE"
+                style="@style/from_text_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="0.0" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="卡片金额：" />
+
+        <TextView
+                android:id="@+id/editKPJE"
+                style="@style/from_text_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="0.0" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="卡片序号：" />
+
+        <EditText
+                android:id="@+id/editSERIALNUM"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="卡片序号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="折旧状态：" />
+
+        <EditText
+                android:id="@+id/editDPRECIATIONTYPE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="折旧状态" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="预计使用月份：" />
+
+        <EditText
+                android:id="@+id/editYEARCOUNT"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="预计使用月份" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="累计折旧：" />
+
+        <EditText
+                android:id="@+id/editDPRECIATIONADD"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="累计折旧" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="当前累计折旧：" />
+
+        <EditText
+                android:id="@+id/editCURRDPRECIATIONADD"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="当前累计折旧" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="取得日期：" />
+
+        <EditText
+                android:id="@+id/editASSETSUSEDATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="取得日期"
+                android:inputType="date" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="取得方式：" />
+
+        <EditText
+                android:id="@+id/editGETMODE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="取得方式" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="使用状况：" />
+
+        <EditText
+                android:id="@+id/editUSESTATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="使用状况" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="录入日期：" />
+
+        <EditText
+                android:id="@+id/editASSETSWRITERDATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:enabled="false"
+                android:hint="录入日期" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="录&#8194;入&#8194;人：" />
+
+        <EditText
+                android:id="@+id/editASSETSWRITER"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:enabled="false"
+                android:hint="录入人" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="保修截止日期：" />
+
+        <EditText
+                android:id="@+id/editASSETSENDUSEDATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="保修截止日期"
+                android:inputType="date" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="采购组织形式：" />
+
+        <EditText
+                android:id="@+id/editPURCHASINGORGANIZATION"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="采购组织形式" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="产权单位：" />
+
+        <EditText
+                android:id="@+id/editPROPERTY"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="产权单位" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="车&#8194;牌&#8194;号：" />
+
+        <EditText
+                android:id="@+id/editVEHICLENO"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="车牌号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="厂牌型号：" />
+
+        <EditText
+                android:id="@+id/editASSETSFACTORYNO"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="厂牌型号" />
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="发动机号：" />
+
+        <EditText
+                android:id="@+id/editFDJH"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="发动机号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="车&#8194;架&#8194;号：" />
+
+        <EditText
+                android:id="@+id/editCJHM"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="车架号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="排&#8194;气&#8194;量：" />
+
+        <EditText
+                android:id="@+id/editVEHEXH"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="排气量" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="车辆产地：" />
+
+        <EditText
+                android:id="@+id/editASSETSPRODAREA"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="车辆产地" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="行驶里程：" />
+
+        <EditText
+                android:id="@+id/editLONGMILES"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="行驶里程" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="权属所有人：" />
+
+        <EditText
+                android:id="@+id/editASSETSMANAGER"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="权属所有人" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="发证时间：" />
+
+        <EditText
+                android:id="@+id/editASSETSDISPENSEDATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="发证时间"
+                android:inputType="date" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="编制情况：" />
+
+        <EditText
+                android:id="@+id/editASSETSORGANIZATION"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="编制情况" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="分类用途：" />
+
+        <EditText
+                android:id="@+id/editVEHPURPOSE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="分类用途" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="文物等级：" />
+
+        <EditText
+                android:id="@+id/editASSETSCULGRADE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="文物等级" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="所在楼层，空值：" />
+
+        <EditText
+                android:id="@+id/editSZLC"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="所在楼层，空值" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="CardID：" />
+
+        <EditText
+                android:id="@+id/editCARDID"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="CardID" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="财政资产：" />
+
+        <Switch
+                android:id="@+id/toggleISCZ"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:showText="true"
+                android:textOff="否"
+                android:textOn="是" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="盘点表1：" />
+
+        <EditText
+                android:id="@+id/editPDZT"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="盘点表1" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="6dp"
+            android:visibility="gone">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="盘点表2：" />
+
+        <EditText
+                android:id="@+id/editZT"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="盘点表2" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="序列号：" />
+
+        <EditText
+                android:id="@+id/editXLH"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="序列号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="生产厂家：" />
+
+        <EditText
+                android:id="@+id/editSCCJ"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="生产厂家" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="供货商：" />
+
+        <EditText
+                android:id="@+id/editVENDOR"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="供货商" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="出厂编号：" />
+
+        <EditText
+                android:id="@+id/editCCBH"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="出厂编号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="管理编号：" />
+
+        <EditText
+                android:id="@+id/editGLBH"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="管理编号" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="参数：" />
+
+        <EditText
+                android:id="@+id/editCANSHU"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="参数" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="溯源周期：" />
+
+        <EditText
+                android:id="@+id/editSYZQ"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="溯源周期"
+                android:inputType="number"
+                android:maxLength="3" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="溯源方式：" />
+
+        <EditText
+                android:id="@+id/editSYFS"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="溯源方式" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="检定校准日期：" />
+
+        <EditText
+                android:id="@+id/editJDJZRQ"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="检定校准日期"
+                android:inputType="date" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="有效期至：" />
+
+        <EditText
+                android:id="@+id/editYXQZ"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="有效期至"
+                android:inputType="date" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="所属项目：" />
+
+        <EditText
+                android:id="@+id/editSSXM"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="所属项目" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="密级：" />
+
+        <TextView
+                android:id="@+id/editClassification"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="密级" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="配发日期：" />
+
+        <TextView
+                android:id="@+id/editIsSueDate"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="配发日期" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="财务记账时间：" />
+
+        <TextView
+                android:id="@+id/editBOOKKEEPINGTIME"
+                style="@style/from_text_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="凭证号：" />
+
+        <TextView
+                android:id="@+id/editVOUCHERNO"
+                style="@style/from_text_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="" />
+
+        </LinearLayout>
+
+    <!--按钮-->
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15sp"
+            android:gravity="center_horizontal">
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonSave"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:background="@color/app_color_blue"
+                android:text="保存"
+                android:textColor="@color/colorWhite" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonPrintLabel"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
+                android:background="@color/colorZong"
+                android:text="打印条码"
+                android:textColor="@color/colorWhite"
+                android:visibility="invisible" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonPhoto"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
+                android:text="照片"
+                android:visibility="gone" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonCopy"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
+                android:background="@color/app_color_theme_1"
+                android:text="复制"
+                android:textColor="@color/colorWhite"
+                android:visibility="invisible" />
+    </LinearLayout>
+
+</LinearLayout>

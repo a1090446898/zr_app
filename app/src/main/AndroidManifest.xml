@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.gsoft.inventory">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <application
+        android:name=".InventoryApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_xct"
+        android:label="@string/app_name"
+        android:hardwareAccelerated="true"
+        android:networkSecurityConfig="@xml/network_config"
+        android:roundIcon="@mipmap/ic_xct"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ImportQCYActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UploadPhotoImagesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignaturePhotoViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignatureActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OfflineHomeActivity"
+            android:exported="true" />
+        <activity android:name=".OfflineLoginActivity" />
+        <activity android:name=".NetChooseActivity" />
+        <activity android:name=".DisposeAssetsActivity" />
+        <activity android:name=".AssetsDisposeActivity" />
+        <activity android:name=".ImportPrintersActivity" />
+
+        <!--数据库名称-->
+        <meta-data
+            android:name="DATABASE"
+            android:value="xct_zcqc.db" />
+        <!--数据库版本号，生成表需要更新该版本号,在assets，sugar_upgrades目录下新建version.sql文件-->
+        <meta-data
+            android:name="VERSION"
+            android:value="52" />
+        <meta-data
+            android:name="QUERY_LOG"
+            android:value="true" />
+        <meta-data
+            android:name="DOMAIN_PACKAGE_NAME"
+            android:value="com.gsoft.inventory" />
+
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTask" />
+        <activity android:name=".BluetoothDeviceActivity" />
+        <activity android:name=".PrintLabelActivity" />
+        <activity android:name=".ImportAssetsActivity" />
+        <activity android:name=".AssetsQueryActivity" />
+        <activity android:name=".AssetsViewActivity" />
+        <activity android:name=".AssetsCodeScanActivity" />
+        <activity android:name=".NewAssetsActivity" />
+        <activity android:name=".ImportAccountsActivity" />
+        <activity android:name=".ImportNetAssetsActivity" />
+        <activity android:name=".ImportAssetsCategoryActivity" />
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".EditAssetsActivity" />
+        <activity android:name=".PhotoActivity" />
+        <activity android:name=".PhotoViewActivity" />
+        <activity android:name=".ScanPhotoActivity" />
+
+        <activity android:name=".QueryActivity" />
+        <activity android:name=".AssetsRecodeActivity" />
+
+        <!--资产领用-->
+        <activity android:name=".view.asset_receive.AssetReceiveActivity" />
+        <activity android:name=".view.asset_receive.AssetReceiveDetailActivity" />
+        <activity android:name=".view.asset_receive.NewAssetReceiveActivity" />
+
+        <!--资产借用-->
+        <activity android:name=".view.asset_borrow.AssetBorrowActivity"  />
+        <activity android:name=".view.asset_borrow.AssetBorrowDetailActivity"  />
+
+        <!--资产归还-->
+        <activity android:name=".view.asset_return.AssetReturnActivity" />
+
+        <!--资产移交-->
+        <activity android:name=".view.asset_transfer.AssetTransferActivity" />
+        <activity android:name=".view.asset_transfer.AssetTransferDetailActivity" />
+
+        <!--资产采购-->
+        <activity android:name=".view.asset_purchase.AssetPurchaseActivity" />
+        <activity android:name=".view.asset_purchase.AssetPurchaseDetailActivity" />
+
+        <!--资产报修-->
+        <activity android:name=".view.asset_repair.AssetRepairActivity" />
+        <activity android:name=".view.asset_repair.AssetRepairDetailActivity" />
+
+        <!--服饰管理-->
+        <activity android:name=".view.dress_manage.DressManageActivity" />
+        <activity android:name=".view.dress_manage.DressManageDetailActivity" />
+
+        <activity android:name=".view.AssetDiscardActivity" />
+
+        <activity android:name=".BatchCopyActivity" android:exported="false"  />
+
+        <activity android:name=".ProtocolActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.gsoft.inventory.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider> <!-- 高德定位服务 -->
+        <receiver android:name=".utils.NetWorkReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

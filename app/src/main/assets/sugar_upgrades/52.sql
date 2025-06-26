@@ -1,0 +1,2 @@
+
+ALTER TABLE ASSETS ADD COLUMN VENDOR varchar(100) default '';

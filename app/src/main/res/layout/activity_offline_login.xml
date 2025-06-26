@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".OfflineLoginActivity">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/qmui_topbar_height"
+        android:layout_alignParentTop="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/topbar"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/editAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:hint="请选择账套"
+            android:inputType="text"
+            android:typeface="sans"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/editUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:hint="请输入用户名"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/editPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:hint="请输入密码"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/editDeviceNo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:hint="请选择设备号"
+            android:inputType="text"
+            android:maxLength="2"
+            android:typeface="sans" />
+
+        <EditText
+            android:id="@+id/editPrinter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:hint="请选择打印效果"
+            android:inputType="text"
+            android:text="大一维码"
+            android:typeface="sans" />
+
+        <EditText
+                android:id="@+id/editPrinterTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginBottom="10dp"
+                android:drawablePadding="10dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="请选择打印抬头"
+                android:inputType="text"
+                android:text="单位名称"
+                android:typeface="sans" />
+
+        <EditText
+                android:id="@+id/editPrinterPosition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginBottom="10dp"
+                android:drawablePadding="10dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="请选择打印位置"
+                android:inputType="text"
+                android:text="打印位置"
+                android:typeface="sans"/>
+
+        <EditText
+                android:id="@+id/editInventorySetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginBottom="10dp"
+                android:drawablePadding="10dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="盘点人员设置"
+                android:inputType="none"
+                android:typeface="sans"/>
+
+        <EditText
+            android:id="@+id/editQCY"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="10dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:hint="请选择资产清查员"
+            android:inputType="none"
+            android:typeface="sans" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal">
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonLogin"
+                android:layout_width="60dp"
+                android:layout_height="40dp"
+                android:text="登陆"
+                android:textSize="12sp" />
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonPrint"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="打印字段"
+                android:textSize="12sp" />
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonImportAccounts"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:text="导入账套"
+                android:textSize="12sp" />
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonImportQCY"
+                android:layout_width="90dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:text="导入清查员"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_bottom_copy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="10dp"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryTxt" />
+</RelativeLayout>

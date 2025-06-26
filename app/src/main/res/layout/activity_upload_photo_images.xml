@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UploadPhotoImagesActivity">
+
+
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/qmui_topbar_height"
+        android:layout_alignParentTop="true" >
+    </com.qmuiteam.qmui.widget.QMUITopBar>
+
+
+    <ListView
+            android:id="@+id/listFiles"
+            android:layout_width="match_parent"
+            android:layout_height="585dp"
+            android:layout_below="@+id/topbar"
+            android:cacheColorHint="@android:color/transparent"
+            android:dividerHeight="1px"
+            android:overScrollMode="never"
+           >
+    </ListView>
+  <!--  <TextView
+            android:id="@+id/textViewInfo"
+            android:layout_width="392dp"
+            android:layout_marginTop="70dp"
+            android:layout_height="wrap_content"
+            android:text="数量: 0"
+            android:textSize="16sp"
+            android:padding="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/listFiles"
+            app:layout_constraintTop_toBottomOf="@+id/topbar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="7dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="12dp"/>-->
+
+            />
+</RelativeLayout>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/tv_depart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:gravity="center_horizontal|center_vertical"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="部门名称" />
+
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="资产使用人" />
+
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="已签名" />
+
+    <TextView
+        android:id="@+id/tv_look"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:textColor="@color/colorSkeyBlue"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="查看签名" />
+
+    <Button
+        android:id="@+id/button_signature"
+        android:layout_width="0dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_weight="2"
+        android:background="@drawable/radius_button_bg_blue"
+        android:text="发送确认"
+        android:textColor="@color/colorWhite"
+        android:textSize="12sp" />
+</LinearLayout>

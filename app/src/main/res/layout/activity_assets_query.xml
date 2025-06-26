@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/lyDrawLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AssetsQueryActivity">
+
+    <RelativeLayout
+        android:id="@+id/lyResult"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height"
+            android:layout_alignParentTop="true" />
+
+        <LinearLayout
+            android:id="@+id/lyscrollhead"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/topbar"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_gravity="center_horizontal" />
+
+            <include
+                android:id="@+id/head"
+                layout="@layout/assets_list_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/lyQuery" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/tv_assets_msg"
+            android:layout_below="@+id/lyscrollhead"
+            app:srlEnableFooterFollowWhenLoadFinished="true"
+            app:srlEnableScrollContentWhenLoaded="true">
+
+            <ListView
+                android:id="@+id/listAssets"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@android:color/transparent"
+                android:dividerHeight="1px"
+                android:overScrollMode="never"></ListView>
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+
+        <TextView
+            android:id="@+id/tv_assets_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:padding="5dp"
+            android:textAlignment="center"
+            android:textColor="@color/colorSkeyBlue" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/lyQuery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@color/colorWhite"
+        android:orientation="vertical">
+
+        <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/querybar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height"
+            android:layout_alignParentTop="true" />
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="资产名称：" />
+
+                    <EditText
+                        android:id="@+id/editASSETSNAME"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:hint="资产名称(模糊)" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="规格：" />
+
+                    <EditText
+                            android:id="@+id/editASSETSMODEL"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_weight="3"
+                            android:hint="规格(模糊)" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="型号：" />
+
+                    <EditText
+                            android:id="@+id/editASSETSSTANDARD"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_weight="3"
+                            android:hint="型号(模糊)" />
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="条码编号：" />
+
+                    <EditText
+                        android:id="@+id/editBARCODEID"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+
+                        android:hint="条码编号" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="资产类别：" />
+
+                    <EditText
+                        android:id="@+id/editASSETSTYPE"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="选择资产类别" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="账套：" />
+
+                    <EditText
+                        android:id="@+id/editACCTSUITEID"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:text="选择账套" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="管理人：" />
+
+                    <EditText
+                        android:id="@+id/editCUSTODIAN"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:hint="管理人" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="使用人：" />
+
+                    <EditText
+                            android:id="@+id/editASSETSUSER"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="3"
+                            android:hint="使用人" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="编制情况：" />
+
+                    <EditText
+                        android:id="@+id/editASSETSORGANIZATION"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="编制情况" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="使用部门：" />
+
+                    <EditText
+                        android:id="@+id/editASSETSDEPT"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:hint="使用部门" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="管理部门：" />
+
+                    <EditText
+                        android:id="@+id/editGROUNDMANAGEDEPT"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="管理部门" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="存放地点：" />
+
+                    <EditText
+                        android:id="@+id/editASSETSLAYADD"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:hint="存放地点" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="资产原值：" />
+
+                    <EditText
+                            android:id="@+id/editASSETSCURRPRICE"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="3"
+                            android:hint="资产原值" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="备注：" />
+
+                    <EditText
+                        android:id="@+id/editREMARKS"
+                        style="@style/assets_edit_value"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:hint="备注" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/assets_edit_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:labelFor="@+id/switcher"
+                        android:text="未同步：" />
+
+                    <Switch
+                        android:id="@+id/switcher"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:checked="false"
+                        android:showText="true"
+                        android:textOff="否"
+                        android:textOn="是" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal">
+
+                    <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/search_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="查询" />
+
+                    <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/search_reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:text="清空" />
+
+                    <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/search_close"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:text="取消" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

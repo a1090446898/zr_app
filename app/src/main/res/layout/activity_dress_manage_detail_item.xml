@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:padding="0dp"
+              android:gravity="center_vertical">
+
+    <!-- 多选框 -->
+    <CheckBox
+            android:id="@+id/cb_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <!-- 资产信息展示区域（水平排列，可根据需求调整为垂直或网格） -->
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+        <TextView
+                android:id="@+id/tv_docId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="服饰编号: " />
+
+        <TextView
+                android:id="@+id/tv_dressName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="服饰名称: " />
+
+        <TextView
+                android:id="@+id/tv_receiveNum"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="领用数量: " />
+        <TextView
+                android:id="@+id/tv_inventoryQuantity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="库存数量: " />
+
+        <TextView
+                android:id="@+id/tv_receiveUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="领用人: " />
+
+        <TextView
+                android:id="@+id/tv_receiveDepart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="领用部门: " />
+
+
+
+        <!-- 灰色下划线 -->
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:background="#E0E0E0"/>
+    </LinearLayout>
+
+</LinearLayout>

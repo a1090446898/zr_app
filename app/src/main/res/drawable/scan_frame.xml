@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 透明背景 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+            <stroke
+                    android:width="2dp"
+                    android:color="#FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- 四个角的标记 -->
+    <item android:top="-1dp" android:left="-1dp">
+        <shape android:shape="rectangle">
+            <size android:width="20dp" android:height="20dp" />
+            <stroke
+                    android:width="1dp"
+                    android:color="#fa3534" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+
+    <item android:top="-1dp" android:right="-1dp">
+        <shape android:shape="rectangle">
+            <size android:width="20dp" android:height="20dp" />
+            <stroke
+                    android:width="1dp"
+                    android:color="#fa3534" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+
+    <item android:bottom="-1dp" android:left="-1dp">
+        <shape android:shape="rectangle">
+            <size android:width="20dp" android:height="20dp" />
+            <stroke
+                    android:width="1dp"
+                    android:color="#fa3534" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+
+    <item android:bottom="-1dp" android:right="-1dp">
+        <shape android:shape="rectangle">
+            <size android:width="20dp" android:height="20dp" />
+            <stroke
+                    android:width="1dp"
+                    android:color="#fa3534" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+</layer-list>

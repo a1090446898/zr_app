@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                   android:layout_width="match_parent"
+                                   android:layout_height="wrap_content"
+                                   android:layout_margin="8dp"
+                                   app:cardCornerRadius="8dp"
+                                   app:cardElevation="4dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+        <TextView
+                android:id="@+id/tv_DOCID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="编号"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+        <TextView
+                android:id="@+id/tv_APPLICANT"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="人员"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_USEDEPT"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="部门"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_APPLY_EXPLAIN"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="说明"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_STATE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="审核状态"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_APPLICANTDATE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="日期"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

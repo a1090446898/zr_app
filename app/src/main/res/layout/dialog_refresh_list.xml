@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="16dp">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="380dp"
+            android:layout_below="@+id/topbar"
+            android:orientation="vertical">
+
+        <HorizontalScrollView
+                android:id="@+id/main_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+            <!-- 唯一的直接子容器 -->
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                <!-- 表头 -->
+                <LinearLayout
+                        android:id="@+id/lyscrollhead"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                    <TextView
+                            android:id="@+id/allCheck"
+                            android:layout_width="60dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:visibility="gone"
+                            android:text="选择"/>
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSNAME"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="资产名称"
+                            android:textColor="@color/colorFootMenu_text_checked"
+                            />
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvBARCODEID"
+                            style="@style/assets_item_tv"
+                            android:text="条码编号"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSMODEL"
+                            style="@style/assets_item_tv"
+                            android:text="规格"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSSTANDARD"
+                            style="@style/assets_item_tv"
+                            android:text="型号"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+
+                    <TextView
+                            android:id="@+id/tvASSETSMEASURE"
+                            style="@style/assets_item_tv"
+                            android:text="计量单位"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSUSER"
+                            style="@style/assets_item_tv"
+                            android:text="使用人"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSWRITER"
+                            style="@style/assets_item_tv"
+                            android:text="录入人"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSWRITERDATE"
+                            style="@style/assets_item_tv"
+                            android:text="录入日期"/>
+
+
+                    <TextView
+                            android:id="@+id/tvACCTSUITEID"
+                            style="@style/assets_item_tv"
+                            android:text="账套"
+                            android:visibility="gone"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvPROPERTY"
+                            style="@style/assets_item_tv"
+                            android:singleLine="true"
+                            android:ellipsize="start"
+                            android:text="产权单位"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvREMARKS"
+                            style="@style/assets_item_tv"
+                            android:text="备注"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSTYPE"
+                            style="@style/assets_item_tv"
+                            android:text="资产类别"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvGETMODE"
+                            android:visibility="gone"
+                            style="@style/assets_item_tv"
+                            android:text="取得方式"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvUSESTATE"
+                            style="@style/assets_item_tv"
+                            android:text="使用情况"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSDEPT"
+                            style="@style/assets_item_tv"
+                            android:text="使用部门"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvGROUNDMANAGEDEPT"
+                            style="@style/assets_item_tv"
+                            android:text="管理部门"
+                            android:visibility="gone"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSNUM"
+                            style="@style/assets_item_tv"
+                            android:text="数量"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvASSETSLAYADD"
+                            style="@style/assets_item_tv"
+                            android:text="存放地点"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <View
+                            android:layout_width="1px"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@color/colorDark"/>
+
+                    <TextView
+                            android:id="@+id/tvSERIALCODE"
+                            style="@style/assets_item_tv"
+                            android:text="卡片编号"/>
+
+                </LinearLayout>
+                <androidx.core.widget.NestedScrollView
+                        android:id="@+id/nested_scroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fillViewport="true">
+                    <!-- 列表 -->
+                    <ListView
+                            android:id="@+id/listAssets"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:dividerHeight="1px"
+                            />
+                </androidx.core.widget.NestedScrollView>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/assets_edit_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="复制数量："/>
+
+        <EditText
+                android:id="@+id/et_number"
+                style="@style/assets_edit_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:inputType="number"
+                android:hint="1"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/assets_edit_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="是否复制图片："/>
+
+        <RadioGroup
+                android:id="@+id/rg_copy_img"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:orientation="horizontal">
+
+            <RadioButton
+                    android:id="@+id/rb_copy_img_yes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="是"/>
+
+            <RadioButton
+                    android:id="@+id/rb_copy_img_no"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="否"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+
+
+
+</LinearLayout>

@@ -1,0 +1,280 @@
+<resources>
+    <string name="app_name">资产管理</string>
+    <string name="unknow_address">未知地址</string>
+    <string name="unknow_name">未知设备</string>
+    <string name="turn_on_bt">请先开启蓝牙</string>
+    <string name="connect_fail">设备连接失败</string>
+    <string name="protocal_title_1">装备大数据应用管理平台软件移动端</string>
+    <string name="protocal_title_2">用户许可安装协议</string>
+    <string name="tip_downtassets">增量更新</string>
+    <string name="tip_checkall">全选</string>
+    <array name="printe_effect">
+        <item>大一维码</item>
+        <item>大二维码</item>
+        <item>小一维码</item>
+        <item>小二维码</item>
+        <item>网页二维码-二字段</item>
+        <item>网页二维码-四字段</item>
+        <item>大二维码-五字段</item>
+    </array>
+    <array name="inventory_setting">
+        <item>智软盘点</item>
+        <item>单位自盘</item>
+    </array>
+    <array name="print_title_select">
+        <item>单位名称</item>
+        <item>部门名称</item>
+        <item>单位+部门名称</item>
+    </array>
+    <array name="print_position_select">
+        <item>居中</item>
+        <item>居左</item>
+    </array>
+    <array name="sbhm">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </array>
+    <array name="zclb">
+        <item>土地、房屋及建筑物</item>
+        <item>通用设备</item>
+        <item>专用设备</item>
+        <item>文物和陈列品</item>
+        <item>图书、档案</item>
+        <item>家具、用具及动植物</item>
+        <item>无形资产</item>
+    </array>
+
+    <array name="zclbNew">
+        <item>房屋和构筑物</item>
+        <item>设备</item>
+        <item>文物和陈列品</item>
+        <item>图书和档案</item>
+        <item>家具和用具</item>
+        <item>特种动植物</item>
+        <item>物资</item>
+        <item>无形资产</item>
+    </array>
+    <array name="printfieldsTitle">
+        <item>资产名称</item>
+        <item>规格型号</item>
+        <item>品牌</item>
+        <item>使用部门</item>
+        <item>使用人</item>
+        <item>存放地点</item>
+        <item>取得日期</item>
+        <item>数量</item>
+        <item>资产原值</item>
+        <item>管理人</item>
+        <item>管理部门</item>
+        <item>卡片编号</item>
+        <item>是否财政资产</item>
+        <item>序列号</item>
+        <item>生产厂家</item>
+        <item>出厂编号</item>
+        <item>管理编号</item>
+        <item>车牌号</item>
+        <item>参数</item>
+        <item>溯源周期</item>
+        <item>溯源方式</item>
+        <item>检定校准日期</item>
+        <item>有效期至</item>
+        <item>所属项目</item>
+        <item>密级</item>
+        <item>配发日期</item>
+        <item>备注</item>
+    </array>
+
+    <array name="printfieldsTitleCz">
+        <item>资产名称</item>
+        <item>使用日期</item>
+        <item>使用部门</item>
+        <item>规格型号</item>
+        <item>存放位置</item>
+    </array>
+
+    <array name="printfieldsCodeCz">
+        <item>ASSETSNAME</item>
+        <item>ASSETSUSEDATE</item>
+        <item>ASSETSDEPT</item>
+        <item>ASSETSSTANDARD</item>
+        <item>ASSETSLAYADD</item>
+    </array>
+
+    <array name="printfieldsCode">
+        <item>ASSETSNAME</item>
+        <item>ASSETSSTANDARD</item>
+        <item>BRAND</item>
+        <item>ASSETSDEPT</item>
+        <item>ASSETSUSER</item>
+        <item>ASSETSLAYADD</item>
+        <item>ASSETSUSEDATE</item>
+        <item>ASSETSNUM</item>
+        <item>ASSETSCURRPRICE</item>
+        <item>CUSTODIAN</item>
+        <item>GROUNDMANAGEDEPT</item>
+        <item>SERIALCODE</item>
+        <item>ISCZ</item>
+        <item>ASSETSSERIALNUMBER</item>
+        <item>ASSETSSUPPLIER</item>
+        <item>FACTORYNO</item>
+        <item>MANAGENO</item>
+        <item>VEHICLENO</item>
+        <item>PARAMETERS</item>
+        <item>TRACEABILITY</item>
+        <item>TRACEABILITYPE</item>
+        <item>CALIBRATIONDATE</item>
+        <item>VALIDDATE</item>
+        <item>PROBELONG</item>
+        <item>CLASSIFICATION</item>
+        <item>ISSUEDATE</item>
+        <item>REMARKS</item>
+    </array>
+    <array name="qdfs">
+        <item>政府采购</item>
+        <item>直接购入</item>
+        <item>下拨</item>
+        <item>案件转入</item>
+        <item>建造</item>
+        <item>赠予</item>
+        <item>自购</item>
+        <item>局配</item>
+        <item>调拨</item>
+        <item>划拨</item>
+        <item>其他采购方式</item>
+    </array>
+    <array name="syzk">
+        <item>在用</item>
+        <item>闲置</item>
+        <item>维修</item>
+        <item>封存</item>
+        <item>报废</item>
+        <item>下拨</item>
+        <item>调拨</item>
+        <item>毁坏不能使用</item>
+        <item>其他使用状态</item>
+    </array>
+    <array name="zjzt">
+        <item>不计提折旧</item>
+        <item>计提折旧</item>
+    </array>
+    <array name="wwdj">
+        <item>国家级</item>
+        <item>省市级</item>
+        <item>没用的</item>
+        <item>坏的</item>
+        <item>碎了的</item>
+        <item>其他</item>
+    </array>
+    <array name="bzqk">
+        <item>财政在编</item>
+        <item>非财政在编</item>
+    </array>
+    <array name="syfs">
+        <item>检定</item>
+        <item>校准</item>
+    </array>
+    <array name="flyt">
+        <item>领导用车</item>
+        <item>公务用车</item>
+        <item>专业用车</item>
+        <item>公务用车</item>
+        <item>生活用车</item>
+        <item>接待用车</item>
+        <item>其他用车</item>
+        <item>单位用车</item>
+    </array>
+    <array name="cgzzxs">
+        <item>政府集中采购</item>
+        <item>部门集中采购</item>
+        <item>分散采购</item>
+        <item>其他</item>
+    </array>
+    <array name="classifications">
+        <item>绝密</item>
+        <item>机密</item>
+        <item>秘密</item>
+    </array>
+    <array name="assets_fields">
+        <item>BARCODEID</item>
+        <item>CARDID</item>
+        <item>GETMODE</item>
+        <item>REMARKS</item>
+        <item>PROPERTY</item>
+        <item>FDJH</item>
+        <item>SZLC</item>
+        <item>CUSTODIAN</item>
+        <item>CJHM</item>
+        <item>ACCTSUITEID</item>
+        <item>SERIALNUM</item>
+        <item>ASSETSTYPE</item>
+        <item>ASSETSSORTCODE</item>
+        <item>ASSETSMEASURE</item>
+        <item>SERIALCODE</item>
+        <item>ASSETSNAME</item>
+        <item>ASSETSSTANDARD</item>
+        <item>ASSETSUSEDATE</item>
+        <item>ASSETSENDUSEDATE</item>
+        <item>YEARCOUNT</item>
+        <item>USESTATE</item>
+        <item>DPRECIATIONTYPE</item>
+        <item>ASSETSLAYADD</item>
+        <item>ASSETSUSER</item>
+        <item>ASSETSDEPT</item>
+        <item>KPJE</item>
+        <item>DPRECIATIONADD</item>
+        <item>ASSETSCURRPRICE</item>
+        <item>CURRDPRECIATIONADD</item>
+        <item>LEFTPRICE</item>
+        <item>GROUNDMANAGEDEPT</item>
+        <item>ASSETSCULGRADE</item>
+        <item>ASSETSPRODAREA</item>
+        <item>VEHICLENO</item>
+        <item>ASSETSDISPENSEDATE</item>
+        <item>ASSETSMANAGER</item>
+        <item>ASSETSFACTORYNO</item>
+        <item>VEHEXH</item>
+        <item>LONGMILES</item>
+        <item>VEHPURPOSE</item>
+        <item>ASSETSORGANIZATION</item>
+        <item>ASSETSNUM</item>
+        <item>ASSETSWRITER</item>
+        <item>ASSETSWRITERDATE</item>
+        <item>PURCHASINGORGANIZATION</item>
+        <item>BRAND</item>
+        <item>PDZT</item>
+        <item>ISUPLOAD</item>
+        <item>PDZT</item>
+        <item>ISCZ</item>
+        <item>DOCID</item>
+        <item>ASSETSMODEL</item>
+        <item>ASSETSSERIALNUMBER</item>
+        <item>ASSETSSUPPLIER</item>
+        <item>FACTORYNO</item>
+        <item>MANAGENO</item>
+        <item>PARAMETERS</item>
+        <item>TRACEABILITY</item>
+        <item>TRACEABILITYPE</item>
+        <item>CALIBRATIONDATE</item>
+        <item>VALIDDATE</item>
+        <item>PROBELONG</item>
+        <item>CLASSIFICATION</item>
+        <item>ISSUEDATE</item>
+        <item>VENDOR</item>
+    </array>
+    <string name="title_activity_offline_login">OfflineLoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+</resources>

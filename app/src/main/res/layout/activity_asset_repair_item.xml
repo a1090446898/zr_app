@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                   android:layout_width="match_parent"
+                                   android:layout_height="wrap_content"
+                                   android:layout_margin="8dp"
+                                   app:cardCornerRadius="8dp"
+                                   app:cardElevation="4dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+        <TextView
+                android:id="@+id/tv_DOCID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="报修编号"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+        <TextView
+                android:id="@+id/tv_SENDUSER"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="报修人"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_SENDPHONE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="联系电话"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_SENDDATE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="报修日期"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_SENDREASON"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="报修原因"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_DOUSER"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="经办人"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_RESULT"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="维修情况"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_DODATE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="办结时间"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+        <TextView
+                android:id="@+id/tv_FID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="资产编号"
+                android:textSize="16sp"
+                android:paddingTop="4dp"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
