@@ -5,7 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -16,24 +17,24 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.gsoft.inventory.entities.JCPrinter;
 import com.gsoft.inventory.entities.ZCQCY;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.BaseCompatActivity;
-import com.gsoft.inventory.utils.DataTransmitHelper;
-import com.gsoft.inventory.utils.OkHttpUtils;
-import com.gsoft.inventory.utils.SecurityUtils;
-import com.gsoft.inventory.utils.SharedPreferencesUtils;
-import com.gsoft.inventory.utils.StringUtils;
-import com.gsoft.inventory.utils.SysConfig;
-import com.gsoft.inventory.utils.SysDefine;
+import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.view.login_setting.ActivityLoginSetting;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
-import com.xuexiang.xupdate.XUpdate;
 import com.xuexiang.xupdate.utils.UpdateUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import butterknife.BindArray;
 import butterknife.BindDrawable;
@@ -91,6 +92,8 @@ public class OfflineLoginActivity extends BaseCompatActivity {
     String qcyName = "";
     String qcyCode = "";
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,6 +137,8 @@ public class OfflineLoginActivity extends BaseCompatActivity {
             Intent intentQCY = new Intent(mContext, ImportQCYActivity.class);
             startActivity(intentQCY);
         });
+
+
         String ztmc = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ZTMC, "");
         String yhbh = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHBH, "");
         String yhmm = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHMM, "");
@@ -274,10 +279,15 @@ public class OfflineLoginActivity extends BaseCompatActivity {
             onLoginAccess();
         });
         // new SyncZCQCYTask().execute("");
-        XUpdate.newBuild(mContext).updateUrl(SysDefine.SERVER_APK_UPDATE()).update();
         resetZCQCY();
-        tv_bottom_copy.setText("贵州兴财通科技有限公司  版权所有 v".concat(UpdateUtils.getVersionName(context)));
+
+        String companyName = CommonUtils.getCompanyNameByFlavor();
+        tv_bottom_copy.setText(companyName + " 版权所有 v".concat(UpdateUtils.getVersionName(context)));
+
+        this.searchImportAuthorCodeTask();
     }
+
+
 
     @Override
     protected void onResume() {
@@ -304,7 +314,7 @@ public class OfflineLoginActivity extends BaseCompatActivity {
         }
         editQCY.setOnClickListener(view -> {
             new QMUIDialog.CheckableDialogBuilder(mContext)
-                    
+
                     .addItems(zcqcnames, (dialog, i) -> {
                         editQCY.setText(zcqcnames[i]);
                         qcyName = zcqcnames[i];
@@ -379,9 +389,8 @@ public class OfflineLoginActivity extends BaseCompatActivity {
             }
             StringBuilder stringBuilder = new StringBuilder();
             try {
-                List<String> results = gson.fromJson(s, new TypeToken<List<String>>() {
-                }.getType());
-                if (results == null || results.size() == 0) {
+                List<String> results = gson.fromJson(s, new TypeToken<List<String>>() {}.getType());
+                if (results == null || results.isEmpty()) {
                     return "登录失败，无效的用户名！";
                 }
                 Accounts.deleteAll(Accounts.class);
@@ -419,7 +428,7 @@ public class OfflineLoginActivity extends BaseCompatActivity {
 
     private void onLoginAccess() {
         List<Accounts> accounts = Accounts.find(Accounts.class, "YHBH=?", editUser.getText().toString().trim());
-        if (accounts == null || accounts.size() == 0 || !SecurityUtils.md5(editPass.getText().toString().trim()).toUpperCase().equals(accounts.get(0).getDLMM())) {
+        if (accounts == null || accounts.isEmpty() || !SecurityUtils.md5(editPass.getText().toString().trim()).toUpperCase().equals(accounts.get(0).getDLMM())) {
             showShortText("登录失败，请联系管理员！");
             return;
         }
@@ -462,7 +471,7 @@ public class OfflineLoginActivity extends BaseCompatActivity {
             try {
                 List<String> results = gson.fromJson(s, new TypeToken<List<String>>() {
                 }.getType());
-                if (results == null || results.size() == 0) {
+                if (results == null || results.isEmpty()) {
                     return "同步资产清查人员失败！";
                 }
                 ZCQCY.deleteAll(ZCQCY.class);
@@ -537,4 +546,64 @@ public class OfflineLoginActivity extends BaseCompatActivity {
                 })
                 .create(mCurrentDialogStyle).show();
     }
+
+
+    public void searchImportAuthorCodeTask() {
+        showProgressDialog("设备码校验中……", "");
+        long count = JCPrinter.count(JCPrinter.class);
+        if(count > 0){
+            hideProgressDialog();
+            return;
+        }
+
+        AtomicInteger isFindCodeTxt = new AtomicInteger(0);
+        CommonUtils.getExecutor().execute(() -> {
+            List<FileBean> fileList = DataTransmitHelper.searchImportFiles(mContext);
+            // 处理文件
+            for (FileBean fileBean : fileList) {
+                String name = fileBean.getName();
+                if ("code.txt".equals(name)) {
+                    String codeStr = readAuthorizationCode(fileBean);
+                    if (!StringUtils.isNullOrEmpty(codeStr)) {
+                        isFindCodeTxt.set(1);
+                        // 以换行符将codeStr拆分为数组
+                        String[] results = codeStr.split("\n");
+                        // 数据库操作
+                        JCPrinter.deleteAll(JCPrinter.class);
+                        for (String dataLine : results) {
+                            if (!dataLine.contains("ERROR")) {
+                                DataTransmitHelper.insertPrinters(dataLine);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            CommonUtils.getHandler().post(() -> {
+                if (isFindCodeTxt.get() == 0) {
+                    showShortText("设备授权码校验失败，请联系相关人员处理。");
+                }
+                hideProgressDialog();
+            });
+        });
+    }
+
+
+
+
+    // 读取文件内容
+    private String readAuthorizationCode(FileBean fileBean) {
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(fileBean.getPath())) {
+            byte[] content = new byte[fis.available()];
+            int readStatus = fis.read(content);
+            return new String(content, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
 }

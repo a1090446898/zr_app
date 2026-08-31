@@ -294,7 +294,7 @@
             style="@style/assets_item_tv"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
-            android:text="卡片编号"/>
+            android:text="资产编号"/>
 
     <View
             android:layout_width="1px"

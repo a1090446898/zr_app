@@ -95,7 +95,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
                                 if (ast.getREMARKS().equals("待删除")) {
                                     ast.delete();
                                 } else {
-                                    ast.setISUPLOAD("1");
+                                    ast.setISUPLOAD("01");
                                     ast.save();
                                 }
                             }

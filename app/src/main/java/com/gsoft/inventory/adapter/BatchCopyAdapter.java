@@ -136,7 +136,7 @@ public class BatchCopyAdapter extends BaseAdapter {
         TextView tvASSETSTYPE;
         /*计量单位*/
         TextView tvASSETSMEASURE;
-        /*卡片编号*/
+        /*资产编号*/
         TextView tvSERIALCODE;
         /*资产名称*/
         TextView tvASSETSNAME;

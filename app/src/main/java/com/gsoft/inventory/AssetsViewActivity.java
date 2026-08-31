@@ -68,6 +68,15 @@ public class AssetsViewActivity extends PrintCompatActivity {
     String[] syfsArray;
     @BindArray(R.array.classifications)
     String[] classifications;
+    @BindArray(R.array.accountBookFields)
+    String[] accountBookFields;
+
+    @BindArray(R.array.downInfoFields)
+    String[] downInfoFields;
+    @BindArray(R.array.deviceTypeFields)
+    String[] deviceTypeFields;
+    @BindArray(R.array.osArray)
+    public String[] osArray;
     //region  控件定义
     /*条码编号*/
     @BindView(R.id.tvDOCID)
@@ -114,7 +123,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
     /*计量单位*/
     @BindView(R.id.tvASSETSMEASURE)
     TextView tvASSETSMEASURE;
-    /*卡片编号*/
+    /*资产编号*/
     @BindView(R.id.tvSERIALCODE)
     TextView tvSERIALCODE;
     /*资产名称*/
@@ -150,6 +159,12 @@ public class AssetsViewActivity extends PrintCompatActivity {
     /*使用部门*/
     @BindView(R.id.tvASSETSDEPT)
     TextView tvASSETSDEPT;
+    /*所属处室*/
+    @BindView(R.id.tvDEPARTMENT)
+    TextView tvDEPARTMENT;
+    /*是否公物仓*/
+    @BindView(R.id.tvISGWC)
+    TextView tvISGWC;
     /*卡片金额-原值，设为空值*/
     @BindView(R.id.tvKPJE)
     TextView tvKPJE;
@@ -242,6 +257,22 @@ public class AssetsViewActivity extends PrintCompatActivity {
     TextView editYXQZ;
     @BindView(R.id.editSSXM)
     TextView editSSXM;
+    @BindView(R.id.editPRINTNO)
+    TextView editPRINTNO;
+    @BindView(R.id.editPRO)
+    TextView editPRO;
+    @BindView(R.id.editACCOUNTBOOK)
+    TextView editACCOUNTBOOK;
+    @BindView(R.id.editDOWNINFO)
+    TextView editDOWNINFO;
+    @BindView(R.id.editSUMCOMPLETEMONTH)
+    TextView editSUMCOMPLETEMONTH;
+    @BindView(R.id.editCOMPLETEMONTH)
+    TextView editCOMPLETEMONTH;
+    @BindView(R.id.editMONDEPREVALUE)
+    TextView editMONDEPREVALUE;
+    @BindView(R.id.editDEVICETYPE)
+    TextView editDEVICETYPE;
     @BindView(R.id.editClassification)
     TextView editClassification;
     @BindView(R.id.editIsSueDate)
@@ -257,8 +288,71 @@ public class AssetsViewActivity extends PrintCompatActivity {
     @BindView(R.id.editVOUCHERNO)
     TextView editVOUCHERNO;
 
+    @BindView(R.id.editDWCODE)
+    TextView editDWCODE;
+
+    @BindView(R.id.editSAMPLDATE)
+    TextView editSAMPLDATE;
+
+
+    @BindView(R.id.editSAMPLCODE)
+    TextView editSAMPLCODE;
+
+    @BindView(R.id.editMONITORPRO)
+    TextView editMONITORPRO;
+
+    @BindView(R.id.editSAVEMETHOD)
+    TextView editSAVEMETHOD;
+
+    @BindView(R.id.editSAMPLESTATE)
+    TextView editSAMPLESTATE;
+
+    @BindView(R.id.editSAMPLEUSER)
+    TextView editSAMPLEUSER;
+
+
+    @BindView(R.id.editCONCENTRATION)
+    TextView editCONCENTRATION;
+    @BindView(R.id.editPREPARER)
+    TextView editPREPARER;
+    @BindView(R.id.editMEDIA)
+    TextView editMEDIA;
+    @BindView(R.id.editSTORAGENEED)
+    TextView editSTORAGENEED;
+
     @BindView(R.id.editISUPLOAD)
     TextView editISUPLOAD;
+
+
+    @BindView(R.id.editHARDID)
+    TextView editHARDID;
+
+    @BindView(R.id.editIP)
+    TextView editIP;
+
+    @BindView(R.id.editMAC)
+    TextView editMAC;
+
+    @BindView(R.id.editINTERNETID)
+    TextView editINTERNETID;
+
+    @BindView(R.id.editPORT)
+    TextView editPORT;
+
+    @BindView(R.id.editPURPOSE)
+    TextView editPURPOSE;
+
+    @BindView(R.id.editHARDSN)
+    TextView editHARDSN;
+
+    @BindView(R.id.editNETTYPE)
+    TextView editNETTYPE;
+
+    @BindView(R.id.editOS)
+    TextView editOS;
+
+    @BindView(R.id.editINSTALLDATE)
+    TextView editINSTALLDATE;
 
     private int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
 
@@ -343,7 +437,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
         tvASSETSSORTCODE.setText(assetsCategory == null ? "" : assetsCategory.getNAME());
         /*计量单位*/
         tvASSETSMEASURE.setText(assets.getASSETSMEASURE() + "");
-        /*卡片编号*/
+        /*资产编号*/
         tvSERIALCODE.setText(assets.getSERIALCODE() + "");
         /*资产名称*/
         tvASSETSNAME.setText(assets.getASSETSNAME() + "");
@@ -367,6 +461,10 @@ public class AssetsViewActivity extends PrintCompatActivity {
         tvASSETSUSER.setText(assets.getASSETSUSER() + "");
         /*使用部门*/
         tvASSETSDEPT.setText(assets.getASSETSDEPT() + "");
+        /*所属处室*/
+        tvDEPARTMENT.setText(assets.getDEPARTMENT() + "");
+        /*是否公物仓*/
+        tvISGWC.setText("02".equals(assets.getISGWC()) ? "否" : "是");
         /*卡片金额-原值，设为空值*/
         tvKPJE.setText(assets.getKPJE() + "");
         /*累计折旧*/
@@ -428,13 +526,47 @@ public class AssetsViewActivity extends PrintCompatActivity {
         editJDJZRQ.setText(assets.getCALIBRATIONDATE() + "");
         editYXQZ.setText(assets.getVALIDDATE() + "");
         editSSXM.setText(assets.getPROBELONG() + "");
+        editPRINTNO.setText(assets.getPRINTNO() + "");
+        editPRO.setText(assets.getPRO() + "");
+        editACCOUNTBOOK.setText(DictionaryHelper.getDictionaryName(assets.getACCOUNTBOOK(), accountBookFields));
+        editDOWNINFO.setText(DictionaryHelper.getDictionaryName(assets.getDOWNINFO(), downInfoFields));
+        editSUMCOMPLETEMONTH.setText(assets.getSUMCOMPLETEMONTH() + "");
+        editCOMPLETEMONTH.setText(assets.getCOMPLETEMONTH() + "");
+        editMONDEPREVALUE.setText(assets.getMONDEPREVALUE() + "");
+        editDEVICETYPE.setText(DictionaryHelper.getDictionaryName(assets.getDEVICETYPE(), deviceTypeFields));
         /**  210219添加2个字段 **/
         editIsSueDate.setText(assets.getISSUEDATE() + "");
         editClassification.setText(DictionaryHelper.getDictionaryName(assets.getCLASSIFICATION(), classifications));
 
         // 财务记账时间, 凭证号
         editVOUCHERNO.setText(assets.getVOUCHERNO());
+
+        editDWCODE.setText(assets.getDWCODE());
+        editSAMPLDATE.setText(assets.getSAMPLDATE());
+        editSAMPLCODE.setText(assets.getSAMPLCODE());
+        editMONITORPRO.setText(assets.getMONITORPRO());
+        editSAVEMETHOD.setText(assets.getSAVEMETHOD());
+        editSAMPLESTATE.setText(assets.getSAMPLESTATE());
+        editSAMPLEUSER.setText(assets.getSAMPLEUSER());
+
+        editCONCENTRATION.setText(assets.getCONCENTRATION());
+        editPREPARER.setText(assets.getPREPARER());
+        editMEDIA.setText(assets.getMEDIA());
+        editSTORAGENEED.setText(assets.getSTORAGENEED());
+
+
         editBOOKKEEPINGTIME.setText(assets.getBOOKKEEPINGTIME());
+
+        editHARDID.setText(assets.getHARDID());
+        editIP.setText(assets.getIP());
+        editMAC.setText(assets.getMAC());
+        editINTERNETID.setText(assets.getINTERNETID());
+        editPORT.setText(assets.getPORT());
+        editPURPOSE.setText(assets.getPURPOSE());
+        editHARDSN.setText(assets.getHARDSN());
+        editNETTYPE.setText(assets.getNETTYPE());
+        editOS.setText(assets.getOS());
+        editINSTALLDATE.setText(assets.getINSTALLDATE());
 
         // 同步情况
         String isUpload = assets.getISUPLOAD();
@@ -501,7 +633,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
                                                 /*showShortText("禁止删除");
                                                 dialog.dismiss();*/
                                                 assets.setREMARKS("待删除");
-                                                assets.setISUPLOAD("0");
+                                                assets.setISUPLOAD("02");
                                                 assets.save();
                                                 AssetsUtils.uploadAssets(assets, mContext);
                                                 showShortText("删除请求已提交");
@@ -519,19 +651,19 @@ public class AssetsViewActivity extends PrintCompatActivity {
                                 break;
                             case 4:
                                 assets.setREMARKS("盘实");
-                                assets.setISUPLOAD("0");
+                                assets.setISUPLOAD("02");
                                 assets.setZT("02");
                                 assets.save();
                                 break;
                             case 5:
                                 assets.setREMARKS("盘盈");
-                                assets.setISUPLOAD("0");
+                                assets.setISUPLOAD("02");
                                 assets.setZT("03");
                                 assets.save();
                                 break;
                             case 6:
                                 assets.setREMARKS("盘亏");
-                                assets.setISUPLOAD("0");
+                                assets.setISUPLOAD("02");
                                 assets.setZT("04");
                                 assets.save();
                                 break;

@@ -24,7 +24,8 @@ public class SyncServerAssetsTask implements Callable<String> {
 
     @Override
     public String call() {
-        String s = OkHttpUtils.getInstance().get(String.format(SysDefine.SERVERHOST_SYNC_ASSETS(), ztbh, bmbh));
+        String formatUrl = String.format(SysDefine.SERVERHOST_SYNC_ASSETS(), ztbh, bmbh);
+        String s = OkHttpUtils.getInstance().get(formatUrl);
         if (StringUtils.isNullOrEmpty(s) || s.startsWith("ERROR")) {
             return "同步出错，".concat(s);
         }
@@ -46,6 +47,7 @@ public class SyncServerAssetsTask implements Callable<String> {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             stringBuilder.append("同步失败，请联系技术人员\n");
         }
         return stringBuilder.toString();

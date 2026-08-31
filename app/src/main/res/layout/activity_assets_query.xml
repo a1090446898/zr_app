@@ -181,6 +181,27 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="资产编号：" />
+
+                    <EditText
+                            android:id="@+id/editSERIALCODE"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_weight="3"
+
+                            android:hint="资产编号" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -203,7 +224,7 @@
                         android:hint="选择资产类别" />
                 </LinearLayout>
 
-                <LinearLayout
+               <!-- <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -224,7 +245,7 @@
                         android:focusable="false"
                         android:focusableInTouchMode="false"
                         android:text="选择账套" />
-                </LinearLayout>
+                </LinearLayout>-->
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -332,6 +353,29 @@
                         android:focusable="false"
                         android:focusableInTouchMode="false"
                         android:hint="管理部门" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            style="@style/assets_edit_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="盘点状态：" />
+
+                    <EditText
+                            android:id="@+id/editPDZT"
+                            style="@style/assets_edit_value"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="3"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="盘点状态" />
                 </LinearLayout>
 
                 <LinearLayout

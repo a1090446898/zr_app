@@ -1,24 +1,39 @@
+
+
 package com.gsoft.inventory;
 
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import com.google.gson.Gson;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import com.google.gson.reflect.TypeToken;
 import com.gsoft.inventory.abs.AssetsBaseActivity;
-import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.const_data.Log_file_name;
+import com.gsoft.inventory.utils.AIPhotoCaptureHelper;
+import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.AssetsCopy;
+import com.gsoft.inventory.utils.AssetsUtils;
+import com.gsoft.inventory.utils.DataConvert;
+import com.gsoft.inventory.utils.SharedPreferencesUtils;
+import com.gsoft.inventory.utils.StringUtils;
+import com.gsoft.inventory.utils.SysConfig;
+import com.gsoft.inventory.utils.SysDefine;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
-import javax.annotation.Nullable;
+import java.io.File;
 import java.util.List;
+
+import butterknife.ButterKnife;
 
 import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
@@ -38,7 +53,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
     private boolean copyFrom = false;
     private String copyImg = "";
 
-    private Gson gson = new Gson();
 
     View queryButton;
 
@@ -49,8 +63,16 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         setContentView(R.layout.activity_new_assets);
         ButterKnife.bind(this);
 
+        // 初始化相机（父类方法）
+        initCameraLauncher();
+
         initializeView();
     }
+
+
+
+
+
 
 
     @Override
@@ -81,6 +103,10 @@ public class NewAssetsActivity extends AssetsBaseActivity {
                     jumpToQuery();
                 });
 
+        // 初始化AI拍照工具类（父类方法）
+        initAIPhotoHelper();
+
+
         // 初始化数据
         this.initData();
         this.initData2();
@@ -94,7 +120,11 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         receiveCopyValue();
     }
 
-    private void initData2 () {
+
+
+
+
+    private void initData2() {
         buttonPrintLabel = (QMUIButton) findViewById(R.id.buttonPrintLabel);
 
         buttonPrintLabel.setOnClickListener(view -> {
@@ -131,6 +161,8 @@ public class NewAssetsActivity extends AssetsBaseActivity {
             assetsCreating.setASSETSUSEDATE(DataConvert.FormatDate2Day());
             assetsCreating.setISCZ("01");
             toggleISCZ.setChecked(false);
+            assetsCreating.setISGWC("02");
+            editISGWC.setText(gwcFields[1]);
         } else {
             fillAssetsData();
         }
@@ -142,14 +174,26 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         assetsCreating.setASSETSWRITER(application.getZcqcyCode());
         editASSETSWRITERDATE.setText(DataConvert.FormatDate2Day());
 
-        buttonSave.setOnClickListener(view -> {saveData();});
-//        buttonCopy.setOnClickListener(view -> copyData());
+        // 保存监听处理
+        if (buttonSave != null) {
+            buttonSave.setOnClickListener(view -> {
+                saveData();
+            });
+        }
+        // 复制监听处理
+        if (buttonCopy != null) {
+            buttonCopy.setOnClickListener(view -> copyData());
+        }
+
+
     }
+
+
 
     /**
      * 保存数据
      */
-    private void saveData(){
+    private void saveData() {
         if (!checkRequiredFields()) {
             return;
         }
@@ -164,8 +208,12 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         // 联想搜索按钮
         removeTopQueryButton();
 
-        if (StringUtils.isNullOrEmpty(editBARCODEID.getText().toString())) {editBARCODEID.setText(assetsCreating.getBARCODEID());}
-        if (StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())) {editSERIALCODE.setText(assetsCreating.getSERIALCODE());}
+        if (StringUtils.isNullOrEmpty(editBARCODEID.getText().toString())) {
+            editBARCODEID.setText(assetsCreating.getBARCODEID());
+        }
+        if (StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())) {
+            editSERIALCODE.setText(assetsCreating.getSERIALCODE());
+        }
         SysConfig.lastManageUnit = assetsCreating.getGROUNDMANAGEDEPT();
 
         buttonPrintLabel.setVisibility(View.VISIBLE);
@@ -187,25 +235,29 @@ public class NewAssetsActivity extends AssetsBaseActivity {
                 .create(mCurrentDialogStyle).show();
     }
 
-    private void setAssetProperties(){
+    private void setAssetProperties() {
         this.setBaseAssetProperties();
 
         // 特殊处理
         assetsCreating.setPDZT("03");
         assetsCreating.setZT("0");
         String docId = assetsCreating.getDOCID();
-        if (StringUtils.isNullOrEmpty(docId)) {docId = AssetsUtils.generalDocId(application.getDeviceNo());}
+        if (StringUtils.isNullOrEmpty(docId)) {
+            docId = AssetsUtils.generalDocId(application.getDeviceNo());
+        }
         String remarks = editREMARKS.getText().toString();
-        if (StringUtils.isNullOrEmpty(remarks)) {editREMARKS.setText(String.format("%s盘盈", remarks));}
+        if (StringUtils.isNullOrEmpty(remarks)) {
+            editREMARKS.setText(String.format("%s盘盈", remarks));
+        }
         assetsCreating.setDOCID(docId);
         assetsCreating.setREMARKS(remarks);
-        assetsCreating.setPDZT(isAdd ? "03": "02");
+        assetsCreating.setPDZT(isAdd ? "03" : "02");
     }
 
     /**
      * 复制数据
      */
-    private void copyData(){
+    private void copyData() {
         String assetsACCTSUITEID = assetsCreating.getACCTSUITEID();
         String assetsTypeCode = assetsCreating.getASSETSTYPE();
         String assetsASSETSSORTCODE = assetsCreating.getASSETSSORTCODE();
@@ -217,6 +269,8 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         String assetsGETMODE = assetsCreating.getGETMODE();
         String assetsUseMan = assetsCreating.getASSETSUSER();
         String assetsUseDepart = assetsCreating.getASSETSDEPT();
+        String assetsISGWC = assetsCreating.getISGWC();
+        String assetsDepartment = assetsCreating.getDEPARTMENT();
         String assetsGROUNDMANAGEDEPT = assetsCreating.getGROUNDMANAGEDEPT();
         String assetsISSueDate = assetsCreating.getISSUEDATE();
         String assetsClassification = assetsCreating.getCLASSIFICATION();
@@ -242,7 +296,9 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         assetsCreating.setGROUNDMANAGEDEPT(assetsGROUNDMANAGEDEPT);
         assetsCreating.setISSUEDATE(assetsISSueDate);
         assetsCreating.setCLASSIFICATION(assetsClassification);
-        showShortText("复制完毕，请设置卡片编号");
+        assetsCreating.setISGWC(assetsISGWC);
+        assetsCreating.setDEPARTMENT(assetsDepartment);
+        showShortText("复制完毕，请设置资产编号");
         addQueryButton();
     }
 
@@ -276,7 +332,9 @@ public class NewAssetsActivity extends AssetsBaseActivity {
                             }
 
                             @Override
-                            public void onCopyFailure(String errorMessage) {showShortText("联网图片复制失败");}
+                            public void onCopyFailure(String errorMessage) {
+                                showShortText("联网图片复制失败");
+                            }
                         });
             } else {
                 uploadData();
@@ -305,7 +363,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
             // 说明有值
             String assetsCopyListJson = SharedPreferencesUtils.getString(NewAssetsActivity.this, "COPY_ASSETS_JSON", "");
             if (!TextUtils.isEmpty(assetsCopyListJson)) {
-                List<AssetsCopy> assetsCopyList = gson.fromJson(assetsCopyListJson, new TypeToken<List<AssetsCopy>>() {
+                List<AssetsCopy> assetsCopyList = Log_file_name.gson.fromJson(assetsCopyListJson, new TypeToken<List<AssetsCopy>>() {
                 }.getType());
                 for (AssetsCopy item : assetsCopyList) {
                     if (assetsCopyDocId.equals(item.getDOCID())) {
@@ -391,6 +449,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
 
     /**
      * 接收盘实页面带过来的值
+     *
      * @param data
      */
     private void receivedPageValue(Intent data) {

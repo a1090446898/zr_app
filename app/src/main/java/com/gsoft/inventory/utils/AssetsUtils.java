@@ -55,7 +55,7 @@ public class AssetsUtils {
                                 assets.delete();
                                 showToast(context, "同步删除成功");
                             } else {
-                                assets.setISUPLOAD("1");
+                                assets.setISUPLOAD("01");
                                 assets.save();
                                 showToast(context, "联网上传成功");
                             }
@@ -97,7 +97,7 @@ public class AssetsUtils {
                                 assets.delete();
                                 showToast(context, "同步删除成功");
                             } else {
-                                assets.setISUPLOAD("1");
+                                assets.setISUPLOAD("01");
                                 assets.save();
                                 showToast(context, "联网上传成功");
                             }
@@ -213,7 +213,7 @@ public class AssetsUtils {
         }
         clone.setSERIALCODE("");
         clone.setBARCODEID("");
-        clone.setISUPLOAD("0");
+        clone.setISUPLOAD("02");
         clone.setDOCID("");
         return clone;
     }
@@ -332,6 +332,8 @@ public class AssetsUtils {
                 failCount.getAndIncrement();
                 String msg = MessageFormat.format("总数量{0}，成功{1}，失败{2}, 文件{3}", size, doCount.get(), failCount.get(), finalFileName);
                 message.append(msg);
+                LogToFile.toLogFile(context, Log_file_name.UPLOAD_PHOTO_LOG_FILE_NAME, "同步照片"+name+"失败, 原因：" + errMessage + "\n");
+
                 AssetPhoto assetPhoto = AssetPhoto.findById(AssetPhoto.class, photoId);
                 if (assetPhoto == null) {
                     return;

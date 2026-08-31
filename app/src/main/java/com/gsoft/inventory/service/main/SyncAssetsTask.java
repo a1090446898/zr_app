@@ -90,13 +90,13 @@ public class SyncAssetsTask implements Callable<String> {
                 }
                 for (SyncResult sr : results) {
                     String barcode = sr.barcodeid;
-                    if (sr.result.equals("1")) {
+                    if ("1".equals(sr.result)) {
                         List<Assets> assets = Assets.find(Assets.class, "BARCODEID=?", barcode);
                         for (Assets ast : assets) {
-                            if (ast.getREMARKS().equals("待删除")) {
+                            if ("待删除".equals(ast.getREMARKS())) {
                                 ast.delete();
                             } else {
-                                ast.setISUPLOAD("1");
+                                ast.setISUPLOAD("01");
                                 ast.save();
                             }
                         }

@@ -2,6 +2,9 @@ package com.gsoft.inventory.utils;
 
 import java.security.PublicKey;
 
+/**
+ * @author 10904
+ */
 public class SysDefine {
 
     public static final String IntentExtra_AssetsView = "IntentExtra_AssetsView";
@@ -18,9 +21,19 @@ public class SysDefine {
     public static final String PROCESS_RESULT_ERROR = "ERROR";
     public static final String TRANS_DISPOSE_CODE = "TRANS_DISPOSE_CODE";
     public static final String TRANS_SIGNATURE_PHOTO = "TRANS_SIGNATURE_PHOTO";
-    public static String SERVERHOST = "http://www.zrast.com/";
-//    public static String SERVERHOST = "http://47.110.252.199:8080/";
-//    public static String SERVERHOST = "http://192.168.3.4:80/";
+
+//    public static String SERVERHOST = "http://www.zrast.com/";
+    public static String SERVERHOST = "http://192.168.2.156:80/";
+
+    public static String WEB_URL = "http://www.zrast.com:8034";
+//    public static String WEB_URL = "http://192.168.2.103:8082";
+
+    public static String AI_PHOTO_UPLOAD_API = "http://ea.zrast.com:9093/zr-ai/business/attachment/upload?status=2";
+    public static String AI_PHOTO_UPLOAD_RECOGNITION_API = "http://ea.zrast.com:9093/zr-ai/ai/productVision/extract";
+
+//    public static String AI_PHOTO_UPLOAD_API = "http://192.168.2.103:8080/business/attachment/upload?status=2";
+//    public static String AI_PHOTO_UPLOAD_RECOGNITION_API = "http://192.168.2.102:8080/ai/productVision/extract";
+
 
     public static String getServerHost() {
         return SERVERHOST;
@@ -64,7 +77,7 @@ public class SysDefine {
         return getServerHost() + "getAssetsInterface.do?Act=getMd5Code";
     }
     public static String SERVER_APK_UPDATE () {
-        return getServerHost() + "version.do?Act=getVersion";
+        return getServerHost() + "version.do?Act=getVersion&ACCTID=%1$s";
     }
     public static String SERVER_SYNC_ZCQCY () {
         return getServerHost() + "getAssetsInterface.do?Act=getUserList&acctsuiteId=%1$s";
@@ -107,6 +120,7 @@ public class SysDefine {
 
     public static String getLy(){return getServerHost() + "getAssetsInterface.do?Act=getLy&Userid=%1$s";}
     public static String getLyDetailList(){return getServerHost() + "getAssetsInterface.do?Act=getLyList&Formid=%1$s";}
+    public static String getLySelectList(){return getServerHost() + "getAssetsInterface.do?Act=getGwcList&Userid=%1$s";}
     public static String getJy(){return getServerHost() + "getAssetsInterface.do?Act=getDevice&Userid=%1$s&Type=02";}
     public static String getJyDetailList(){return getServerHost() + "getAssetsInterface.do?Act=getDeviceList&Formid=%1$s";}
 
@@ -123,6 +137,9 @@ public class SysDefine {
 
     public static String getFs(){return getServerHost() + "getAssetsInterface.do?Act=getClothes&Userid=%1$s";}
     public static String getFsDetailList(){return getServerHost() + "getAssetsInterface.do?Act=getClothesList&Formid=%1$s";}
+
+    public static String getMenuRole(){return getServerHost() + "getAssetsInterface.do?Act=getMenuList&Userid=%1$s";}
+    public static String getBadgeAndNotificationApi(){return getServerHost() + "getAssetsInterface.do?Act=getDealList&Userid=%1$s";}
 
     public enum RuntimeModel {Online, Offline}
 }

@@ -1,12 +1,16 @@
 package com.gsoft.inventory.utils;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 
+import android.provider.Settings;
 import com.gsoft.inventory.InventoryApplication;
 
 import java.io.File;
@@ -486,6 +490,156 @@ public class FileSearchHelper {
         }
         cursor.close();
         return fileList;
+    }
+
+    /**
+     * 扫描指定目录下的特定类型文件
+     * 支持 Android 6.0 和 Android 11 版本
+     *
+     * @param context 上下文
+     * @param directoryPath 目标目录路径
+     * @param extension 文件扩展名（如 "xlsx", "xls"）
+     * @return 符合条件的文件列表
+     */
+    public static List<FileBean> searchFilesInDirectory(Context context, String directoryPath, String extension) {
+        List<FileBean> fileList = new ArrayList<>();
+
+        File directory = new File(directoryPath);
+        if (!directory.exists() || !directory.isDirectory()) {
+            return fileList;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return fileList;
+        }
+
+        String mimeType = getMimeTypeByExtension(extension);
+
+        for (File file : files) {
+            if (file.isFile()) {
+                String fileExtension = getFileExtension(file.getName());
+                if (extension.equalsIgnoreCase(fileExtension)) {
+                    FileBean bean = new FileBean();
+                    String path = file.getAbsolutePath();
+
+                    bean.setName(file.getName());
+                    bean.setPath(path);
+                    bean.setSize(file.length());
+                    bean.setDate(file.lastModified());
+
+                    fileList.add(bean);
+                }
+            }
+        }
+
+        return fileList;
+    }
+
+    /**
+     * 根据扩展名获取MIME类型
+     *
+     * @param extension 文件扩展名
+     * @return MIME类型字符串
+     */
+    private static String getMimeTypeByExtension(String extension) {
+        for (int i = 0; i < MIMETable.length; i++) {
+            if (extension.equals(MIMETable[i][0])) {
+                return MIMETable[i][1];
+            }
+        }
+        return "*/*"; // 默认返回通配符类型
+    }
+
+    /**
+     * 获取文件扩展名
+     *
+     * @param fileName 文件名
+     * @return 扩展名（不包含点号）
+     */
+    private static String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            return fileName.substring(lastDotIndex + 1);
+        }
+        return "";
+    }
+
+    /**
+     * 扫描Download目录下的zr子目录
+     *
+     * @param context 上下文
+     * @param extension 文件扩展名
+     * @return zr目录下的指定类型文件列表
+     */
+    public static List<FileBean> searchFilesInZrDirectory(Context context, String extension) {
+        // Android 10+ 使用作用域存储
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // 检查是否有MANAGE_EXTERNAL_STORAGE权限
+            if (checkAndRequestManageExternalStoragePermission(context)) {
+                // 有权限则访问公共目录
+                String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+                String zrPath = downloadPath + "/zr";
+                // 检查并创建zr目录
+                File zrDir = new File(zrPath);
+                if (!zrDir.exists()) {
+                    // 创建zr目录及其父目录
+                    zrDir.mkdirs();
+                }
+                return searchFilesInDirectory(context, zrPath, extension);
+            } else {
+                // 无权限则使用应用专属目录
+                File downloadDir = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "zr");
+                // 检查并创建zr目录
+                if (!downloadDir.exists()) {
+                    downloadDir.mkdirs(); // 创建zr目录及其父目录
+                }
+                return searchFilesInDirectory(context, downloadDir.getAbsolutePath(), extension);
+            }
+        } else {
+            // Android 9及以下版本使用旧API
+            String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+            String zrPath = downloadPath + "/zr";
+            // 检查并创建zr目录
+            File zrDir = new File(zrPath);
+            if (!zrDir.exists()) {
+                zrDir.mkdirs(); // 创建zr目录及其父目录
+            }
+            return searchFilesInDirectory(context, zrPath, extension);
+        }
+    }
+
+    /**
+     * 检查是否拥有管理外部存储权限 (Android 11+)
+     */
+    @TargetApi(Build.VERSION_CODES.R)
+    private static boolean hasManageExternalStoragePermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        }
+        // Android 10及以下版本不需要此权限
+        return true;
+    }
+
+    /**
+     * 检查并尝试获取管理外部存储权限 (Android 11+)
+     * 如果没有权限，则启动权限请求
+     */
+    @TargetApi(Build.VERSION_CODES.R)
+    public static boolean checkAndRequestManageExternalStoragePermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            boolean hasPermission = Environment.isExternalStorageManager();
+            if (!hasPermission) {
+                // 启动权限请求
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", context.getPackageName(), null);
+                intent.setData(uri);
+                context.startActivity(intent);
+            }
+            return hasPermission;
+        }
+        // Android 10及以下版本不需要此权限
+        return true;
     }
 
     public static List<FileBean> searchType(Context context, Uri searchUri, String type) {

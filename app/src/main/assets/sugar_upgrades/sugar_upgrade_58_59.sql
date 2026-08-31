@@ -1,0 +1,6 @@
+ALTER TABLE ASSETS ADD COLUMN NETTYPE varchar(50) default '';
+
+
+
+
+

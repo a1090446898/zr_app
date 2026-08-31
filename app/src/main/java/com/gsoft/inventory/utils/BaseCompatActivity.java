@@ -12,12 +12,18 @@ import android.widget.Toast;
 
 import com.gsoft.inventory.InventoryApplication;
 
+/**
+ * @author 10904
+ */
 public abstract class BaseCompatActivity extends AppCompatActivity {
     protected Context mContext;
 
     protected InventoryApplication application;
 
     protected final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private ProgressDialog progressDialog;
+
 
 
     @Override
@@ -30,7 +36,6 @@ public abstract class BaseCompatActivity extends AppCompatActivity {
 
     public abstract void initializeView();
 
-    private ProgressDialog progressDialog;
 
     public void showShortText(CharSequence textMessage) {
         if (Looper.myLooper() == Looper.getMainLooper()) {

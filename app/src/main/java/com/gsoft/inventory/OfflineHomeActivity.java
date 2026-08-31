@@ -3,6 +3,7 @@ package com.gsoft.inventory;
 import static com.gsoft.inventory.utils.SysDefine.PROCESS_RESULT_SUCCESS;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.os.Bundle;
@@ -68,11 +69,11 @@ public class OfflineHomeActivity extends BaseCompatActivity {
     @Override
     public void initializeView() {
         topBar.setTitle("资产大数据应用管理平台");
-        /*topBar.addRightImageButton(R.drawable.ic_card, R.id.qmui_tab_segment_item_id).setOnClickListener(v -> {
-            Uri uri = Uri.parse("http://47.110.252.199:8080/");
+        topBar.addRightImageButton(R.drawable.ic_card, R.id.qmui_tab_segment_item_id).setOnClickListener(v -> {
+  /*          Uri uri = Uri.parse("http://47.110.252.199:8080/");
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            startActivity(intent);
-        });*/
+            startActivity(intent);*/
+        });
         tv_bottom_copy.setText("贵州兴财通科技有限公司  版权所有 v".concat(UpdateUtils.getVersionName(mContext)));
         menuItemList.add(new GridMenuItem("资产列表", R.drawable.icon_list));
         menuItemList.add(new GridMenuItem("盘点资产", R.drawable.icon_scan_barcode));
@@ -208,7 +209,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                 .addAction("取消", (dialog, index) -> dialog.dismiss())
                 .addAction("确定", (dialog, index) -> {
                     String text = builder.getEditText().getText().toString();
-                    if (text.equals("123456")) {
+                    if ("123456".equals(text)) {
                         dialog.dismiss();
                         Intent intentImport = new Intent(OfflineHomeActivity.this, ImportAssetsActivity.class);
                         startActivity(intentImport);
@@ -493,7 +494,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                                 if (ast.getREMARKS().equals("待删除")) {
                                     ast.delete();
                                 } else {
-                                    ast.setISUPLOAD("1");
+                                    ast.setISUPLOAD("01");
                                     ast.save();
                                 }
                             }

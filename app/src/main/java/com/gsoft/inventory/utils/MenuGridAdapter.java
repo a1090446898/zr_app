@@ -23,6 +23,7 @@ public class MenuGridAdapter extends BaseAdapter {
 
     private List<GridMenuItem> MenuArray;
 
+
     public MenuGridAdapter(Context mContext, List<GridMenuItem> arrmenu) {
         super();
         this.mContext = mContext;
@@ -52,14 +53,25 @@ public class MenuGridAdapter extends BaseAdapter {
         }
         TextView tv = BaseViewHolder.get(convertView, R.id.tv_item);
         ImageView iv = BaseViewHolder.get(convertView, R.id.iv_item);
-        int resDrawbleID = this.MenuArray.get(position).getIconRes();
+        TextView badge = BaseViewHolder.get(convertView, R.id.tv_badge);
+
+        GridMenuItem gridMenuItem = this.MenuArray.get(position);
+        int resDrawbleID = gridMenuItem.getIconRes();
+        String badgeCount = gridMenuItem.getBadgeCount();
         if (resDrawbleID == -1) {
             iv.setVisibility(View.INVISIBLE);
         } else {
             iv.setVisibility(View.VISIBLE);
             iv.setBackgroundResource(resDrawbleID);
         }
-        tv.setText(this.MenuArray.get(position).getTitle());
+        tv.setText(gridMenuItem.getTitle());
+
+        // 设置角标
+        if(!StringUtils.isNullOrEmpty(badgeCount) && !"0".equals(badgeCount)){
+            badge.setVisibility(View.VISIBLE);
+            badge.setText(badgeCount);
+        }
+
         return convertView;
     }
 

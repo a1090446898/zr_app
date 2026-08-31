@@ -1,0 +1,7 @@
+ALTER TABLE ASSETS ADD COLUMN ISGWC varchar(20) default '';
+ALTER TABLE ASSETS ADD COLUMN DEPARTMENT varchar(100) default '';
+
+
+
+
+

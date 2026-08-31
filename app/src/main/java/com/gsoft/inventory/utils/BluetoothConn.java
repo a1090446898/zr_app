@@ -90,12 +90,24 @@ public class BluetoothConn implements Serializable {
     public OutputStream outputStream;
 
     public ScanCallback scanCallback;
-    private Handler mHandler;
+    private volatile Handler mHandler;
 
-    {
-        mHandler = new Handler() {
-        };
+    private Handler getHandler() {
+        if (mHandler == null) {
+            synchronized (this) {
+                if (mHandler == null) {
+                    // 确保在主线程中创建Handler
+                    mHandler = new Handler(android.os.Looper.getMainLooper());
+                }
+            }
+        }
+        return mHandler;
     }
+
+//    {
+//        mHandler = new Handler() {
+//        };
+//    }
 
     private Runnable stopSPPScanRunnable;
     private List<ScanFilter> filters;
@@ -110,7 +122,7 @@ public class BluetoothConn implements Serializable {
     }
 
     public static BluetoothConn getInstance() {
-        return BluetoothConnHolder.INSTANCE; // 错误行号对应此处
+        return BluetoothConnHolder.INSTANCE;
     }
     //private的构造函数用于避免外界直接使用new来实例化对象
     private BluetoothConn(){
@@ -189,7 +201,7 @@ public class BluetoothConn implements Serializable {
         setupRunnable();
 
         if (isSPP){
-            mHandler.postDelayed(stopSPPScanRunnable, 30000);// 搜索30s
+            getHandler().postDelayed(stopSPPScanRunnable, 30000);// 搜索30s
             // 处理已配对设备
        /*     pairedDevices = bluetoothAdapter.getBondedDevices();
             for (BluetoothDevice device : pairedDevices) {

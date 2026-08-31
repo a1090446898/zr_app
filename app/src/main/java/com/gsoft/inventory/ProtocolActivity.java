@@ -1,12 +1,12 @@
 package com.gsoft.inventory;
 
 import android.content.Intent;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.TextView;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.SharedPreferencesUtils;
 import com.qmuiteam.qmui.widget.QMUITopBar;
@@ -15,9 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class ProtocolActivity extends BaseCompatActivity {
 
@@ -40,6 +37,8 @@ public class ProtocolActivity extends BaseCompatActivity {
     @Override
     public void initializeView() {
 
+
+
         if (SharedPreferencesUtils.getBoolean(mContext, SharedPreferencesUtils.KEY_PROTOCAL, false)) {
             Intent mainIntent = new Intent(mContext, NetChooseActivity.class);
             startActivity(mainIntent);
@@ -61,7 +60,12 @@ public class ProtocolActivity extends BaseCompatActivity {
         InputStreamReader inputreader = null;
         BufferedReader buffreader = null;
         try {
-            inputStream = mContext.getResources().getAssets().open("protocal.txt");
+            String flavor = BuildConfig.FLAVOR;
+            String fileName = "protocal.txt";
+            if("companyKaiYang".equals(flavor)){
+                fileName = "protocal_kaiyang.txt";
+            }
+            inputStream = mContext.getResources().getAssets().open(fileName);
             inputreader = new InputStreamReader(inputStream, "utf-8");
             buffreader = new BufferedReader(inputreader);
             String line;
@@ -69,6 +73,8 @@ public class ProtocolActivity extends BaseCompatActivity {
             while ((line = buffreader.readLine()) != null) {
                 stringBuilder.append(line + "\n");
             }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

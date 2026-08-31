@@ -73,7 +73,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String ASSETSSORTCODE;
     /*计量单位*/
     private String ASSETSMEASURE;
-    /*卡片编号*/
+    /*资产编号*/
     private String SERIALCODE;
     /*资产名称*/
     private String ASSETSNAME;
@@ -137,6 +137,10 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String PURCHASINGORGANIZATION;
     /*品牌*/
     private String BRAND;
+    /*空字段1，页面不显示，仅导入/导出/上传传输*/
+    private String EMPTY1;
+    /*空字段2，页面不显示，仅导入/导出/上传传输*/
+    private String EMPTY2;
     /*盘点表1*/
     private String PDZT;
     /*盘点表2*/
@@ -703,6 +707,102 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.PROBELONG = PROBELONG;
     }
 
+    public String getPRINTNO() {
+        return PRINTNO;
+    }
+
+    public void setPRINTNO(String PRINTNO) {
+        this.PRINTNO = PRINTNO;
+    }
+
+    public String getBOOKKEEPINGTIME() {
+        return BOOKKEEPINGTIME;
+    }
+
+    public void setBOOKKEEPINGTIME(String BOOKKEEPINGTIME) {
+        this.BOOKKEEPINGTIME = BOOKKEEPINGTIME;
+    }
+
+    public String getVOUCHERNO() {
+        return VOUCHERNO;
+    }
+
+    public void setVOUCHERNO(String VOUCHERNO) {
+        this.VOUCHERNO = VOUCHERNO;
+    }
+
+    public String getPRO() {
+        return PRO;
+    }
+
+    public void setPRO(String PRO) {
+        this.PRO = PRO;
+    }
+
+    public String getACCOUNTBOOK() {
+        return ACCOUNTBOOK;
+    }
+
+    public void setACCOUNTBOOK(String ACCOUNTBOOK) {
+        this.ACCOUNTBOOK = ACCOUNTBOOK;
+    }
+
+    public String getDOWNINFO() {
+        return DOWNINFO;
+    }
+
+    public void setDOWNINFO(String DOWNINFO) {
+        this.DOWNINFO = DOWNINFO;
+    }
+
+    public String getSUMCOMPLETEMONTH() {
+        return SUMCOMPLETEMONTH;
+    }
+
+    public void setSUMCOMPLETEMONTH(String SUMCOMPLETEMONTH) {
+        this.SUMCOMPLETEMONTH = SUMCOMPLETEMONTH;
+    }
+
+    public String getCOMPLETEMONTH() {
+        return COMPLETEMONTH;
+    }
+
+    public void setCOMPLETEMONTH(String COMPLETEMONTH) {
+        this.COMPLETEMONTH = COMPLETEMONTH;
+    }
+
+    public String getMONDEPREVALUE() {
+        return MONDEPREVALUE;
+    }
+
+    public void setMONDEPREVALUE(String MONDEPREVALUE) {
+        this.MONDEPREVALUE = MONDEPREVALUE;
+    }
+
+    public String getDEVICETYPE() {
+        return DEVICETYPE;
+    }
+
+    public void setDEVICETYPE(String DEVICETYPE) {
+        this.DEVICETYPE = DEVICETYPE;
+    }
+
+    public String getEMPTY1() {
+        return EMPTY1;
+    }
+
+    public void setEMPTY1(String EMPTY1) {
+        this.EMPTY1 = EMPTY1;
+    }
+
+    public String getEMPTY2() {
+        return EMPTY2;
+    }
+
+    public void setEMPTY2(String EMPTY2) {
+        this.EMPTY2 = EMPTY2;
+    }
+
     // 231125添加10个字段
 //序列号//生产厂家//出厂编号//管理编号//参数//溯源周期//溯源方式01：检定/02：校准//检定校准日期YYYY-MM-DD/有效期至YYYY-MM-DD//所属项目
     /**
@@ -746,6 +846,55 @@ public class AssetsCopy extends SugarRecord implements Serializable {
      */
     private String PROBELONG;
 
+    /**
+     * 入账单号
+     */
+    private String PRINTNO;
+
+    /**
+     * 财务记账日期
+     */
+    private String BOOKKEEPINGTIME;
+
+    /**
+     * 凭证号
+     */
+    private String VOUCHERNO;
+
+    /**
+     * 项目名称
+     */
+    private String PRO;
+
+    /**
+     * 会计账簿，字典类型，01：行政账，02：装备账
+     */
+    private String ACCOUNTBOOK;
+
+    /**
+     * 下发情况，字典类型，01：行政下发，02：装备下发
+     */
+    private String DOWNINFO;
+
+    /**
+     * 使用年限
+     */
+    private String SUMCOMPLETEMONTH;
+
+    /**
+     * 已计提折旧月数
+     */
+    private String COMPLETEMONTH;
+
+    /**
+     * 月折旧额
+     */
+    private String MONDEPREVALUE;
+
+    /**
+     * 设备分类，字典类型，01：办公设备，02：实验设备
+     */
+    private String DEVICETYPE;
 
     public String getCLASSIFICATION() {
         return CLASSIFICATION;
@@ -905,8 +1054,20 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.setCALIBRATIONDATE(source.getCALIBRATIONDATE());
         this.setVALIDDATE(source.getVALIDDATE());
         this.setPROBELONG(source.getPROBELONG());
+        this.setPRINTNO(source.getPRINTNO());
+        this.setBOOKKEEPINGTIME(source.getBOOKKEEPINGTIME());
+        this.setVOUCHERNO(source.getVOUCHERNO());
+        this.setPRO(source.getPRO());
+        this.setACCOUNTBOOK(source.getACCOUNTBOOK());
+        this.setDOWNINFO(source.getDOWNINFO());
+        this.setSUMCOMPLETEMONTH(source.getSUMCOMPLETEMONTH());
+        this.setCOMPLETEMONTH(source.getCOMPLETEMONTH());
+        this.setMONDEPREVALUE(source.getMONDEPREVALUE());
+        this.setDEVICETYPE(source.getDEVICETYPE());
         this.setCLASSIFICATION(source.getCLASSIFICATION());
         this.setISSUEDATE(source.getISSUEDATE());
+        this.setEMPTY1(source.getEMPTY1());
+        this.setEMPTY2(source.getEMPTY2());
         this.setASSETSDEPT(source.getASSETSDEPT());
     }
 
@@ -972,8 +1133,20 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         source.setCALIBRATIONDATE(this.getCALIBRATIONDATE());
         source.setVALIDDATE(this.getVALIDDATE());
         source.setPROBELONG(this.getPROBELONG());
+        source.setPRINTNO(this.getPRINTNO());
+        source.setBOOKKEEPINGTIME(this.getBOOKKEEPINGTIME());
+        source.setVOUCHERNO(this.getVOUCHERNO());
+        source.setPRO(this.getPRO());
+        source.setACCOUNTBOOK(this.getACCOUNTBOOK());
+        source.setDOWNINFO(this.getDOWNINFO());
+        source.setSUMCOMPLETEMONTH(this.getSUMCOMPLETEMONTH());
+        source.setCOMPLETEMONTH(this.getCOMPLETEMONTH());
+        source.setMONDEPREVALUE(this.getMONDEPREVALUE());
+        source.setDEVICETYPE(this.getDEVICETYPE());
         source.setCLASSIFICATION(this.getCLASSIFICATION());
         source.setISSUEDATE(this.getISSUEDATE());
+        source.setEMPTY1(this.getEMPTY1());
+        source.setEMPTY2(this.getEMPTY2());
         source.setASSETSDEPT(this.getASSETSDEPT());
     }
 

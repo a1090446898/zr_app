@@ -37,11 +37,41 @@ public class AccountHelper {
         if (StringUtils.isNullOrEmpty(ACCTSUITEID)) return departList;
         List<Accounts> accountsList = Accounts.find(Accounts.class, "ZTBH = ?", ACCTSUITEID);
         for (Accounts accounts : accountsList) {
-            if (!departList.contains(accounts.getBMMC()))
+            if (!departList.contains(accounts.getBMMC())){
                 departList.add(accounts.getBMMC());
+            }
         }
         return departList;
     }
+
+
+    /**
+     * 获取部门列表（返回 Accounts 对象）
+     *
+     * @param ACCTSUITEID 账套编号
+     * @return 部门对象列表
+     */
+    public static List<Accounts> getDepartListWithObjects(String ACCTSUITEID) {
+        List<Accounts> departList = new ArrayList<>();
+        if (StringUtils.isNullOrEmpty(ACCTSUITEID)) return departList;
+        List<Accounts> accountsList = Accounts.find(Accounts.class, "ZTBH = ?", ACCTSUITEID);
+        for (Accounts accounts : accountsList) {
+            // 通过元素中的BMBH来判断该元素是否被添加，如果添加则不添加
+            boolean exists = false;
+            for (Accounts item : departList) {
+                if (item.getBMBH().equals(accounts.getBMBH())) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                departList.add(accounts);
+            }
+        }
+        return departList;
+    }
+
 
     /**
      * 获取部门编码
@@ -52,7 +82,7 @@ public class AccountHelper {
     public static String getDepartCode(String accountid, String departName) {
         if (StringUtils.isNullOrEmpty(departName)) return "";
         List<Accounts> accountsList = Accounts.find(Accounts.class, "ZTBH=? AND BMMC = ?", accountid, departName);
-        return accountsList.size() == 0 ? "" : accountsList.get(0).getBMBH();
+        return accountsList.isEmpty() ? "" : accountsList.get(0).getBMBH();
     }
 
     /**
@@ -64,7 +94,7 @@ public class AccountHelper {
     public static String getDepartName(String departCode) {
         if (StringUtils.isNullOrEmpty(departCode)) return "";
         List<Accounts> accountsList = Accounts.find(Accounts.class, "BMBH = ?", departCode);
-        return accountsList.size() == 0 ? "" : accountsList.get(0).getBMMC();
+        return accountsList.isEmpty() ? "" : accountsList.get(0).getBMMC();
     }
 
     /**
@@ -76,7 +106,7 @@ public class AccountHelper {
     public static String getDanweiCode(String danweiName) {
         if (StringUtils.isNullOrEmpty(danweiName)) return "";
         List<Accounts> accountsList = Accounts.find(Accounts.class, "DWMC = ?", danweiName);
-        return accountsList.size() == 0 ? "" : accountsList.get(0).getDWBH();
+        return accountsList.isEmpty() ? "" : accountsList.get(0).getDWBH();
     }
 
     /**
@@ -90,7 +120,7 @@ public class AccountHelper {
             return "";
         String[] whereArray = {accountid, danweiCode};
         List<Accounts> accountsList = Accounts.find(Accounts.class, "ZTBH=? AND DWBH = ?", whereArray, null, "Id ASC", "1");
-        return accountsList.size() == 0 ? "" : accountsList.get(0).getDWMC();
+        return accountsList.isEmpty() ? "" : accountsList.get(0).getDWMC();
     }
 
 

@@ -41,6 +41,7 @@ public class EditAssetsActivity extends AssetsBaseActivity {
         setContentView(R.layout.activity_new_assets);
         ButterKnife.bind(this);
 
+        initCameraLauncher();  // 新增：初始化相机
         initSelfData();
         initializeView();
 
@@ -107,7 +108,8 @@ public class EditAssetsActivity extends AssetsBaseActivity {
         viewClickSetting();
         // 初始化选择器
         initCategoryPicker();
-
+        // 初始化AI拍照（父类方法，自动绑定buttonAIPhoto点击事件）
+        initAIPhotoHelper();
 
         fillAssetsData();
 
@@ -216,7 +218,7 @@ public class EditAssetsActivity extends AssetsBaseActivity {
         }
 
         if (!Objects.equals(oldAsset.getCARDID(), newAsset.getCARDID())) {
-            changes.append("卡片编号, ");
+            changes.append("资产编号, ");
             hasChanges = true;
         }
         if(!Objects.equals(oldAsset.getBARCODEID(), newAsset.getBARCODEID())){
@@ -401,12 +403,68 @@ public class EditAssetsActivity extends AssetsBaseActivity {
             changes.append("所属项目, ");
             hasChanges = true;
         }
+        if (!Objects.equals(oldAsset.getPRINTNO(), newAsset.getPRINTNO())) {
+            changes.append("入账单号, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getBOOKKEEPINGTIME(), newAsset.getBOOKKEEPINGTIME())) {
+            changes.append("财务记账日期, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getVOUCHERNO(), newAsset.getVOUCHERNO())) {
+            changes.append("凭证号, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getPRO(), newAsset.getPRO())) {
+            changes.append("项目名称, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getACCOUNTBOOK(), newAsset.getACCOUNTBOOK())) {
+            changes.append("会计账簿, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getDOWNINFO(), newAsset.getDOWNINFO())) {
+            changes.append("下发情况, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getSUMCOMPLETEMONTH(), newAsset.getSUMCOMPLETEMONTH())) {
+            changes.append("使用年限, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getCOMPLETEMONTH(), newAsset.getCOMPLETEMONTH())) {
+            changes.append("已计提折旧月数, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getMONDEPREVALUE(), newAsset.getMONDEPREVALUE())) {
+            changes.append("月折旧额, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getDEVICETYPE(), newAsset.getDEVICETYPE())) {
+            changes.append("设备分类, ");
+            hasChanges = true;
+        }
         if(!Objects.equals(oldAsset.getCLASSIFICATION(), newAsset.getCLASSIFICATION())){
             changes.append("密级， ");
             hasChanges = true;
         }
         if (!Objects.equals(oldAsset.getISSUEDATE(), newAsset.getISSUEDATE())) {
             changes.append("配发日期, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getPURPOSE(), newAsset.getPURPOSE())) {
+            changes.append("设备用途, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getNETTYPE(), newAsset.getNETTYPE())) {
+            changes.append("网络类型, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getISGWC(), newAsset.getISGWC())) {
+            changes.append("是否公物仓, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getDEPARTMENT(), newAsset.getDEPARTMENT())) {
+            changes.append("所属处室, ");
             hasChanges = true;
         }
 

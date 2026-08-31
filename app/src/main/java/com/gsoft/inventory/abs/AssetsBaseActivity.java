@@ -2,12 +2,17 @@ package com.gsoft.inventory.abs;
 
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.*;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import butterknife.BindArray;
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -17,6 +22,8 @@ import com.gsoft.inventory.R;
 import com.gsoft.inventory.data.CategoryData;
 import com.gsoft.inventory.service.new_assets.LoadCategoryTask;
 import com.gsoft.inventory.utils.*;
+import com.huawei.hms.hmsscankit.ScanUtil;
+import com.huawei.hms.ml.scan.HmsScan;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -26,6 +33,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import android.app.Activity;
+import java.io.File;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * @author 10904
@@ -41,6 +53,8 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
    public Accounts loginAccount = null;
 
+   @BindView(R.id.buttonAIPhoto)
+   public Button buttonAIPhoto;
 
     /*资产类别*/
     @BindArray(R.array.zclb)
@@ -78,6 +92,37 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
     @BindArray(R.array.classifications)
     public String[] classifications;
+
+    @BindArray(R.array.osArray)
+    public String[] osArray;
+
+    @BindArray(R.array.sampleStateFields)
+    public String[] sampleStateFields;
+
+    /*设备用途*/
+    @BindArray(R.array.devicePurposeFields)
+    public String[] devicePurposeFields;
+
+    /*网络类型*/
+    @BindArray(R.array.netTypeFields)
+    public String[] netTypeFields;
+
+    /*是否公物仓*/
+    @BindArray(R.array.gwcFields)
+    public String[] gwcFields;
+
+    /*会计账簿*/
+    @BindArray(R.array.accountBookFields)
+    public String[] accountBookFields;
+
+    /*下发情况*/
+    @BindArray(R.array.downInfoFields)
+    public String[] downInfoFields;
+
+    /*设备分类*/
+    @BindArray(R.array.deviceTypeFields)
+    public String[] deviceTypeFields;
+
     /*条码编号*/
     @BindView(R.id.editBARCODEID)
     public EditText editBARCODEID;
@@ -120,7 +165,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     /*计量单位*/
     @BindView(R.id.editASSETSMEASURE)
     public EditText editASSETSMEASURE;
-    /*卡片编号*/
+    /*资产编号*/
     @BindView(R.id.editSERIALCODE)
     public EditText editSERIALCODE;
     /*资产名称*/
@@ -156,6 +201,13 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     /*使用部门,名称*/
     @BindView(R.id.editASSETSDEPT)
     public AutoCompleteTextView editASSETSDEPT;
+
+    /*所属处室*/
+    @BindView(R.id.editDEPARTMENT)
+    public EditText editDEPARTMENT;
+    /*是否公物仓*/
+    @BindView(R.id.editISGWC)
+    public EditText editISGWC;
     /*卡片金额-原值，设为空值*/
     @BindView(R.id.editKPJE)
     public TextView editKPJE;
@@ -246,6 +298,23 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindView(R.id.editSSXM)
     public EditText editSSXM;
 
+    @BindView(R.id.editPRINTNO)
+    public EditText editPRINTNO;
+    @BindView(R.id.editPRO)
+    public EditText editPRO;
+    @BindView(R.id.editACCOUNTBOOK)
+    public TextView editACCOUNTBOOK;
+    @BindView(R.id.editDOWNINFO)
+    public TextView editDOWNINFO;
+    @BindView(R.id.editSUMCOMPLETEMONTH)
+    public EditText editSUMCOMPLETEMONTH;
+    @BindView(R.id.editCOMPLETEMONTH)
+    public EditText editCOMPLETEMONTH;
+    @BindView(R.id.editMONDEPREVALUE)
+    public EditText editMONDEPREVALUE;
+    @BindView(R.id.editDEVICETYPE)
+    public TextView editDEVICETYPE;
+
     @BindView(R.id.editVENDOR)
     public EditText editVENDOR;
 
@@ -262,8 +331,76 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindView(R.id.editBOOKKEEPINGTIME)
     public TextView editBOOKKEEPINGTIME;
 
+    @BindView(R.id.editDWCODE)
+    public EditText editDWCODE;
+
+
     @BindView(R.id.editVOUCHERNO)
     public TextView editVOUCHERNO;
+
+    @BindView(R.id.editSAMPLDATE)
+    public EditText editSAMPLDATE;
+
+    @BindView(R.id.editSAMPLCODE)
+    public EditText editSAMPLCODE;
+
+    @BindView(R.id.editMONITORPRO)
+    public EditText editMONITORPRO;
+
+    @BindView(R.id.editSAVEMETHOD)
+    public EditText editSAVEMETHOD;
+
+    @BindView(R.id.editSAMPLESTATE)
+    public EditText editSAMPLESTATE;
+
+    @BindView(R.id.editCONCENTRATION)
+    public EditText editCONCENTRATION;
+
+    @BindView(R.id.editPREPARER)
+    public EditText editPREPARER;
+
+    @BindView(R.id.editMEDIA)
+    public EditText editMEDIA;
+
+    @BindView(R.id.editSTORAGENEED)
+    public EditText editSTORAGENEED;
+
+
+    @BindView(R.id.editSAMPLEUSER)
+    public EditText editSAMPLEUSER;
+
+
+    @BindView(R.id.editHARDID)
+    public EditText editHARDID;
+
+    @BindView(R.id.editIP)
+    public EditText editIP;
+
+    @BindView(R.id.editMAC)
+    public EditText editMAC;
+
+    @BindView(R.id.editINTERNETID)
+    public EditText editINTERNETID;
+
+
+    @BindView(R.id.editPORT)
+    public EditText editPORT;
+
+    @BindView(R.id.editPURPOSE)
+    public EditText editPURPOSE;
+
+    @BindView(R.id.editNETTYPE)
+    public EditText editNETTYPE;
+
+
+    @BindView(R.id.editHARDSN)
+    public EditText editHARDSN;
+
+    @BindView(R.id.editOS)
+    public EditText editOS;
+
+    @BindView(R.id.editINSTALLDATE)
+    public EditText editINSTALLDATE;
 
 
     @BindView(R.id.buttonSave)
@@ -284,6 +421,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
     public OptionsPickerView pvOptions;
 
+
     public void initData(){
 
         loginAccount = application.getLoginAccount();
@@ -299,6 +437,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         danweiList.toArray(dwArray);
         bmArray = new String[AccountHelper.getDepartList(loginAccount.getZTBH()).size()];
         AccountHelper.getDepartList(loginAccount.getZTBH()).toArray(bmArray);
+
     }
 
     public void iconSetting(){
@@ -324,6 +463,17 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editJDJZRQ.setCompoundDrawables(null, null, icon_right, null);
         editIsSueDate.setCompoundDrawables(null, null, icon_right, null);
         editClassification.setCompoundDrawables(null, null, icon_right, null);
+        editACCOUNTBOOK.setCompoundDrawables(null, null, icon_right, null);
+        editDOWNINFO.setCompoundDrawables(null, null, icon_right, null);
+        editDEVICETYPE.setCompoundDrawables(null, null, icon_right, null);
+        editSAMPLDATE.setCompoundDrawables(null, null, icon_right, null);
+        editSAMPLESTATE.setCompoundDrawables(null, null, icon_right, null);
+        editPURPOSE.setCompoundDrawables(null, null, icon_right, null);
+        editNETTYPE.setCompoundDrawables(null, null, icon_right, null);
+
+        editISGWC.setCompoundDrawables(null, null, icon_right, null);
+//        editOS.setCompoundDrawables(null, null, icon_right, null);
+        editINSTALLDATE.setCompoundDrawables(null, null, icon_right, null);
     }
 
     public void viewStateSetting(){
@@ -363,6 +513,16 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editYXQZ.setFocusable(false);
         editJDJZRQ.setFocusableInTouchMode(false);
         editJDJZRQ.setFocusable(false);
+        editSAMPLDATE.setFocusable(false);
+        editSAMPLESTATE.setFocusable(false);
+        editPURPOSE.setFocusable(false);
+        editPURPOSE.setFocusableInTouchMode(false);
+        editNETTYPE.setFocusable(false);
+        editNETTYPE.setFocusableInTouchMode(false);
+        editISGWC.setFocusable(false);
+        editISGWC.setFocusableInTouchMode(false);
+//        editOS.setFocusable(false);
+        editINSTALLDATE.setFocusable(false);
     }
 
 
@@ -379,7 +539,8 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                     rootCategoryArray = data.rootCategories;
                     secondCategoryArray = data.secondCategories;
                     thirdCategoryArray = data.thirdCategories;
-                    initCategoryPicker(); // 调用公共初始化方法
+                    // 调用公共初始化方法
+                    initCategoryPicker();
                 } else {
                     showShortText("后台加载分类数据失败……");
                 }
@@ -416,23 +577,37 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 : editASSETSCURRPRICE.getText().toString();
     }
 
+
+    /**
+     * 条码编号为空时候自动生成
+     * 资产编号为空的时候赋值条码编号
+     * @param barCode
+     */
     public void setBarCode(String barCode) {
-        if (StringUtils.isNullOrEmpty(editBARCODEID.getText().toString())
-                && StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())) {
-            assetsCreating.setSERIALCODE(barCode);
+        // 条码编号
+        String barCodeInputStr = editBARCODEID.getText().toString();
+        // 资产编号
+        String serialInputStr = editSERIALCODE.getText().toString();
+
+        // 对条码编号的判断
+        if(StringUtils.isNullOrEmpty(barCodeInputStr)){
             assetsCreating.setBARCODEID(barCode);
-        } else if (!StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())
-                && StringUtils.isNullOrEmpty(editBARCODEID.getText().toString())) {
-            assetsCreating.setSERIALCODE(editSERIALCODE.getText().toString());
-            assetsCreating.setBARCODEID(editSERIALCODE.getText().toString());
-        } else if (StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())
-                && !StringUtils.isNullOrEmpty(editBARCODEID.getText().toString())) {
-            assetsCreating.setSERIALCODE(editBARCODEID.getText().toString());
-            assetsCreating.setBARCODEID(editBARCODEID.getText().toString());
-        } else {
-            assetsCreating.setSERIALCODE(editSERIALCODE.getText().toString());
-            assetsCreating.setBARCODEID(editBARCODEID.getText().toString());
+            editBARCODEID.setText(barCode);
+            barCodeInputStr = barCode;
         }
+        else{
+            assetsCreating.setBARCODEID(barCodeInputStr);
+        }
+
+        // 对卡片比编号的判断
+        if(StringUtils.isNullOrEmpty(serialInputStr)){
+            assetsCreating.setSERIALCODE(barCodeInputStr);
+            editSERIALCODE.setText(barCodeInputStr);
+        }
+        else{
+            assetsCreating.setSERIALCODE(serialInputStr);
+        }
+
     }
 
     public void setBaseAssetProperties(){
@@ -491,8 +666,90 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setCALIBRATIONDATE(editJDJZRQ.getText().toString());
         assetsCreating.setVALIDDATE(editYXQZ.getText().toString());
         assetsCreating.setPROBELONG(editSSXM.getText().toString());
+        assetsCreating.setPRINTNO(editPRINTNO.getText().toString());
+        assetsCreating.setPRO(editPRO.getText().toString());
+        String accountBookStr = editACCOUNTBOOK.getText().toString();
+        for (int i = 0; i < accountBookFields.length; i++) {
+            if (accountBookFields[i].equals(accountBookStr)) {
+                assetsCreating.setACCOUNTBOOK(String.format("%02d", i + 1));
+                break;
+            }
+        }
+        String downInfoStr = editDOWNINFO.getText().toString();
+        for (int i = 0; i < downInfoFields.length; i++) {
+            if (downInfoFields[i].equals(downInfoStr)) {
+                assetsCreating.setDOWNINFO(String.format("%02d", i + 1));
+                break;
+            }
+        }
+        String deviceTypeStr = editDEVICETYPE.getText().toString();
+        for (int i = 0; i < deviceTypeFields.length; i++) {
+            if (deviceTypeFields[i].equals(deviceTypeStr)) {
+                assetsCreating.setDEVICETYPE(String.format("%02d", i + 1));
+                break;
+            }
+        }
+        assetsCreating.setSUMCOMPLETEMONTH(editSUMCOMPLETEMONTH.getText().toString());
+        assetsCreating.setCOMPLETEMONTH(editCOMPLETEMONTH.getText().toString());
+        assetsCreating.setMONDEPREVALUE(editMONDEPREVALUE.getText().toString());
+        assetsCreating.setBOOKKEEPINGTIME(editBOOKKEEPINGTIME.getText().toString());
+        assetsCreating.setVOUCHERNO(editVOUCHERNO.getText().toString());
         assetsCreating.setISSUEDATE(editIsSueDate.getText().toString());
-        assetsCreating.setISUPLOAD("0");
+        assetsCreating.setISUPLOAD("02");
+        assetsCreating.setREMARKS(editREMARKS.getText().toString());
+
+        assetsCreating.setDWCODE(editDWCODE.getText().toString());
+        assetsCreating.setSAMPLDATE(editSAMPLDATE.getText().toString());
+        assetsCreating.setSAMPLCODE(editSAMPLCODE.getText().toString());
+        assetsCreating.setMONITORPRO(editMONITORPRO.getText().toString());
+        assetsCreating.setSAVEMETHOD(editSAVEMETHOD.getText().toString());
+        String samplStateStr = editSAMPLESTATE.getText().toString();
+        for (int i = 0; i < sampleStateFields.length; i++) {
+            if (sampleStateFields[i].equals(samplStateStr)) {
+                assetsCreating.setSAMPLESTATE("0" + (i+1));
+                break;
+            }
+        }
+        assetsCreating.setCONCENTRATION(editCONCENTRATION.getText().toString());
+        assetsCreating.setPREPARER(editPREPARER.getText().toString());
+        assetsCreating.setMEDIA(editMEDIA.getText().toString());
+        assetsCreating.setSTORAGENEED(editSTORAGENEED.getText().toString());
+
+
+        assetsCreating.setSAMPLEUSER(editSAMPLEUSER.getText().toString());
+
+        assetsCreating.setHARDID(editHARDID.getText().toString());
+        assetsCreating.setIP(editIP.getText().toString());
+        assetsCreating.setMAC(editMAC.getText().toString());
+        assetsCreating.setINTERNETID(editINTERNETID.getText().toString());
+        assetsCreating.setPORT(editPORT.getText().toString());
+        assetsCreating.setPURPOSE(editPURPOSE.getText().toString());
+        String purposeStr = editPURPOSE.getText().toString();
+        for (int i = 0; i < devicePurposeFields.length; i++) {
+            if (devicePurposeFields[i].equals(purposeStr)) {
+                assetsCreating.setPURPOSE(i == devicePurposeFields.length - 1 ? "99" : String.format("%02d", i + 1));
+                break;
+            }
+        }
+        String netTypeStr = editNETTYPE.getText().toString();
+        for (int i = 0; i < netTypeFields.length; i++) {
+            if (netTypeFields[i].equals(netTypeStr)) {
+                assetsCreating.setNETTYPE(i == netTypeFields.length - 1 ? "99" : String.format("%02d", i + 1));
+                break;
+            }
+        }
+        assetsCreating.setHARDSN(editHARDSN.getText().toString());
+        assetsCreating.setOS(editOS.getText().toString());
+        assetsCreating.setINSTALLDATE(editINSTALLDATE.getText().toString());
+        String isgwcStr = editISGWC.getText().toString();
+        for (int i = 0; i < gwcFields.length; i++) {
+            if (gwcFields[i].equals(isgwcStr)) {
+                assetsCreating.setISGWC(String.format("%02d", i + 1));
+                break;
+            }
+        }
+        // 所属处室
+        assetsCreating.setDEPARTMENT(editDEPARTMENT.getText().toString());
     }
 
     /**
@@ -519,8 +776,20 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
             showShortText("请选择资产类别");
             return false;
         }
+        if (StringUtils.isNullOrEmpty(editCUSTODIAN.getText().toString())) {
+            showShortText("请填写管理人");
+            return false;
+        }
         if (StringUtils.isNullOrEmpty(editASSETSDEPT.getText().toString())) {
             showShortText("请选择使用部门");
+            return false;
+        }
+        if (StringUtils.isNullOrEmpty(editASSETSLAYADD.getText().toString())) {
+            showShortText("请填写存放地点");
+            return false;
+        }
+        if (StringUtils.isNullOrEmpty(editGROUNDMANAGEDEPT.getText().toString())) {
+            showShortText("请选择管理部门");
             return false;
         }
         if (StringUtils.isNullOrEmpty(editASSETSUSER.getText().toString())) {
@@ -578,7 +847,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editASSETSSORTCODE.setText(assetsCategory == null ? "" : assetsCategory.getNAME());
         /*计量单位*/
         editASSETSMEASURE.setText(assetsCreating.getASSETSMEASURE());
-        /*卡片编号*/
+        /*资产编号*/
         editSERIALCODE.setText(assetsCreating.getSERIALCODE());
         /*资产名称*/
         editASSETSNAME.setText(assetsCreating.getASSETSNAME());
@@ -602,6 +871,10 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editASSETSUSER.setText(assetsCreating.getASSETSUSER());
         /*使用部门*/
         editASSETSDEPT.setText(assetsCreating.getASSETSDEPT());
+        /*所属处室*/
+        editDEPARTMENT.setText(assetsCreating.getDEPARTMENT());
+        /*是否公物仓*/
+        editISGWC.setText(DictionaryHelper.getDictionaryName(assetsCreating.getISGWC(), gwcFields));
         /*卡片金额-原值，设为空值*/
         editKPJE.setText(assetsCreating.getKPJE());
         editKPJE.setEnabled(false);
@@ -637,7 +910,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editASSETSORGANIZATION.setText(DictionaryHelper.getDictionaryName(assetsCreating.getASSETSORGANIZATION(), bzqkArray));
         /*数量*/
         editASSETSNUM.setText(String.valueOf(assetsCreating.getASSETSNUM()));
-        editASSETSNUM.setEnabled(false);
+        editASSETSNUM.setEnabled(true);
         /*录入人*/
         editASSETSWRITER.setText(AccountHelper.getUserName(assetsCreating.getASSETSWRITER()));
         /*录入日期*/
@@ -662,12 +935,50 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editYXQZ.setText(assetsCreating.getVALIDDATE());
         editSSXM.setText(assetsCreating.getPROBELONG());
 
+        editPRINTNO.setText(assetsCreating.getPRINTNO());
+        editPRO.setText(assetsCreating.getPRO());
+        editACCOUNTBOOK.setText(DictionaryHelper.getDictionaryName(assetsCreating.getACCOUNTBOOK(), accountBookFields));
+        editDOWNINFO.setText(DictionaryHelper.getDictionaryName(assetsCreating.getDOWNINFO(), downInfoFields));
+        editSUMCOMPLETEMONTH.setText(assetsCreating.getSUMCOMPLETEMONTH());
+        editCOMPLETEMONTH.setText(assetsCreating.getCOMPLETEMONTH());
+        editMONDEPREVALUE.setText(assetsCreating.getMONDEPREVALUE());
+        editDEVICETYPE.setText(DictionaryHelper.getDictionaryName(assetsCreating.getDEVICETYPE(), deviceTypeFields));
+
+
         editIsSueDate.setText(assetsCreating.getISSUEDATE());
         editClassification.setText(DictionaryHelper.getDictionaryName(assetsCreating.getCLASSIFICATION(), classifications));
 
         // 财务记账时间, 凭证号
         editVOUCHERNO.setText(assetsCreating.getVOUCHERNO());
         editBOOKKEEPINGTIME.setText(assetsCreating.getBOOKKEEPINGTIME());
+
+
+        editDWCODE.setText(assetsCreating.getDWCODE());
+        editSAMPLDATE.setText(assetsCreating.getSAMPLDATE());
+        editSAMPLCODE.setText(assetsCreating.getSAMPLCODE());
+        editMONITORPRO.setText(assetsCreating.getMONITORPRO());
+        editSAVEMETHOD.setText(assetsCreating.getSAVEMETHOD());
+        editSAMPLESTATE.setText(assetsCreating.getSAMPLESTATE());
+        editSAMPLEUSER.setText(assetsCreating.getSAMPLEUSER());
+
+        editCONCENTRATION.setText(assetsCreating.getCONCENTRATION());
+        editPREPARER.setText(assetsCreating.getPREPARER());
+        editMEDIA.setText(assetsCreating.getMEDIA());
+        editSTORAGENEED.setText(assetsCreating.getSTORAGENEED());
+
+
+        editHARDID.setText(assetsCreating.getHARDID());
+        editIP.setText(assetsCreating.getIP());
+        editMAC.setText(assetsCreating.getMAC());
+        editINTERNETID.setText(assetsCreating.getINTERNETID());
+        editPORT.setText(assetsCreating.getPORT());
+        editPURPOSE.setText(assetsCreating.getPURPOSE());
+        editHARDSN.setText(assetsCreating.getHARDSN());
+        editNETTYPE.setText(assetsCreating.getNETTYPE());
+        editOS.setText(assetsCreating.getOS());
+//        editOS.setText(assetsCreating.getOS());
+//        editOS.setText(DictionaryHelper.getDictionaryName(assetsCreating.getOS(), osArray));
+        editINSTALLDATE.setText(assetsCreating.getINSTALLDATE());
 
     }
 
@@ -718,7 +1029,6 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         });
 
         editGROUNDMANAGEDEPT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(dwArray, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -814,6 +1124,44 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
             editIsSueDate.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
             assetsCreating.setISSUEDATE(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
+
+        editBOOKKEEPINGTIME.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editBOOKKEEPINGTIME.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
+            assetsCreating.setBOOKKEEPINGTIME(DataConvert.FormatDate2Day(tCalendar.getTime()));
+        }, mYear, mMonth, mDay).show());
+
+        editACCOUNTBOOK.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(accountBookFields, (dialog, which) -> {
+                    editACCOUNTBOOK.setText(accountBookFields[which]);
+                    assetsCreating.setACCOUNTBOOK(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+
+        editDOWNINFO.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(downInfoFields, (dialog, which) -> {
+                    editDOWNINFO.setText(downInfoFields[which]);
+                    assetsCreating.setDOWNINFO(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+
+        editDEVICETYPE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(deviceTypeFields, (dialog, which) -> {
+                    editDEVICETYPE.setText(deviceTypeFields[which]);
+                    assetsCreating.setDEVICETYPE(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+
+        editSAMPLDATE.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editSAMPLDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
+            assetsCreating.setSAMPLDATE(DataConvert.FormatDate2Day(tCalendar.getTime()));
+        }, mYear, mMonth, mDay).show());
         editSYZQ.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -873,6 +1221,11 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         });
         editClassification.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
                 .addItems(classifications, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editClassification.setText(classifications[which]);
                     assetsCreating.setCLASSIFICATION(String.format("%02d", which + 1));
                     dialog.dismiss();
@@ -881,9 +1234,53 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
 
 
+        editSAMPLESTATE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(sampleStateFields, (dialog, which) -> {
+                    editSAMPLESTATE.setText(sampleStateFields[which]);
+                    assetsCreating.setSAMPLESTATE("0"+(which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+
+        // 设备用途选择
+        editPURPOSE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(devicePurposeFields, (dialog, which) -> {
+                    if (assetsCreating == null) {
+                        showShortText("请先选择资产");
+                        return;
+                    }
+                    editPURPOSE.setText(devicePurposeFields[which]);
+                    assetsCreating.setPURPOSE(which == devicePurposeFields.length - 1 ? "99" : String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+
+        // 网络类型选择
+        editNETTYPE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(netTypeFields, (dialog, which) -> {
+                    if (assetsCreating == null) {
+                        showShortText("请先选择资产");
+                        return;
+                    }
+                    editNETTYPE.setText(netTypeFields[which]);
+                    assetsCreating.setNETTYPE(which == netTypeFields.length - 1 ? "99" : String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+        // 是否公物仓选择
+        editISGWC.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(gwcFields, (dialog, which) -> {
+                    if (assetsCreating == null) {
+                        showShortText("请先选择资产");
+                        return;
+                    }
+                    editISGWC.setText(gwcFields[which]);
+                    assetsCreating.setISGWC(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
 
         editGETMODE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(qdfsArray, (dialog, which) -> {
                     editGETMODE.setText(qdfsArray[which]);
                     assetsCreating.setGETMODE(String.format("%02d", which + 1));
@@ -892,24 +1289,36 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 .create(mCurrentDialogStyle).show());
         //分类用途
         editVEHPURPOSE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(flytArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editVEHPURPOSE.setText(flytArray[which]);
                     assetsCreating.setVEHPURPOSE(String.format("%02d", which + 1));
                     dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
         editDPRECIATIONTYPE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(zjztArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editDPRECIATIONTYPE.setText(zjztArray[which]);
                     assetsCreating.setDPRECIATIONTYPE(String.format("%02d", which + 1));
                     dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
         editUSESTATE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(syzkArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editUSESTATE.setText(syzkArray[which]);
                     assetsCreating.setUSESTATE(String.format("%02d", which + 1));
                     dialog.dismiss();
@@ -917,8 +1326,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 .create(mCurrentDialogStyle).show());
 
         editPURCHASINGORGANIZATION.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(cgzzxsArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editPURCHASINGORGANIZATION.setText(cgzzxsArray[which]);
                     assetsCreating.setPURCHASINGORGANIZATION(String.format("%02d", which + 1));
                     dialog.dismiss();
@@ -926,8 +1339,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 .create(mCurrentDialogStyle).show());
 
         editASSETSCULGRADE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(wwdjArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editASSETSCULGRADE.setText(wwdjArray[which]);
                     assetsCreating.setASSETSCULGRADE(String.format("%02d", which + 1));
                     dialog.dismiss();
@@ -937,14 +1354,23 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editASSETSORGANIZATION.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
 
                 .addItems(bzqkArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editASSETSORGANIZATION.setText(bzqkArray[which]);
                     assetsCreating.setASSETSORGANIZATION(String.format("%02d", which + 1));
                     dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
         editPROPERTY.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(dwArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editPROPERTY.setText(dwArray[which]);
                     assetsCreating.setPROPERTY(dwArray[which]);
                     dialog.dismiss();
@@ -952,8 +1378,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 .create(mCurrentDialogStyle).show());
         /*账套选择*/
         editACCTSUITEID.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-
                 .addItems(ztArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
                     editACCTSUITEID.setText(ztArray[which]);
                     assetsCreating.setACCTSUITEID(SysConfig.getAccountsByZTMC(ztArray[which]).getZTBH());
                     dialog.dismiss();
@@ -961,6 +1391,11 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 .create(mCurrentDialogStyle).show());
         /*资产类别选择*/
         editASSETSTYPE.setOnClickListener(view -> {
+            if(assetsCreating == null){
+                showShortText("请先扫码选择资产");
+                return;
+            }
+
             int assetsCategoryNewOrOld = AssetsCategoryHelper.getAssetsCategoryNewOrOld();
             String[] temp = null;
             if (assetsCategoryNewOrOld == 1) {
@@ -982,6 +1417,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         });
         /*资产代码选择*/
         editASSETSSORTCODE.setOnClickListener(view -> {
+
+            if(assetsCreating == null){
+                showShortText("请先扫码选择资产");
+                return;
+            }
+
             if (rootCategoryArray == null || rootCategoryArray.isEmpty()) {
                 showShortText("请先选择资产类别，或者等待数据加载完成");
                 return;
@@ -990,6 +1431,199 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
             pvOptions.setPicker(rootCategoryArray, secondCategoryArray, thirdCategoryArray);
             pvOptions.show();
         });
+
+/*        editOS.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(osArray, (dialog, which) -> {
+                    if(assetsCreating == null){
+                        showShortText("请先扫码选择资产");
+                        return;
+                    }
+
+                    editOS.setText(osArray[which]);
+                    assetsCreating.setOS(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());*/
+
+
+        editINSTALLDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+                Calendar tCalendar = Calendar.getInstance();
+                tCalendar.set(year, month, dayOfMonth);
+                editINSTALLDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
+            }
+        }, mYear, mMonth, mDay).show());
+    }
+
+
+    // ==================== AI拍照识图相关（子类共用） ====================
+
+    protected AIPhotoCaptureHelper aiPhotoCaptureHelper;
+    protected ActivityResultLauncher<Intent> cameraLauncher;
+
+    // 记录上次AI填充的值，用于重拍时判断用户是否手动修改
+    private Assets lastAiFilledAssets = new Assets();
+
+    /**
+     * 初始化相机 ActivityResultLauncher（在子类 onCreate 中调用）
+     */
+    protected void initCameraLauncher() {
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        handlePhotoResult();
+                    }
+                }
+        );
+    }
+
+    /**
+     * 初始化AI拍照助手（在 ButterKnife.bind 之后调用）
+     */
+    protected void initAIPhotoHelper() {
+        if (cameraLauncher == null) {
+            initCameraLauncher();
+        }
+        aiPhotoCaptureHelper = new AIPhotoCaptureHelper(this, cameraLauncher, new AIPhotoCaptureHelper.OnAIPhotoCompleteListener() {
+            @Override
+            public void onAIPhotoComplete(Assets aiAssets) {
+                onAIPhotoDataFilled(aiAssets);
+            }
+
+            @Override
+            public void onAIPhotoError(String error) {
+                showShortText("AI拍照识别失败: " + error);
+            }
+        });
+
+        buttonAIPhoto.setOnClickListener(v -> {
+            if (assetsCreating == null) {
+                showShortText("请先保存基本信息");
+                return;
+            }
+            aiPhotoCaptureHelper.startAIPhotoCapture(assetsCreating);
+        });
+    }
+
+    private void handlePhotoResult() {
+        String latestImagePath = aiPhotoCaptureHelper != null ?
+                aiPhotoCaptureHelper.getCapturedPhotoPath() : null;
+        if (latestImagePath != null && new File(latestImagePath).exists()) {
+            showUploadProgress();
+            uploadImageToServer(latestImagePath);
+            return;
+        }
+        // 华为等机型相机异步写文件，延迟后重试
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (latestImagePath != null && new File(latestImagePath).exists()) {
+                showUploadProgress();
+                uploadImageToServer(latestImagePath);
+            } else {
+                // 回退：华为相机可能把照片写入相册而非临时文件
+                String galleryPath = aiPhotoCaptureHelper != null ?
+                        aiPhotoCaptureHelper.getLatestImageFromGalleryPublic() : null;
+                if (galleryPath != null && new File(galleryPath).exists()) {
+                    showUploadProgress();
+                    uploadImageToServer(galleryPath);
+                } else {
+                    showShortText("无法获取拍摄的照片");
+                }
+            }
+        }, 800);
+    }
+
+    protected void showUploadProgress() {
+        if (aiPhotoCaptureHelper != null) {
+            aiPhotoCaptureHelper.showUploadProgress();
+        }
+    }
+
+    protected void uploadImageToServer(String imagePath) {
+        if (aiPhotoCaptureHelper != null) {
+            aiPhotoCaptureHelper.uploadImageToServerPublic(imagePath);
+        }
+    }
+
+
+    /**
+     * AI识别结果填充回调：首次识别直接填充；重新识别时仅覆盖未被用户手动修改的字段
+     */
+    protected void onAIPhotoDataFilled(Assets aiAssets) {
+        if (assetsCreating != null) {
+            fillAiField(aiAssets.getASSETSNAME(), lastAiFilledAssets.getASSETSNAME(),
+                    assetsCreating.getASSETSNAME(), assetsCreating::setASSETSNAME, editASSETSNAME);
+            fillAiField(aiAssets.getBRAND(), lastAiFilledAssets.getBRAND(),
+                    assetsCreating.getBRAND(), assetsCreating::setBRAND, editBRAND);
+            fillAiField(aiAssets.getASSETSMODEL(), lastAiFilledAssets.getASSETSMODEL(),
+                    assetsCreating.getASSETSMODEL(), assetsCreating::setASSETSMODEL, editASSETSMODEL);
+            fillAiField(aiAssets.getASSETSMEASURE(), lastAiFilledAssets.getASSETSMEASURE(),
+                    assetsCreating.getASSETSMEASURE(), assetsCreating::setASSETSMEASURE, editASSETSMEASURE);
+            // 资产类别：用户未手动选择时按AI结果写入并联动UI显示名称；AI未识别出则清空
+            boolean typeUntouched = StringUtils.isNullOrEmpty(assetsCreating.getASSETSTYPE())
+                    || Objects.equals(assetsCreating.getASSETSTYPE(), lastAiFilledAssets.getASSETSTYPE());
+            if (typeUntouched) {
+                if (StringUtils.isNullOrEmpty(aiAssets.getASSETSTYPE())) {
+                    assetsCreating.setASSETSTYPE("");
+                    editASSETSTYPE.setText("");
+                } else {
+                    assetsCreating.setASSETSTYPE(aiAssets.getASSETSTYPE());
+                    String assetsTypeTitle = AssetsCategoryHelper.getAssetsCategoryTitle(aiAssets.getASSETSTYPE());
+                    editASSETSTYPE.setText(assetsTypeTitle);
+                    if (!StringUtils.isNullOrEmpty(assetsTypeTitle)) {
+                        asyncCategory(assetsTypeTitle);
+                    }
+                }
+            }
+            // 资产分类：用户未手动选择时按AI结果写入并联动UI显示名称；AI未识别出则清空
+            boolean sortCodeUntouched = StringUtils.isNullOrEmpty(assetsCreating.getASSETSSORTCODE())
+                    || Objects.equals(assetsCreating.getASSETSSORTCODE(), lastAiFilledAssets.getASSETSSORTCODE());
+            if (sortCodeUntouched) {
+                if (StringUtils.isNullOrEmpty(aiAssets.getASSETSSORTCODE())) {
+                    assetsCreating.setASSETSSORTCODE("");
+                    editASSETSSORTCODE.setText("");
+                } else {
+                    assetsCreating.setASSETSSORTCODE(aiAssets.getASSETSSORTCODE());
+                    AssetsCategory assetsCategory = AssetsCategoryHelper.getAssetsCategory(aiAssets.getASSETSSORTCODE());
+                    editASSETSSORTCODE.setText(assetsCategory == null ? "" : assetsCategory.getNAME());
+                }
+            }
+            // 记录本次AI填充值，供下次重拍时判断用户是否手动修改过
+            lastAiFilledAssets.setASSETSNAME(aiAssets.getASSETSNAME());
+            lastAiFilledAssets.setBRAND(aiAssets.getBRAND());
+            lastAiFilledAssets.setASSETSMODEL(aiAssets.getASSETSMODEL());
+            lastAiFilledAssets.setASSETSMEASURE(aiAssets.getASSETSMEASURE());
+            lastAiFilledAssets.setASSETSTYPE(aiAssets.getASSETSTYPE());
+            lastAiFilledAssets.setASSETSSORTCODE(aiAssets.getASSETSSORTCODE());
+            Toast.makeText(this, "AI识别完成，已填充部分信息", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * 通用AI字段填充：AI识别出的字段写入（首次填充或用户未手动修改时覆盖）；
+     * AI未识别出（null）的字段，若未被用户手动修改则清空，避免残留上一物品的信息
+     */
+    private void fillAiField(String aiValue, String lastAiValue, String currentValue,
+                             Consumer<String> setter, EditText editText) {
+        boolean firstFill = StringUtils.isNullOrEmpty(currentValue);
+        boolean untouched = Objects.equals(currentValue, lastAiValue);
+        if (!firstFill && !untouched) {
+            // 用户手动修改过该字段，不干预
+            return;
+        }
+        // AI未识别出（空）时清空，防止上一物品的信息残留
+        String targetValue = StringUtils.isNullOrEmpty(aiValue) ? "" : aiValue;
+        setter.accept(targetValue);
+        editText.setText(targetValue);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (aiPhotoCaptureHelper != null) {
+            aiPhotoCaptureHelper.handlePermissionResult(requestCode, permissions, grantResults);
+        }
     }
 
 

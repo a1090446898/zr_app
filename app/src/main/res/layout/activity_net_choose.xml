@@ -23,7 +23,7 @@
         android:padding="15dp"
         android:text="联网在线版本"
         android:textColor="@color/colorWhite"
-        app:qmui_backgroundColor="@color/colorSkeyBlue"
+        app:qmui_backgroundColor="@color/primary_color"
         app:qmui_radius="8dp" />
 
     <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
@@ -36,7 +36,7 @@
         android:padding="15dp"
         android:text="脱网离线版本"
         android:textColor="@color/colorWhite"
-        app:qmui_backgroundColor="@color/colorSkeyBlue"
+        app:qmui_backgroundColor="@color/primary_color"
         app:qmui_radius="8dp" />
 
 </LinearLayout>

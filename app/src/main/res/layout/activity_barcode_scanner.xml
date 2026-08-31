@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            >
+        <Button
+                android:id="@+id/btn_switch_mode"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="4dp"
+                android:elevation="4dp"
+                android:background="@color/primary_color"
+                android:textColor="@android:color/white"
+                android:text="使用摄像头扫码"/>
+
+
+        <TextView
+                android:layout_below="@id/btn_switch_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/form_label"
+                android:textSize="18dp"
+                android:text="红外线扫码"/>
+        <TextView
+                android:layout_below="@id/btn_switch_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="10dp"
+                android:textColor="@color/form_label"
+                android:textSize="18dp"
+                android:text="手持设备在本页面按住侧边按钮"/>
+    </LinearLayout>
+
+</RelativeLayout>

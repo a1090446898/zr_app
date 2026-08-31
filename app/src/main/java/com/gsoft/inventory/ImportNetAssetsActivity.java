@@ -29,8 +29,8 @@ public class ImportNetAssetsActivity extends BaseCompatActivity {
     @BindView(R.id.chkZengLiang) CheckBox chkZengLiang;
     @BindView(R.id.chkAll) CheckBox chkAll;
     QMUIGroupListView.Section groupSection = null;
-    List<String> departArray;
-    List<String> chooseDeparts;
+    List<Accounts> departArray;
+    List<Accounts> chooseDeparts;
     List<QMUICommonListItemView> listItemViews;
     boolean isClearAssets = true;
     private int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
@@ -59,9 +59,9 @@ public class ImportNetAssetsActivity extends BaseCompatActivity {
             String deptids = "";
             String deptNames = "";
             for (int i = 0; i < chooseDeparts.size(); i++) {
-                deptNames = deptNames.concat(chooseDeparts.get(i)).concat(",");
-                String bmbh = AccountHelper.getDepartCode(ztbh, chooseDeparts.get(i));
-                deptids = deptids.concat(bmbh).concat(",");
+                Accounts account = chooseDeparts.get(i);
+                deptNames = deptNames.concat(account.getBMMC()).concat(",");
+                deptids = deptids.concat(account.getBMBH()).concat(",");
             }
             final String fetchDeptids = deptids.substring(0, deptids.length() - 1);
             final QMUIDialog.MessageDialogBuilder builder = new QMUIDialog.MessageDialogBuilder(mContext);
@@ -93,9 +93,9 @@ public class ImportNetAssetsActivity extends BaseCompatActivity {
                     .create(mCurrentDialogStyle).show();
 
         });
-        departArray = AccountHelper.getDepartList(ztbh);
+        departArray = AccountHelper.getDepartListWithObjects(ztbh);
         chooseDeparts = new ArrayList<>();
-        int size = QMUIDisplayHelper.dp2px(mContext, 40);
+//        int size = QMUIDisplayHelper.dp2px(mContext, 40);
         groupSection = QMUIGroupListView.newSection(mContext)
                 .setTitle("选择要导入资产的部门");
         listItemViews = new ArrayList<>();
@@ -112,10 +112,10 @@ public class ImportNetAssetsActivity extends BaseCompatActivity {
     }
 
     private void initGroupListView() {
-        for (String name : departArray) {
-            QMUICommonListItemView itemWithSwitch = mGroupListView.createItemView(name);
+        for (Accounts account : departArray) {
+            QMUICommonListItemView itemWithSwitch = mGroupListView.createItemView(account.getBMMC());
             itemWithSwitch.setAccessoryType(QMUICommonListItemView.ACCESSORY_TYPE_SWITCH);
-            itemWithSwitch.getSwitch().setOnCheckedChangeListener(new OnDepartButtonCheckedChangeListener(name, chooseDeparts));
+            itemWithSwitch.getSwitch().setOnCheckedChangeListener(new OnDepartButtonCheckedChangeListener(account, chooseDeparts));
             groupSection.addItemView(itemWithSwitch, null);
             listItemViews.add(itemWithSwitch);
         }

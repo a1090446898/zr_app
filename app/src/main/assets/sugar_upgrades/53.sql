@@ -1,0 +1,1 @@
+-- ALTER TABLE ACCOUNTS ADD COLUMN PHONE varchar(50) default '';

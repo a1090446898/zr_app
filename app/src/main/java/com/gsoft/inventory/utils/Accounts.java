@@ -4,6 +4,9 @@ import com.orm.SugarRecord;
 
 import java.io.Serializable;
 
+/**
+ * @author 10904
+ */
 public class Accounts extends SugarRecord implements Serializable {
     /**
      * 账套编号
@@ -41,6 +44,11 @@ public class Accounts extends SugarRecord implements Serializable {
      * 密码
      */
     private String DLMM;
+
+    /**
+     * 用户手机号
+     */
+    private String PHONE;
 
     public String getZTBH() {
         return ZTBH;
@@ -114,4 +122,11 @@ public class Accounts extends SugarRecord implements Serializable {
         this.DLMM = DLMM;
     }
 
+    public String getPHONE() {
+        return PHONE;
+    }
+
+    public void setPHONE(String PHONE) {
+        this.PHONE = PHONE;
+    }
 }

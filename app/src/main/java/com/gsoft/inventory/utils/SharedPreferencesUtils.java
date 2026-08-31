@@ -9,6 +9,7 @@ public class SharedPreferencesUtils {
     public static final String KEY_PROTOCAL = "KEY_PROTOCAL";
     public static final String KEY_ZTMC = "KEY_ZTMC";
     public static final String KEY_YHBH = "KEY_YHBH";
+    public static final String KEY_ACCOUNT_NUM = "KEY_ACCOUNT_NUM";
     public static final String KEY_YHMM = "KEY_YHMM";
     public static final String KEY_DEVICENO = "KEY_DEVICENO";
     public static final String KEY_QCY = "KEY_QCY";
@@ -19,14 +20,15 @@ public class SharedPreferencesUtils {
     public static final String KEY_PRINT_EFFECT = "KEY_PRINT_EFFECT";
     public static final String KEY_PRINT_TITLE = "KEY_PRINT_TITLE";
     public static final String KEY_PRINT_POSITION = "KEY_PRINT_POSITION";
-    public static final String KEY_INVENTORY_SETTING = "KEY_INVENTORY_SETTING";
     public static final String SP_KEY_SERVERHOST = "SP_KEY_SERVERHOST";
     public static final String KEY_ZCQCYNAME = "SP_KEY_ZCQCYNAME";
     public static final String KEY_ZCQCYCODE = "SP_KEY_ZCQCYCODE";
+    public static final String KEY_INVENTORY_SETTING = "KEY_INVENTORY_SETTING";
 
     public static final String KEY_PRINTER_MAC = "KEY_PRINTER_MAC";
     public static final String KEY_PRINTER_NAME = "KEY_PRINTER_NAME";
     public static final String KEY_PRINTER_TYPE = "KEY_PRINTER_TYPE";
+    public static final String KEY_OFFLINE_LOGIN = "KEY_OFFLINE_LOGIN";
 
     // 用来保存记录打印信息，存放为JSON格式
     public static final String KEY_SAVE_PRINT_INFO = "KEY_SAVE_PRINT_INFO";

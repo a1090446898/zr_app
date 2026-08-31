@@ -1,0 +1,46 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@color/bg_gray"
+                tools:context=".view.home.MainActivity">
+
+    <!-- 新增ViewPager2作为内容容器 -->
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/tabLayout" />
+
+
+    <!-- 添加：底部TabLayout标签栏 -->
+    <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"
+            app:tabIndicatorHeight="0dp"
+            app:tabSelectedTextColor="@color/primary_color"
+            app:tabTextColor="@color/colorPrimaryTxt">
+
+
+        <!-- 工作台标签 -->
+        <!--<com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_workbench"
+                android:text="工作台"/>-->
+
+        <!-- 首页标签 -->
+        <!--<com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_my"
+                android:text="我的"/>-->
+    </com.google.android.material.tabs.TabLayout>
+
+
+</RelativeLayout>

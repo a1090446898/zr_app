@@ -15,10 +15,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.gsoft.inventory.adapter.AssetsListAdapter;
 import com.gsoft.inventory.pojo.JumPagePojo;
+import com.gsoft.inventory.pojo.QueryResutlPojo;
 import com.gsoft.inventory.utils.*;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.rscja.team.qcom.deviceapi.Q;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
@@ -37,6 +39,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     ListView listAssets;
 
     String[] dwArray = null;
+    String[] pdztString = {"盘实", "盘盈", "盘亏", "未盘"};
+    String[] pdztCodeString = {"02", "03", "04", "01"};
 
     @BindView(R.id.topbar)
     QMUITopBar topBar;
@@ -53,6 +57,9 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     @BindView(R.id.editASSETSNAME)
     EditText editASSETSNAME;
 
+    @BindView(R.id.editSERIALCODE)
+    EditText editSERIALCODE;
+
     // 规格
     @BindView(R.id.editASSETSSTANDARD)
     EditText editASSETSSTANDARD;
@@ -63,8 +70,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
 
     @BindView(R.id.editCUSTODIAN)
     EditText editCUSTODIAN;
-    @BindView(R.id.editACCTSUITEID)
-    EditText editACCTSUITEID;
+//    @BindView(R.id.editACCTSUITEID)
+//    EditText editACCTSUITEID;
     @BindView(R.id.editASSETSORGANIZATION)
     EditText editASSETSORGANIZATION;
     @BindView(R.id.editASSETSTYPE)
@@ -74,7 +81,11 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     @BindView(R.id.editGROUNDMANAGEDEPT)
     EditText editGROUNDMANAGEDEPT;
 
+    @BindView(R.id.editPDZT)
+    EditText editPDZT;
+
     private String groundManageDeptCode;
+    private String pdztCode;
     @BindView(R.id.editASSETSLAYADD)
     EditText editASSETSLAYADD;
     @BindView(R.id.editASSETSUSER)
@@ -119,11 +130,11 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     private JumPagePojo jumPagePojo = new JumPagePojo();
 
 
-    int pageSize = 15;
+    int pageNum = 0;
+    int pageSize = 20;
     boolean hasMoreData = false;
     private int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
 
-    long maxAssetsID = 0;
     boolean isFirstLoad = true;
 
 
@@ -134,8 +145,6 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         ButterKnife.bind(this);
         initializeView();
         receiveNewQueries();
-        // 显式初始化
-        maxAssetsID = 0;
 
     }
 
@@ -168,6 +177,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         boolean isJumpPage = getIntent().getBooleanExtra("isJumpPage", false);
         if(isJumpPage){
             searchPDZT = "01";
+            editPDZT.setVisibility(View.GONE);
         }
 
         if(!TextUtils.isEmpty(assetsName)){
@@ -183,36 +193,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             editASSETSTYPE.setText(assetsType);
         }
 
-        /*
-        if(!TextUtils.isEmpty(assetManager)){
-            editCUSTODIAN.setText(assetManager);
-        }
-
-        if(!TextUtils.isEmpty(assetsUser)){
-            editASSETSUSER.setText(assetsUser);
-        }
-
-        if(!TextUtils.isEmpty(assetsLayAdd)){
-            editASSETSLAYADD.setText(assetsLayAdd);
-        }
-        if(!TextUtils.isEmpty(assetsCurPrice)){
-            editASSETSCURRPRICE.setText(assetsCurPrice);
-        }
-
-        if(!TextUtils.isEmpty(assetsDept)){
-            editASSETSDEPT.setText(assetsDept);
-        }
-        if(!TextUtils.isEmpty(deptCode)){
-            groundManageDeptCode = deptCode;
-        }
-        if(!TextUtils.isEmpty(groundManageDept)){
-            editGROUNDMANAGEDEPT.setText(groundManageDept);
-        }*/
 
         jumPagePojo.setIsJumpPage(isJumpPage);
-
-        // 执行搜索逻辑
-        new SearchAssetsTask().execute();
 
     }
 
@@ -246,9 +228,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
                 lyDrawLayout.post(new Runnable() {
                     @Override
                     public void run() {
-                        //refreshLayout.setEnableAutoLoadMore(true);
+                        pageNum=0;
                         assetsList.clear();
-                        maxAssetsID = 0;
                         lyDrawLayout.closeDrawer(lyQuery);
                         new SearchAssetsTask().execute();
                     }
@@ -259,7 +240,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             @Override
             public void onClick(View view) {
                 editASSETSTYPE.setText("");
-                editACCTSUITEID.setText("");
+//                editACCTSUITEID.setText("");
                 editASSETSDEPT.setText("");
                 editASSETSLAYADD.setText("");
                 editASSETSNAME.setText("");
@@ -279,23 +260,33 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         queryBar.setTitle("查询条件");
         //必须设置图片的大小否则没有作用
         icon_right.setBounds(0, 0, 60, 60);
-        editACCTSUITEID.setCompoundDrawables(null, null, icon_right, null);
+//        editACCTSUITEID.setCompoundDrawables(null, null, icon_right, null);
         editASSETSTYPE.setCompoundDrawables(null, null, icon_right, null);
         editASSETSORGANIZATION.setCompoundDrawables(null, null, icon_right, null);
         editGROUNDMANAGEDEPT.setCompoundDrawables(null, null, icon_right, null);
+        editPDZT.setCompoundDrawables(null, null, icon_right, null);
 
         // 获取部门名称
         List<String> danweiList = AccountHelper.getDanweiList(loginAccount.getZTBH());
         dwArray = new String[danweiList.size()];
         danweiList.toArray(dwArray);
         editGROUNDMANAGEDEPT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-                
                 .addItems(dwArray, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         editGROUNDMANAGEDEPT.setText(dwArray[which]);
-                        String danweiCode = AccountHelper.getDanweiCode(dwArray[which]);
-                        groundManageDeptCode = danweiCode;
+                        groundManageDeptCode = AccountHelper.getDanweiCode(dwArray[which]);
+                        dialog.dismiss();
+                    }
+                })
+                .create(mCurrentDialogStyle).show());
+
+        editPDZT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(pdztString, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        editPDZT.setText(pdztString[which]);
+                        pdztCode = pdztCodeString[which];
                         dialog.dismiss();
                     }
                 })
@@ -343,7 +334,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             }
         });
         /*账套选择*/
-        editACCTSUITEID.setOnClickListener(new View.OnClickListener() {
+      /*  editACCTSUITEID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new QMUIDialog.CheckableDialogBuilder(mContext)
@@ -357,7 +348,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
                         })
                         .create(mCurrentDialogStyle).show();
             }
-        });
+        });*/
         mHead = (RelativeLayout) findViewById(R.id.head);
         mHead.setFocusable(true);
         mHead.setClickable(true);
@@ -367,19 +358,12 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         assetsAdapter = new AssetsListAdapter(assetsList, mContext, mHead, jumPagePojo);
         listAssets.setOnTouchListener(new ListViewAndHeadViewTouchLinstener());
         listAssets.setAdapter(assetsAdapter);
-        //new SearchAssetsTask().execute();
-
-        //lyDrawLayout.openDrawer(lyQuery);
         refreshLayout.setEnableRefresh(false);
-        //refreshLayout.setEnableAutoLoadMore(false);
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore(RefreshLayout refreshlayout) {
-                if (hasMoreData)
+                if (!hasMoreData){
                     new SearchAssetsTask().execute();
-                else{
-//                    refreshLayout.finishLoadMore(100);
-                    refreshLayout.finishLoadMoreWithNoMoreData();
                 }
             }
         });
@@ -388,15 +372,9 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        tv_assets_msg.setText("当前共有资产：" + Assets.count(Assets.class) + "条");
-        maxAssetsID = 0;
-        // 重置"是否有更多数据"标志（关键修复点）
-        hasMoreData = true;
-        if (!isFirstLoad) {
-            assetsList.clear();
-            lyDrawLayout.closeDrawer(lyQuery);
-            new SearchAssetsTask().execute();
-        }
+        this.pageNum = 0;
+        this.assetsList.clear();
+        new SearchAssetsTask().execute();
     }
 
     @Override
@@ -404,7 +382,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         super.onPause();
     }
 
-    private class SearchAssetsTask extends AsyncTask<Void, Void, List<Assets>> {
+    private class SearchAssetsTask extends AsyncTask<Void, Void, QueryResutlPojo> {
 
         StringBuilder queryWhere = new StringBuilder();
         List<String> whereParams = new ArrayList<>();
@@ -412,13 +390,13 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //assetsList.clear();
-            queryWhere.append(" Id > " + maxAssetsID);
+            showProgressDialog("", "正在检索资产");
 
-            if (!TextUtils.isEmpty(editACCTSUITEID.getText().toString()) && !editACCTSUITEID.getText().toString().equals("选择账套")) {
+            queryWhere.append(" Id > 0");
+          /*  if (!TextUtils.isEmpty(editACCTSUITEID.getText().toString()) && !editACCTSUITEID.getText().toString().equals("选择账套")) {
                 queryWhere.append(" and ACCTSUITEID=? ");
                 whereParams.add(SysConfig.getAccountsByZTMC(editACCTSUITEID.getText().toString()).getZTBH());
-            }
+            }*/
             if (!TextUtils.isEmpty(editASSETSDEPT.getText().toString())) {
                 queryWhere.append(" and ASSETSDEPT LIKE ? ");
                 whereParams.add("%" + editASSETSDEPT.getText().toString() + "%");
@@ -426,6 +404,11 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             if (!TextUtils.isEmpty(editBARCODEID.getText().toString())) {
                 queryWhere.append(" and BARCODEID LIKE ? ");
                 whereParams.add("%" + editBARCODEID.getText().toString() + "%");
+            }
+
+            if (!TextUtils.isEmpty(editSERIALCODE.getText().toString())) {
+                queryWhere.append(" and SERIALCODE LIKE ? ");
+                whereParams.add("%" + editSERIALCODE.getText().toString() + "%");
             }
 
             if (!TextUtils.isEmpty(editASSETSLAYADD.getText().toString())) {
@@ -459,17 +442,18 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             if (!TextUtils.isEmpty(editGROUNDMANAGEDEPT.getText().toString()) && !TextUtils.isEmpty(groundManageDeptCode)) {
                 queryWhere.append(" and GROUNDMANAGEDEPT = ? ");
                 whereParams.add(groundManageDeptCode);
-//                whereParams.add("%" + editGROUNDMANAGEDEPT.getText().toString() + "%");
             }
+
             if (!TextUtils.isEmpty(editASSETSORGANIZATION.getText().toString())) {
                 queryWhere.append(" and PROPERTY=? ");
                 whereParams.add(editASSETSORGANIZATION.getText().toString());
             }
             if(!StringUtils.isNullOrEmpty(searchPDZT)){
-//                queryWhere.append(" and PDZT IN ('01', '03', '04')");
                 queryWhere.append(" and PDZT = '01'");
-//              whereParams.add(searchPDZT);
-
+            }
+            if (StringUtils.isNullOrEmpty(searchPDZT) && !TextUtils.isEmpty(editPDZT.getText().toString()) && !TextUtils.isEmpty(pdztCode)) {
+                queryWhere.append(" and PDZT = ? ");
+                whereParams.add(pdztCode);
             }
 
             if (!TextUtils.isEmpty(editASSETSCURRPRICE.getText().toString())) {
@@ -484,19 +468,20 @@ public class AssetsQueryActivity extends BaseCompatActivity {
                 queryWhere.append(" and ISUPLOAD=? ");
                 whereParams.add("0");
             }
-            showProgressDialog("", "正在检索资产");
+
         }
 
         @Override
-        protected List<Assets> doInBackground(Void... params) {
+        protected QueryResutlPojo doInBackground(Void... params) {
+
             String[] whereArray = new String[whereParams.size()];
             whereParams.toArray(whereArray);
 
-            List<Assets> assetsList = Assets.find(Assets.class, queryWhere.toString(), whereArray, null, "Id ASC", pageSize + "");
-            if (!assetsList.isEmpty()) {
-                AssetsQueryActivity.this.assetsList.addAll(assetsList);
-                int size = assetsList.size();
-                maxAssetsID = assetsList.get(size - 1).getId();
+            List<Assets> assetsList = Assets.find(Assets.class, queryWhere.toString(), whereArray, null, "ID DESC", pageNum + ", "+pageSize);
+            long total = Assets.count(Assets.class, queryWhere.toString(), whereArray, null, "ID DESC", "");
+
+            /* if (!assetsList.isEmpty()) {
+               int size = assetsList.size();
 
                 // 获取resultList的ID，并调用接口进行同步操作
                 List<String> stringList = new ArrayList<>();
@@ -515,64 +500,33 @@ public class AssetsQueryActivity extends BaseCompatActivity {
                 if(sbLen > 0){
                     sb.deleteCharAt( sbLen- 1);
                 }
-    /*            String dataStr = sb.toString();
-                String param = String.format(SysDefine.SERVERHOST_SYNC_ASSETS_BY_ID_GET, ztbh, dataStr);
-                String s = OkHttpUtils.getInstance().get(param);
-                if (StringUtils.isNullOrEmpty(s) || s.startsWith("ERROR")) {
-                    showShortText("同步出错，".concat(s));
-                }
-                else{
-                    StringBuilder errorStr = new StringBuilder();
-                    try {
-                        List<String> results = gson.fromJson(s, new TypeToken<List<String>>() {}.getType());
-                        for (String dataLine : results) {
-                            long newID = DataTransmitHelper.updateAssets(dataLine);
-                            if (newID == -1) {
-                                String[] rowStrArray = dataLine.split("\\|", -1);
-                                String bcode = rowStrArray[0].trim();
-                                errorStr.append("条码编号：".concat(bcode).concat("更新失败；"));
-                            }
-                        }
-                        if(errorStr.length() > 0){
-                            showShortText(errorStr.toString());
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }*/
+            }*/
 
-            }
-            else {
-                // 若无新数据，重置分页标志
-                hasMoreData = false;
-            }
-            // 移除重复的第二次查询（原有代码中的第二次查询是冗余的，可能导致覆盖）
-            // assetsList = Assets.find(Assets.class, queryWhere.toString(), whereArray, null, "Id ASC", pageSize + "");
-            return assetsList;
+            QueryResutlPojo queryResutlPojo = new QueryResutlPojo();
+            queryResutlPojo.setAssetsList(assetsList);
+            queryResutlPojo.setTotal(total);
+            return queryResutlPojo;
         }
 
         @Override
-        protected void onPostExecute(List<Assets> assetsList) {
-            super.onPostExecute(assetsList);
+        protected void onPostExecute(QueryResutlPojo pojo) {
+            super.onPostExecute(pojo);
+
+            List<Assets> resultList = pojo.getAssetsList();
             hideProgressDialog();
-            /*if (assetsList.size() < pageSize) {
-                hasMoreData = false;
-                //refreshLayout.setEnableLoadMore(false);
-            } else {
-                hasMoreData = true;
-                //refreshLayout.setEnableLoadMore(true);
-            }
 
-            tv_assets_msg.setText("当前共有资产：" + assetsList.size() + "条");
-            assetsAdapter.notifyDataSetChanged();
-            refreshLayout.finishLoadMore(500);//传入false表示加载失败*/
-
+            long total = pojo.getTotal();
             // 根据本次加载的结果判断是否有更多数据
-            hasMoreData = assetsList.size() >= pageSize;
-            refreshLayout.finishLoadMore(hasMoreData ? 500 : 100);
-
+            if (!resultList.isEmpty()) {
+                assetsList.addAll(resultList);
+                pageNum += pageSize;
+            }
+            hasMoreData = resultList.isEmpty();
+            // 重置加载状态：清除"没有更多数据"标记，允许再次加载
+            refreshLayout.setNoMoreData(hasMoreData);
+            refreshLayout.finishLoadMore( 200);
             // 更新UI显示总数（使用全局列表的总数）
-            tv_assets_msg.setText("共有资产：" +  Assets.count(Assets.class) + "条");
+            tv_assets_msg.setText("共有资产：" +  total + "条");
             assetsAdapter.notifyDataSetChanged();
         }
 
@@ -583,8 +537,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         }
 
         @Override
-        protected void onCancelled(List<Assets> assetsList) {
-            super.onCancelled(assetsList);
+        protected void onCancelled(QueryResutlPojo pojo) {
+            super.onCancelled(pojo);
             hideProgressDialog();
         }
     }

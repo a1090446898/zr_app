@@ -72,33 +72,43 @@
 
             <Button
                     android:id="@+id/buttonSaveSelf"
-                    android:layout_width="60dp"
+                    android:layout_width="50dp"
                     android:layout_height="30dp"
                     android:text="保存"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:background="@drawable/bg_round_button_success"
-                    android:layout_marginLeft="8dp"/>
+                    android:layout_marginLeft="6dp"/>
+
+            <Button
+                    android:id="@+id/buttonPrint"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:text="打印"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:background="@drawable/bg_round_button_primary"
+                    android:layout_marginLeft="6dp"/>
 
             <Button
                     android:id="@+id/buttonMore"
-                    android:layout_width="60dp"
+                    android:layout_width="50dp"
                     android:layout_height="30dp"
-                    android:text="更多"
+                    android:text="详情"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:background="@drawable/bg_round_button_primary"
-                    android:layout_marginLeft="8dp"/>
+                    android:layout_marginLeft="6dp"/>
 
             <Button
                     android:id="@+id/button_scan"
-                    android:layout_width="60dp"
+                    android:layout_width="50dp"
                     android:layout_height="30dp"
                     android:text="扫码"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:background="@drawable/bg_round_button_primary"
-                    android:layout_marginLeft="8dp"/>
+                    android:layout_marginLeft="6dp"/>
 
         </LinearLayout>
 
@@ -112,7 +122,7 @@
             android:background="@color/window_background"
             android:orientation="vertical">
 
-        <include layout="@layout/common_assets_form"/>
+        <include layout="@layout/common_assets_form_bak"/>
     </ScrollView>
 
 

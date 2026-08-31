@@ -1,14 +1,19 @@
 package com.gsoft.inventory.utils;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import okhttp3.*;
+import okio.BufferedSink;
 
 public class OkHttpUtils {
     private static OkHttpUtils okHttpUtils = null;
@@ -35,7 +40,7 @@ public class OkHttpUtils {
     }
 
     public String get(String url) {
-        try  {
+        try {
             Request request = new Request.Builder().url(url).build();
             Response response = client.newCall(request).execute();
             ResponseBody body = response.body();
@@ -70,7 +75,7 @@ public class OkHttpUtils {
     }
 
     public String postJson(String url, String jsonString) {
-        try{
+        try {
             RequestBody body = RequestBody.create(JSON, jsonString);
             Request request = new Request.Builder().url(url).post(body).build();
             Response response = client.newCall(request).execute();
@@ -133,4 +138,94 @@ public class OkHttpUtils {
         File upFile = new File(filePath);
         uploadImage(url, upFile, MediaType.parse("image/jpeg"), params, callback);
     }
+
+
+    /**
+     * 使用OkHttp上传content://格式的文件
+     *
+     * @param context    上下文
+     * @param contentUri 要上传的文件Uri（content://格式）
+     * @param uploadUrl  后端上传接口
+     */
+    public String uploadFileByContentUri(Context context, Uri contentUri, String uploadUrl) {
+        try {
+            // 1. 获取ContentResolver和输入流
+            ContentResolver resolver = context.getContentResolver();
+            InputStream inputStream = resolver.openInputStream(contentUri);
+            if (inputStream == null) {
+                return "无法打开文件输入流";
+            }
+
+            // 2. 获取文件MIME类型
+            String mimeType = resolver.getType(contentUri);
+            if (mimeType == null) {
+                // 默认二进制类型
+                mimeType = "application/octet-stream";
+            }
+
+            // 3. 构建Multipart请求体
+            String finalMimeType = mimeType;
+            RequestBody fileBody = new RequestBody() {
+                @Override
+                public MediaType contentType() {
+                    return MediaType.parse(finalMimeType);
+                }
+
+                @Override
+                public void writeTo(@NonNull BufferedSink sink) throws IOException {
+                    // 直接写入输入流内容
+                    byte[] buffer = new byte[1024 * 8];
+                    int len;
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        sink.write(buffer, 0, len);
+                    }
+                    inputStream.close(); // 关闭输入流
+                }
+
+                @Override
+                public long contentLength() {
+                    try {
+                        return inputStream.available();
+                    } catch (IOException e) {
+                        return -1; // 无法获取长度时返回-1
+                    }
+                }
+            };
+
+            // 获取文件名
+            String fileNameByUri = CommonUtils.getFileNameFromUri(context, contentUri);
+            if (StringUtils.isNullOrEmpty(fileNameByUri)) {
+                fileNameByUri = "uploadFile";
+            }
+
+            // 4. 构建Multipart表单
+            MultipartBody multipartBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart(
+                            "file",
+                            fileNameByUri,
+                            fileBody
+                    )
+                    .build();
+
+            // 5. 构建请求
+            Request request = new Request.Builder()
+                    .url(uploadUrl)
+                    .post(multipartBody)
+                    .build();
+
+            // 6. 执行请求
+            Response response = client.newCall(request).execute();
+            if (response.body() != null) {
+                return response.body().string();
+            }
+
+        } catch (Exception e) {
+            Log.e("uploadFileByContentUri", "上传异常", e);
+            return "上传异常：" + e.getMessage();
+        }
+
+        return "上传失败";
+    }
+
 }

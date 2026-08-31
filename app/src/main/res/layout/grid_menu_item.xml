@@ -21,6 +21,23 @@
             android:background="@android:drawable/ic_menu_camera"
             android:contentDescription="@string/app_name"
             android:scaleType="centerInside" />
+
+        <!-- 新增红色数字角标 -->
+        <TextView
+                android:id="@+id/tv_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/badge_red_circle"
+                android:text="3"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:minWidth="18dp"
+                android:minHeight="18dp"
+                android:gravity="center"
+                android:visibility="gone"/>
+
         <TextView
             android:id="@+id/tv_item"
             android:layout_width="wrap_content"

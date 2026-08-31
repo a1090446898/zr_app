@@ -1,1 +1,5 @@
-include ':app'
+
+rootProject.name = "zr_app"
+include 'app'
+include ':opencv'
+project(':opencv').projectDir = new File('D:\\ZR\\zcqc_APP\\gitee_app\\doubao_ai\\zr_app\\opencv')

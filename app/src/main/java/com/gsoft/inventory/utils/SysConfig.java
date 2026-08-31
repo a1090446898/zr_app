@@ -4,12 +4,11 @@ import android.annotation.SuppressLint;
 import android.os.Environment;
 
 import java.io.File;
-import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+
 
 /**
  * @author 10904
@@ -38,6 +37,16 @@ public class SysConfig {
      */
     public static String apk_temp_file = Environment.getExternalStorageDirectory().getPath() + "/inventory/files/inventory.apk";
 
+    public static String[] assetsFieldsArray =  null;
+
+
+    public static String lastManageUnit = null;
+
+    public static List<String> userArray;
+    static List<Accounts> accountsList = null;
+    static List<String> ztList = null;
+    static List<String> bmList = null;
+    static List<String> dwList = null;
     /**
      * 检查SD卡目录
      */
@@ -85,11 +94,7 @@ public class SysConfig {
         return exportFile.getAbsolutePath();
     }
 
-    public static List<String> userArray;
-    static List<Accounts> accountsList = null;
-    static List<String> ztList = null;
-    static List<String> bmList = null;
-    static List<String> dwList = null;
+
 
     public static List<Accounts> getAccountList() {
         if (accountsList == null || accountsList.size() == 0) {
@@ -143,9 +148,7 @@ public class SysConfig {
         return bmList;
     }
 
-    public static String[] assetsFieldsArray = null;
 
-    public static String lastManageUnit = null;
 
     /**
      * 获取资产自动条码编号

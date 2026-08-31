@@ -1,64 +1,58 @@
 package com.gsoft.inventory;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.device.ScanManager;
 import android.device.scanner.configuration.PropertyID;
-import android.os.*;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.google.zxing.client.android.Intents;
 import com.gsoft.inventory.abs.AssetsBaseActivity;
+import com.gsoft.inventory.service.asset_code_scan.ScanCodeResultHandle;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.view.scan.BarcodeScannerActivity;
+import com.huawei.hms.hmsscankit.ScanUtil;
+import com.huawei.hms.ml.scan.HmsScan;
+import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
-import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.rscja.barcode.BarcodeDecoder;
 import com.rscja.barcode.BarcodeFactory;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
-import javax.annotation.Nullable;
-import java.lang.ref.WeakReference;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import static com.gsoft.inventory.const_data.ReqPageCodeConst.REQUEST_CODE_BARCODE_SCAN;
+import static com.gsoft.inventory.const_data.ReqPageCodeConst.REQUEST_HUAWEI_CODE_SCAN;
+import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
 /**
  * @author 10904
  */
-@RuntimePermissions
 public class AssetsCodeScanActivity extends AssetsBaseActivity {
-
     QMUITopBar topBar;
-
-    BarcodeDecoder barcodeDecoder = BarcodeFactory.getInstance().getBarcodeDecoder();
-
-    private ScanManager mScanManager = null;
-    private final ScanCodeHandler scanCodeHandler = new ScanCodeHandler(this);
-
-    private ActivityResultLauncher<ScanOptions> barcodeLauncher;
-    //优博讯
-    int[] idbuf = new int[]{PropertyID.WEDGE_INTENT_ACTION_NAME, PropertyID.WEDGE_INTENT_DATA_STRING_TAG};
-    int[] idmodebuf = new int[]{PropertyID.WEDGE_KEYBOARD_ENABLE, PropertyID.TRIGGERING_MODES, PropertyID.LABEL_APPEND_ENTER};
-    String[] action_value_buf = new String[]{ScanManager.ACTION_DECODE, ScanManager.BARCODE_STRING_TAG};
-    int[] idmode;
-    Boolean isSustain = false;
-
+    public Boolean isSustain = false;
     @BindView(R.id.button_scan)
     Button buttonScan;
-//    Assets assetsCreating = new Assets();
+
+    @BindView(R.id.buttonPrint)
+    Button buttonPrint;
 
     @BindView(R.id.buttonMore)
     Button buttonMore;
@@ -67,14 +61,44 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
     Button buttonSaveSelf;
     @BindView(R.id.checkSustain)
     CheckBox checkSustain;
+    private ScanUtils scanUtils;
+
+    // ==================== 新设备广播扫码 ====================
+    private static final String SCAN_ACTION = "com.android.server.scannerservice.broadcast";
+    private BroadcastReceiver scanReceiver;
+    private boolean isScanReceiverRegistered = false;
+    private Handler scanCodeResultHandler;
+    private boolean isNewDevice;
+
+    public HmsScanAnalyzerOptions options;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_assets_code_scan);
         ButterKnife.bind(this);
+        isNewDevice = ScanDeviceUtils.isNewDevice();
+        if (isNewDevice) {
+            scanCodeResultHandler = new ScanCodeResultHandle(this);
+            initBroadcastScan();
+        }
         initializeView();
     }
 
+    private void initBroadcastScan() {
+        scanReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (SCAN_ACTION.equals(intent.getAction())) {
+                    String code = intent.getStringExtra("scannerdata");
+                    if (!StringUtils.isNullOrEmpty(code)) {
+                        code = code.replace("\n", "").replace("\r", "");
+                        onScanResult(code);
+                    }
+                }
+            }
+        };
+    }
 
     @Override
     public void initializeView() {
@@ -84,45 +108,45 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
         topBar.addRightTextButton("签名", R.id.topbar_right_query_button).setOnClickListener(v -> {
             startActivity(new Intent(mContext, SignatureActivity.class));
         });
-
-        if ("DT50Q".equals(Build.MODEL)) initYBX();
         this.initializeFromData();
-        barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-                    if (StringUtils.isNullOrEmpty(result.getContents())) {
-                        Intent originalIntent = result.getOriginalIntent();
-                        if (originalIntent == null) {
-                            showShortText("取消扫码");
-                        } else if (originalIntent.hasExtra(Intents.Scan.MISSING_CAMERA_PERMISSION)) {
-                            Toast.makeText(mContext, "授权失败，请允许使用您的摄像头扫码", Toast.LENGTH_SHORT).show();
-                        }
-                        return;
-                    }
-                    String scanString = StringUtils.decodeQRCode(result.getContents());
-                    onScanResult(scanString);
-                });
+        if (!isNewDevice) {
+            scanUtils = new ScanUtils(this);
+        }
     }
+
     public void initializeFromData() {
+        // 初始化数据
         initData();
-        // 图标设置
         iconSetting();
-        // 组件状态设置
         viewStateSetting();
-        // 监听设置
         viewClickSetting();
-        // 初始化选择器
         initCategoryPicker();
+
+        options = new HmsScanAnalyzerOptions.Creator()
+                .setHmsScanTypes(HmsScan.ALL_SCAN_TYPE)
+                .setViewType(0)
+                .setErrorCheck(true).create();
+        CommonPermissionUtils.requestCameraPermission(this);
+        CommonPermissionUtils.requestReadFilePermission(this);
 
         checkSustain.setOnCheckedChangeListener((compoundButton, b) -> {isSustain = b;});
 
-        buttonScan.setOnClickListener(v -> {
-            this.onScanOld();
-//           this.onScanNew();
-        });
+        buttonScan.setOnClickListener(v -> {this.onScanNew();});
 
         buttonMore.setOnClickListener(v -> {btnMoreClick();});
 
         buttonSaveSelf.setOnClickListener(view -> {saveData();});
-        buttonSave.setOnClickListener(view -> {saveData();});
+        if (buttonSave != null) {
+            buttonSave.setOnClickListener(view -> {saveData();});
+        }
+
+        if (buttonCopy != null) {
+            buttonCopy.setOnClickListener(view -> copyData());
+        }
+
+        if(buttonPrint != null){
+            buttonPrint.setOnClickListener(view -> printAsset());
+        }
 
 
     }
@@ -154,241 +178,122 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
         if (StringUtils.isNullOrEmpty(editSERIALCODE.getText().toString())) {editSERIALCODE.setText(assetsCreating.getSERIALCODE());}
         SysConfig.lastManageUnit = assetsCreating.getGROUNDMANAGEDEPT();
         showShortText("保存成功");
+
+
+    }
+
+
+    private void printAsset () {
+        if (assetsCreating == null || assetsCreating.getDOCID() == null) {
+            showShortText("请先扫码资产");
+            return;
+        }
+        String docId = assetsCreating.getDOCID();
+        String accountId = assetsCreating.getACCTSUITEID();
+
+        // 通过账套id查询账套名称
+        Accounts accounts = AccountHelper.getACCTSUITEID(accountId);
+        String accountName = accounts == null ? "" : accounts.getZTMC();
+
+        if (!isPrinterConnected()) {
+            Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
+            startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
+            return;
+        }
+        printAssets(accountName, assetsCreating);
+
+    }
+
+    /**
+     * 复制数据
+     */
+    private void copyData(){
+        String assetsACCTSUITEID = assetsCreating.getACCTSUITEID();
+        String assetsTypeCode = assetsCreating.getASSETSTYPE();
+        String assetsASSETSSORTCODE = assetsCreating.getASSETSSORTCODE();
+        String assetsASSETSORGANIZATION = assetsCreating.getASSETSORGANIZATION();
+        String assetsASSETSCULGRADE = assetsCreating.getASSETSCULGRADE();
+        String assetsPURCHASINGORGANIZATION = assetsCreating.getPURCHASINGORGANIZATION();
+        String assetsUSESTATE = assetsCreating.getUSESTATE();
+        String assetsDPRECIATIONTYPE = assetsCreating.getDPRECIATIONTYPE();
+        String assetsGETMODE = assetsCreating.getGETMODE();
+        String assetsUseMan = assetsCreating.getASSETSUSER();
+        String assetsUseDepart = assetsCreating.getASSETSDEPT();
+        String assetsGROUNDMANAGEDEPT = assetsCreating.getGROUNDMANAGEDEPT();
+        String assetsISSueDate = assetsCreating.getISSUEDATE();
+        String assetsClassification = assetsCreating.getCLASSIFICATION();
+        assetsCreating = new Assets();
+        assetsCreating.setBARCODEID("");
+        assetsCreating.setSERIALCODE("");
+        editSERIALCODE.setText("");
+        editBARCODEID.setText("");
+
+        buttonPrintLabel.setVisibility(View.INVISIBLE);
+//        buttonCopy.setVisibility(View.INVISIBLE);
+        assetsCreating.setASSETSDEPT(assetsUseDepart);
+        assetsCreating.setASSETSUSER(assetsUseMan);
+        assetsCreating.setACCTSUITEID(assetsACCTSUITEID);
+        assetsCreating.setASSETSTYPE(assetsTypeCode);
+        assetsCreating.setASSETSSORTCODE(assetsASSETSSORTCODE);
+        assetsCreating.setGETMODE(assetsGETMODE);
+        assetsCreating.setASSETSORGANIZATION(assetsASSETSORGANIZATION);
+        assetsCreating.setASSETSCULGRADE(assetsASSETSCULGRADE);
+        assetsCreating.setPURCHASINGORGANIZATION(assetsPURCHASINGORGANIZATION);
+        assetsCreating.setUSESTATE(assetsUSESTATE);
+        assetsCreating.setDPRECIATIONTYPE(assetsDPRECIATIONTYPE);
+        assetsCreating.setGROUNDMANAGEDEPT(assetsGROUNDMANAGEDEPT);
+        assetsCreating.setISSUEDATE(assetsISSueDate);
+        assetsCreating.setCLASSIFICATION(assetsClassification);
+        showShortText("复制完毕，请设置资产编号");
     }
 
 
     private void btnMoreClick() {
-        if (assetsCreating == null) {
+        if (assetsCreating == null || assetsCreating.getDOCID() == null) {
             showShortText("请先扫码资产");
             return;
         }
         Long id = assetsCreating.getId();
-        if (id == null) {
-            showShortText("请先扫码资产");
-            return;
-        }
         Intent intentAssetsView = new Intent(mContext, AssetsViewActivity.class);
         intentAssetsView.putExtra(SysDefine.IntentExtra_AssetsID, id);
         startActivity(intentAssetsView);
-        closeScanDevice();
+        scanUtils.onDestroy();
         finish();
     }
 
-
-    @NeedsPermission({Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE})
-    public void cameraScan() {
-        ScanOptions options = new ScanOptions();
-        barcodeLauncher.launch(options);
-    }
-
-
-
-    // 权限请求结果回调
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        AssetsCodeScanActivityPermissionsDispatcher.onRequestPermissionsResult(AssetsCodeScanActivity.this, requestCode, grantResults);
-    }
-
-
-    private boolean checkScan () {
-        // 进行判断，如果当前设备安卓版本为7.0以上，正常调用扫码功能，
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            showShortText("请按手持设备侧边进行扫码");
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * 旧版本扫描二维码
-     */
-    private void onScanOld(){
-        if(!checkScan()){return;}
-        // 扫码处理
-        AssetsCodeScanActivityPermissionsDispatcher.cameraScanWithPermissionCheck(AssetsCodeScanActivity.this);
-    }
 
     /**
      * 新版本扫描二维码
      */
     private void onScanNew(){
-//        if(!checkScan()){return;}
-        // 跳转到ScanPhotoActivity
-        startActivity(new Intent(this, ScanPhotoActivity.class));
-        finish();
-    }
-
-    private void initYBX() {
-        mScanManager = new ScanManager();
-        mScanManager.openScanner();
-        action_value_buf = mScanManager.getParameterString(idbuf);
-        idmode = mScanManager.getParameterInts(idmodebuf);
-        idmode[0] = 0;
-        mScanManager.setParameterInts(idmodebuf, idmode);
-        registerYBX();
-    }
-
-    private BroadcastReceiver mScanReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String result = intent.getStringExtra(action_value_buf[1]);
-            if (result != null) {
-                onScanResult(result);
-            }
-        }
-
-    };
-
-    private void registerYBX() {
-        IntentFilter filter = new IntentFilter();
-        action_value_buf = mScanManager.getParameterString(idbuf);
-        filter.addAction(action_value_buf[0]);
-        registerReceiver(mScanReceiver, filter);
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (Build.MODEL.equals("DT50Q")) {
-            registerYBX();
-        } else {
-            new InitTask().execute();
+        boolean hasPermission = CommonPermissionUtils.requestCameraPermission(this);
+        if(hasPermission){
+            ScanUtil.startScan(this, REQUEST_HUAWEI_CODE_SCAN, options);
         }
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        try {
-            if (Build.MODEL.equals("DT50Q"))
-                unregisterReceiver(mScanReceiver);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        closeScanDevice();
-    }
-
-    private void closeScanDevice() {
-        if (barcodeDecoder != null) {
-            barcodeDecoder.close();
-        }
-        try {
-            if (Build.MODEL.equals("DT50Q")) {
-                unregisterReceiver(mScanReceiver);
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.e("onKeyDown", String.valueOf(keyCode));
-        if (keyCode == 139) {
-            if (event.getRepeatCount() == 0) {
-                ScanBarcode();
-                return true;
-            }
-        } else if (keyCode == 520 || keyCode == 521) {
-            if (event.getRepeatCount() == 0) {
-                mScanManager.startDecode();
-            }
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-
-        if (keyCode == 139) {
-            if (event.getRepeatCount() == 0) {
-                this.stop();
-                return true;
-            }
-        } else if (keyCode == 520 || keyCode == 521) {
-            if (event.getRepeatCount() == 0) {
-                mScanManager.stopDecode();
-            }
-        }
-        return super.onKeyUp(keyCode, event);
-    }
-
-    private void ScanBarcode() {
-        this.start();
-    }
-
-    private void start() {
-        barcodeDecoder.startScan();
-    }
-
-    private void stop() {
-        barcodeDecoder.stopScan();
-    }
-
-    private void open() {
-        barcodeDecoder.open(this);
-
-        barcodeDecoder.setDecodeCallback(barcodeEntity -> {
-            if (barcodeEntity.getResultCode() == BarcodeDecoder.DECODE_SUCCESS) {
-                Message msgScanResult = new Message();
-                try {
-                    String barCode = barcodeEntity.getBarcodeData();
-                    byte[] barcodeBytesData = barcodeEntity.getBarcodeBytesData();
-                    if (barCode.toUpperCase().startsWith("HTTP") && barCode.toUpperCase().contains("BARCODE")) {   // 网络型二维码
-                        onScanResult(barCode);
-                    } else if (barCode.length() > 25) {
-                        if (!barCode.contains("条码编号：")) {
-                            // 过滤掉无法解码的字节
-                            byte[] filteredBytes = filterInvalidUtf8Bytes(barcodeBytesData);
-                            String utf8String = new String(filteredBytes, StandardCharsets.UTF_8);
-                            String[] parts = utf8String.split("\n");
-                            if (parts.length > 0) {
-                                barCode = parts[0];
-                            }
-                        }
-                        onScanResult(barCode);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_HUAWEI_CODE_SCAN && data != null) {
+            int errorCode = data.getIntExtra(ScanUtil.RESULT_CODE, ScanUtil.SUCCESS);
+            if (errorCode == ScanUtil.SUCCESS) {
+                HmsScan resultObj = data.getParcelableExtra(ScanUtil.RESULT);
+                if (resultObj != null) {
+                    String result = resultObj.getOriginalValue();
+                    if (scanUtils != null) {
+                        scanUtils.onScanResult(result);
                     } else {
-                        showShortText(barCode);
-                        msgScanResult.arg1 = 1;
-                        msgScanResult.obj = barCode;
-                        scanCodeHandler.sendMessage(msgScanResult);
+                        onScanResult(result);
                     }
-
-                } catch (Exception ex) {
-                    msgScanResult.arg1 = 0;
-                    msgScanResult.obj = ex.getMessage();
                 }
             }
-        });
-    }
-
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X ", b));
         }
-        return sb.toString();
     }
 
-    public static byte[] filterInvalidUtf8Bytes(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            if (b >= 0) {
-                sb.append((char) b);
-            }
-        }
-        return sb.toString().getBytes();
-    }
-
+    /**
+     * 处理扫码结果（新设备无ScanUtils时使用）
+     */
     private void onScanResult(String barCode) {
         Message msgScanResult = new Message();
         try {
@@ -404,101 +309,75 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
             showShortText(barCode);
             msgScanResult.arg1 = 1;
             msgScanResult.obj = barCode;
-
         } catch (Exception ex) {
             msgScanResult.arg1 = 0;
             msgScanResult.obj = ex.getMessage();
         }
-        scanCodeHandler.sendMessage(msgScanResult);
+        scanCodeResultHandler.sendMessage(msgScanResult);
     }
 
-
-    /**
-     * 设备上电异步类
-     * @author liuruifeng
-     */
-    class InitTask extends AsyncTask<String, Integer, Boolean> {
-        ProgressDialog mypDialog;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            boolean reuslt = false;
-            open();
-            return reuslt;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isNewDevice && scanReceiver != null && !isScanReceiverRegistered) {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(SCAN_ACTION);
+            intentFilter.setPriority(Integer.MAX_VALUE);
+            registerReceiver(scanReceiver, intentFilter);
+            isScanReceiverRegistered = true;
         }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            mypDialog.cancel();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mypDialog = new ProgressDialog(mContext);
-            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mypDialog.setMessage("正在初始化设备");
-            mypDialog.setCanceledOnTouchOutside(false);
-            mypDialog.show();
-        }
-
     }
 
-    private static class ScanCodeHandler extends Handler {
-        private final WeakReference<AssetsCodeScanActivity> mActivty;
-
-        private ScanCodeHandler(AssetsCodeScanActivity mActivty) {
-            this.mActivty = new WeakReference<AssetsCodeScanActivity>(mActivty);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            AssetsCodeScanActivity activity = mActivty.get();
-            if (msg.arg1 == 1) {
-                String barCode = msg.obj.toString();
-                if (activity != null) {
-                    Accounts loginAccount = activity.loginAccount;
-                    if (loginAccount == null) {
-                        activity.showShortText("登录失效，请退出重新登录");
-                        return;
-                    }
-                    List<Assets> assetsList = Assets.find(Assets.class, "BARCODEID=? AND ACCTSUITEID=?", barCode, loginAccount.getZTBH());
-                    if (assetsList.size() == 1) {
-                        if (activity.isSustain) {
-                            Assets assets = assetsList.get(0);
-                            if (!StringUtils.isNullOrEmpty(assets.getREMARKS()) && !assets.getREMARKS().contains("盘实")) {
-                                assets.setREMARKS("盘实");
-                            }
-                            assets.setISUPLOAD("0");
-                            assets.setPDZT("02");
-                            assets.save();
-                            AssetsUtils.uploadAssets(assets, activity);
-                            activity.showShortText(barCode.concat("已盘实"));
-                            activity.assetsCreating = assets;
-                            activity.fillAssetsData();
-                        } else {
-                            activity.assetsCreating = assetsList.get(0);
-                            activity.fillAssetsData();
-                        }
-                    } else if (assetsList.size() > 1) {
-                        Intent intentRecode = new Intent(activity, AssetsRecodeActivity.class);
-                        intentRecode.putExtra(SysDefine.IntentExtra_SERIALCODE, barCode);
-                        activity.startActivity(intentRecode);
-                        activity.closeScanDevice();
-                        activity.finish();
-                    } else {
-                        activity.showShortText("未找到此编码资产！");
-                    }
-                }
-            } else {
-                activity.showShortText("扫码失败！");
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isNewDevice && isScanReceiverRegistered) {
+            try {
+                unregisterReceiver(scanReceiver);
+            } catch (IllegalArgumentException e) {
+                Log.e("AssetsCodeScanActivity", "注销广播接收器时出错", e);
             }
+            isScanReceiverRegistered = false;
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isNewDevice && isScanReceiverRegistered) {
+            try {
+                unregisterReceiver(scanReceiver);
+            } catch (IllegalArgumentException e) {
+                Log.e("AssetsCodeScanActivity", "注销广播接收器时出错", e);
+            }
+            isScanReceiverRegistered = false;
+        }
+        if (scanUtils != null) {
+            scanUtils.onDestroy();
+        }
+    }
 
+    public void destroy(){
+        if (scanUtils != null) {
+            scanUtils.onDestroy();
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (!isNewDevice && scanUtils != null && scanUtils.onKeyDown(keyCode, event)) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (!isNewDevice && scanUtils != null && scanUtils.onKeyUp(keyCode, event)) {
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 }
 
 

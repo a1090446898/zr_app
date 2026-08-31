@@ -70,7 +70,7 @@ public class PrintLabelActivity extends PrintCompatActivity {
                     startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH_BARCODE);
                     return;
                 }
-                printBarCode("1211103000308");
+//                printBarCode("1211103000308");
             }
         });
     }

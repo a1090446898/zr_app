@@ -15,6 +15,7 @@
     <color name="hint_text">#9E9E9E</color>
     <color name="edittext_stroke">#BDBDBD</color>
     <color name="edittext_focused">#2196F3</color>
+    <color name="bg_gray">#fafafa</color>
 
 
 
@@ -38,7 +39,8 @@
     <color name="colorGreen">#45d59e</color>
     <color name="colorSkeyBlue">#1E90FF</color>
     <!-- common -->
-    <color name="app_color_blue">#00A8E1</color>
+<!--    <color name="app_color_blue">#00A8E1</color>-->
+    <color name="app_color_blue">#2196F3</color>
     <color name="app_color_blue_disabled">#8000A8E1</color>
     <color name="app_color_blue_pressed">#c000A8E1</color>
 
@@ -46,15 +48,15 @@
     <color name="app_color_blue_2_disabled">#7F31BDF3</color>
     <color name="app_color_blue_2_pressed">#7F31BDF3</color>
 
-    <color name="app_color_theme_1">#EF5362</color> <!-- Grapefruit -->
-    <color name="app_color_theme_2">#FE6D4B</color> <!-- Bittersweet -->
-    <color name="app_color_theme_3">#FFCF47</color> <!-- Sunflower -->
-    <color name="app_color_theme_4">#9FD661</color> <!-- Grass -->
-    <color name="app_color_theme_5">#3FD0AD</color> <!-- Mint -->
-    <color name="app_color_theme_6">#2BBDF3</color> <!-- Aqua -->
-    <color name="app_color_theme_7">#5A9AEF</color> <!-- Blue Jeans -->
-    <color name="app_color_theme_8">#AC8FEF</color> <!-- Lavender -->
-    <color name="app_color_theme_9">#EE85C1</color> <!-- Pink Rose -->
+    <color name="app_color_theme_1">#EF5362</color>
+    <color name="app_color_theme_2">#FE6D4B</color>
+    <color name="app_color_theme_3">#FFCF47</color>
+    <color name="app_color_theme_4">#9FD661</color>
+    <color name="app_color_theme_5">#3FD0AD</color>
+    <color name="app_color_theme_6">#2BBDF3</color>
+    <color name="app_color_theme_7">#5A9AEF</color>
+    <color name="app_color_theme_8">#AC8FEF</color>
+    <color name="app_color_theme_9">#EE85C1</color>
 
     <color name="app_color_description">@color/qmui_config_color_gray_5</color>
 

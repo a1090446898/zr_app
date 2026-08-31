@@ -23,7 +23,7 @@ public class Assets extends SugarRecord implements Serializable {
     private String FDJH;
     /*所在楼层，空值*/
     private String SZLC;
-    /*使用(保管)人*/
+    /*使用(保管)人，管理人*/
     private String CUSTODIAN;
     /*车架号*/
     private String CJHM;
@@ -37,13 +37,13 @@ public class Assets extends SugarRecord implements Serializable {
     private String ASSETSSORTCODE;
     /*计量单位*/
     private String ASSETSMEASURE;
-    /*卡片编号*/
+    /*资产编号*/
     private String SERIALCODE;
     /*资产名称*/
     private String ASSETSNAME;
     /*型号*/
     private String ASSETSSTANDARD;
-    /*取得日期*/
+    /*取得日期、 配制日期*/
     private String ASSETSUSEDATE;
     /*保修截止日期*/
     private String ASSETSENDUSEDATE;
@@ -101,6 +101,9 @@ public class Assets extends SugarRecord implements Serializable {
     private String PURCHASINGORGANIZATION;
     /*品牌*/
     private String BRAND;
+
+    private String EMPTY1 = "";
+    private String EMPTY2 = "";
     /*盘点表1*/
     private String PDZT;
     /*盘点表2*/
@@ -110,7 +113,7 @@ public class Assets extends SugarRecord implements Serializable {
     private String ISMODIFY = "0";*/
 
     /*是否上传*/
-    private String ISUPLOAD = "0";
+    private String ISUPLOAD = "02";
 
     /*是否财政资产*/
     private String ISCZ = "01";
@@ -157,12 +160,63 @@ public class Assets extends SugarRecord implements Serializable {
     private String CALIBRATIONDATE;
     /**
      * 有效期至YYYY-MM-DD
+     * 有效日期
      */
     private String VALIDDATE;
     /**
      * 所属项目
      */
     private String PROBELONG;
+
+    /**
+     * 入账单号
+     */
+    private String PRINTNO;
+
+    /**
+     * 财务记账日期
+     */
+    private String BOOKKEEPINGTIME;
+
+    /**
+     * 凭证号
+     */
+    private String VOUCHERNO;
+
+
+    /**
+     * 项目名称
+     */
+    private String PRO;
+    /**
+     * 会计账簿，字典类型，01：行政账，02：装备账
+     */
+    private String ACCOUNTBOOK;
+
+    /**
+     * 下发情况，字典类型，01：行政下发，02：装备下发
+     */
+    private String DOWNINFO;
+
+    /**
+     * 使用年限
+     */
+    private String SUMCOMPLETEMONTH;
+
+    /**
+     * 已计提折旧月数
+     */
+    private String COMPLETEMONTH;
+
+    /**
+     * 月折旧额
+     */
+    private String MONDEPREVALUE;
+
+    /**
+     * 设备分类，字典类型，01：办公设备，02：实验设备
+     */
+    private String DEVICETYPE;
 
     /**
      * 字典数据：01/绝密，02/机密，03/秘密，无默认值
@@ -181,21 +235,133 @@ public class Assets extends SugarRecord implements Serializable {
 
     private String COPY_DOC_ID;
 
-    /**
-     *财务记账时间
-     */
-    private String BOOKKEEPINGTIME;
-
-    /**
-     *凭证号
-     */
-    private String VOUCHERNO;
 
     /**
      * 供货商
      */
     private String VENDOR;
 
+
+    /**
+     * 点位编码
+     */
+    private String DWCODE;
+
+    /**
+     * 采样日期
+     */
+    private String SAMPLDATE;
+
+    /**
+     * 样品编码
+     */
+    private String SAMPLCODE;
+
+    /**
+     * 监测项目
+     */
+    private String MONITORPRO;
+
+    /**
+     * 保存方法
+     */
+    private String SAVEMETHOD;
+
+    /**
+     * 样品状态
+     * 01：待检/02：在检/03：检毕
+     */
+    private String SAMPLESTATE;
+
+    /**
+     * 采样人员
+     */
+    private String SAMPLEUSER;
+
+
+
+    /**
+     * 硬盘号
+     */
+    private String HARDID;
+
+    /**
+     * 硬盘序列号
+     */
+    private String HARDSN;
+
+    /**
+     * IP
+     */
+    private String IP;
+
+    /**
+     * MAC
+     */
+    private String MAC;
+
+    /**
+     * 入网账号
+     */
+    private String INTERNETID;
+
+    /**
+     * 端口号
+     */
+    private String PORT;
+
+    /**
+     * 用途
+     */
+    private String PURPOSE;
+
+    /**
+     * 操作系统安装时间
+     */
+    private String INSTALLDATE;
+
+    /**
+     * 操作系统
+     */
+    private String OS;
+
+
+    /**
+     * 配置浓度
+     */
+    private String CONCENTRATION;
+
+    /**
+     * 配制人
+     */
+    private String PREPARER;
+
+    /**
+     * 介质
+     */
+    private String MEDIA;
+
+    /**
+     * 贮存条件
+     */
+    private String STORAGENEED;
+
+    /**
+     * 网络类型
+     * 01：互联网/02：纪检监察内网/03：纪检监察外网/04：电子政务内网/05：电子政务外网/06：专网/99：其它
+     */
+    private String NETTYPE;
+
+    /**
+     * 是否公物仓
+     * 01：是/02：否，默认02
+     */
+    private String ISGWC = "02";
+
+    /**
+     * 所属处室
+     */
+    private String DEPARTMENT;
 
     public String getISCZ() {
         return ISCZ;
@@ -578,6 +744,22 @@ public class Assets extends SugarRecord implements Serializable {
         this.BRAND = BRAND;
     }
 
+    public String getEMPTY1() {
+        return EMPTY1;
+    }
+
+    public void setEMPTY1(String EMPTY1) {
+        this.EMPTY1 = EMPTY1;
+    }
+
+    public String getEMPTY2() {
+        return EMPTY2;
+    }
+
+    public void setEMPTY2(String EMPTY1) {
+        this.EMPTY1 = EMPTY2;
+    }
+
     public String getZT() {
         return ZT;
     }
@@ -706,6 +888,113 @@ public class Assets extends SugarRecord implements Serializable {
         this.PROBELONG = PROBELONG;
     }
 
+    public String getPRINTNO() {
+        return PRINTNO;
+    }
+
+    public void setPRINTNO(String PRINTNO) {
+        this.PRINTNO = PRINTNO;
+    }
+
+    public String getPRO() {
+        return PRO;
+    }
+
+    public void setPRO(String PRO) {
+        this.PRO = PRO;
+    }
+
+    /**
+     * 01：行政账/02：装备账
+     *
+     * @return 会计账簿名称
+     */
+    public String getACCOUNTBOOK() {
+        if ("01".equals(ACCOUNTBOOK)) {
+            return "行政账";
+        } else if ("02".equals(ACCOUNTBOOK)) {
+            return "装备账";
+        } else {
+            return "";
+        }
+    }
+
+
+
+    public void setACCOUNTBOOK(String ACCOUNTBOOK) {
+        this.ACCOUNTBOOK = ACCOUNTBOOK;
+    }
+
+    /**
+     * 01：行政下发/02：装备下发
+     *
+     * @return 下发情况名称
+     */
+    public String getDOWNINFO() {
+        if ("01".equals(DOWNINFO)) {
+            return "行政下发";
+        } else if ("02".equals(DOWNINFO)) {
+            return "装备下发";
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * 下发情况，字典类型，01：行政下发，02：装备下发
+     *
+     * @return 下发情况编码
+     */
+
+    public void setDOWNINFO(String DOWNINFO) {
+        this.DOWNINFO = DOWNINFO;
+    }
+
+    public String getSUMCOMPLETEMONTH() {
+        return SUMCOMPLETEMONTH;
+    }
+
+    public void setSUMCOMPLETEMONTH(String SUMCOMPLETEMONTH) {
+        this.SUMCOMPLETEMONTH = SUMCOMPLETEMONTH;
+    }
+
+    public String getCOMPLETEMONTH() {
+        return COMPLETEMONTH;
+    }
+
+    public void setCOMPLETEMONTH(String COMPLETEMONTH) {
+        this.COMPLETEMONTH = COMPLETEMONTH;
+    }
+
+    public String getMONDEPREVALUE() {
+        return MONDEPREVALUE;
+    }
+
+    public void setMONDEPREVALUE(String MONDEPREVALUE) {
+        this.MONDEPREVALUE = MONDEPREVALUE;
+    }
+
+    /**
+     * 01：办公设备/02：实验设备
+     *
+     * @return 设备分类名称
+     */
+    public String getDEVICETYPE() {
+        if ("01".equals(DEVICETYPE)) {
+            return "办公设备";
+        } else if ("02".equals(DEVICETYPE)) {
+            return "实验设备";
+        } else {
+            return "";
+        }
+    }
+
+
+
+    public void setDEVICETYPE(String DEVICETYPE) {
+        this.DEVICETYPE = DEVICETYPE;
+    }
+
     public String getCLASSIFICATION() {
         return CLASSIFICATION;
     }
@@ -764,6 +1053,203 @@ public class Assets extends SugarRecord implements Serializable {
         this.VENDOR = VENDOR;
     }
 
+
+    public String getDWCODE() {
+        return DWCODE;
+    }
+
+    public void setDWCODE(String DWCODE) {
+        this.DWCODE = DWCODE;
+    }
+
+    public String getSAMPLDATE() {
+        return SAMPLDATE;
+    }
+
+    public void setSAMPLDATE(String SAMPLDATE) {
+        this.SAMPLDATE = SAMPLDATE;
+    }
+
+    public String getSAMPLCODE() {
+        return SAMPLCODE;
+    }
+
+    public void setSAMPLCODE(String SAMPLCODE) {
+        this.SAMPLCODE = SAMPLCODE;
+    }
+
+    public String getMONITORPRO() {
+        return MONITORPRO;
+    }
+
+    public void setMONITORPRO(String MONITORPRO) {
+        this.MONITORPRO = MONITORPRO;
+    }
+
+    public String getSAVEMETHOD() {
+        return SAVEMETHOD;
+    }
+
+    public void setSAVEMETHOD(String SAVEMETHOD) {
+        this.SAVEMETHOD = SAVEMETHOD;
+    }
+
+
+    public String getHARDID() {
+        return HARDID;
+    }
+
+    public void setHARDID(String HARDID) {
+        this.HARDID = HARDID;
+    }
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
+    public String getMAC() {
+        return MAC;
+    }
+
+    public void setMAC(String MAC) {
+        this.MAC = MAC;
+    }
+
+    public String getINTERNETID() {
+        return INTERNETID;
+    }
+
+    public void setINTERNETID(String INTERNETID) {
+        this.INTERNETID = INTERNETID;
+    }
+
+    public String getPORT() {
+        return PORT;
+    }
+
+    public void setPORT(String PORT) {
+        this.PORT = PORT;
+    }
+
+    /**
+     * 01：办公/02：教学/03：科研/04：培训/05：办案/06：医疗/07：服务窗口/99：其他
+     *
+     * @return 设备用途名称
+     */
+    public String getPURPOSE() {
+        if ("01".equals(PURPOSE)) {
+            return "办公";
+        } else if ("02".equals(PURPOSE)) {
+            return "教学";
+        } else if ("03".equals(PURPOSE)) {
+            return "科研";
+        } else if ("04".equals(PURPOSE)) {
+            return "培训";
+        } else if ("05".equals(PURPOSE)) {
+            return "办案";
+        } else if ("06".equals(PURPOSE)) {
+            return "医疗";
+        } else if ("07".equals(PURPOSE)) {
+            return "服务窗口";
+        } else if ("99".equals(PURPOSE)) {
+            return "其他";
+        } else {
+            return "";
+        }
+    }
+
+    public void setPURPOSE(String PURPOSE) {
+        this.PURPOSE = PURPOSE;
+    }
+
+    /**
+     * 01：互联网/02：纪检监察内网/03：纪检监察外网/04：电子政务内网/05：电子政务外网/06：专网/99：其它
+     *
+     * @return 网络类型名称
+     */
+    public String getNETTYPE() {
+        if ("01".equals(NETTYPE)) {
+            return "互联网";
+        } else if ("02".equals(NETTYPE)) {
+            return "纪检监察内网";
+        } else if ("03".equals(NETTYPE)) {
+            return "纪检监察外网";
+        } else if ("04".equals(NETTYPE)) {
+            return "电子政务内网";
+        } else if ("05".equals(NETTYPE)) {
+            return "电子政务外网";
+        } else if ("06".equals(NETTYPE)) {
+            return "专网";
+        } else if ("99".equals(NETTYPE)) {
+            return "其它";
+        } else {
+            return "";
+        }
+    }
+
+    public void setNETTYPE(String NETTYPE) {
+        this.NETTYPE = NETTYPE;
+    }
+
+    public String getHARDSN() {
+        return HARDSN;
+    }
+
+    public void setHARDSN(String HARDSN) {
+        this.HARDSN = HARDSN;
+    }
+
+    public String getINSTALLDATE() {
+        return INSTALLDATE;
+    }
+
+    public void setINSTALLDATE(String INSTALLDATE) {
+        this.INSTALLDATE = INSTALLDATE;
+    }
+
+    public String getOS() {
+        return OS;
+    }
+
+    public void setOS(String OS) {
+        this.OS = OS;
+    }
+
+    /**
+     * 01：待检/02：在检/03：检毕
+     * @return
+     */
+    public String getSAMPLESTATE() {
+        if("01".equals(SAMPLESTATE)){
+            return "待检";
+        }
+        else if("02".equals(SAMPLESTATE)){
+            return "在检";
+        }
+        else if("03".equals(SAMPLESTATE)){
+            return "检毕";
+        }
+        else {
+            return "";
+        }
+    }
+
+    public void setSAMPLESTATE(String SAMPLESTATE) {
+        this.SAMPLESTATE = SAMPLESTATE;
+    }
+
+    public String getSAMPLEUSER() {
+        return SAMPLEUSER;
+    }
+
+    public void setSAMPLEUSER(String SAMPLEUSER) {
+        this.SAMPLEUSER = SAMPLEUSER;
+    }
+
     public String toLineString() {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -774,7 +1260,7 @@ public class Assets extends SugarRecord implements Serializable {
                 if ("ISUPIMG".equals(field.getName())) {continue;}
                 if ("COPY_DOC_ID".equals(field.getName())) {continue;}
                 try {
-                    stringBuilder.append(field.get(this) + "|");
+                    stringBuilder.append(field.get(this)).append("|");
                 } catch (IllegalAccessException e) {
                     stringBuilder.append("|");
                 }
@@ -785,13 +1271,11 @@ public class Assets extends SugarRecord implements Serializable {
                 if ("COPY_DOC_ID".equals(SysConfig.assetsFieldsArray[i])) {continue;}
                 try {
                     Field field = this.getClass().getDeclaredField(SysConfig.assetsFieldsArray[i]);
-                    if (field != null) {
-                        try {
-                            Object fValue = field.get(this);
-                            stringBuilder.append((fValue == null ? "" : fValue) + "|");
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        Object fValue = field.get(this);
+                        stringBuilder.append(fValue == null ? "" : fValue).append("|");
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -811,7 +1295,7 @@ public class Assets extends SugarRecord implements Serializable {
                 if ("ISUPIMG".equals(field.getName())) {continue;}
                 if ("COPY_DOC_ID".equals(field.getName())) {continue;}
                 try {
-                    stringBuilder.append(field.get(this) + "|");
+                    stringBuilder.append(field.get(this)).append("|");
                 } catch (IllegalAccessException e) {
                     stringBuilder.append("|");
                 }
@@ -822,18 +1306,15 @@ public class Assets extends SugarRecord implements Serializable {
                 if ("COPY_DOC_ID".equals(SysConfig.assetsFieldsArray[i])) {continue;}
                 try {
                     Field field = this.getClass().getDeclaredField(SysConfig.assetsFieldsArray[i]);
-                    if (field != null) {
-                        try {
-                            Object fValue = field.get(this);
-                            if(!StringUtils.isNullOrEmpty(this.DOCID) && i == 48 ){
-                                stringBuilder.append("02" + "|");
-                            }
-                            else{
-                                stringBuilder.append((fValue == null ? "" : fValue) + "|");
-                            }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
+                    try {
+                        Object fValue = field.get(this);
+                        if (!StringUtils.isNullOrEmpty(this.DOCID) && i == 48) {
+                            stringBuilder.append("02" + "|");
+                        } else {
+                            stringBuilder.append(fValue == null ? "" : fValue).append("|");
                         }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -843,5 +1324,51 @@ public class Assets extends SugarRecord implements Serializable {
         return stringBuilder.substring(0, stringBuilder.length() - 1);
     }
 
+    public String getCONCENTRATION() {
+        return CONCENTRATION;
+    }
 
+    public void setCONCENTRATION(String CONCENTRATION) {
+        this.CONCENTRATION = CONCENTRATION;
+    }
+
+    public String getPREPARER() {
+        return PREPARER;
+    }
+
+    public void setPREPARER(String PREPARER) {
+        this.PREPARER = PREPARER;
+    }
+
+    public String getSTORAGENEED() {
+        return STORAGENEED;
+    }
+
+    public void setSTORAGENEED(String STORAGENEED) {
+        this.STORAGENEED = STORAGENEED;
+    }
+
+    public String getMEDIA() {
+        return MEDIA;
+    }
+
+    public void setMEDIA(String MEDIA) {
+        this.MEDIA = MEDIA;
+    }
+
+    public String getISGWC() {
+        return ISGWC;
+    }
+
+    public void setISGWC(String ISGWC) {
+        this.ISGWC = ISGWC;
+    }
+
+    public String getDEPARTMENT() {
+        return DEPARTMENT;
+    }
+
+    public void setDEPARTMENT(String DEPARTMENT) {
+        this.DEPARTMENT = DEPARTMENT;
+    }
 }

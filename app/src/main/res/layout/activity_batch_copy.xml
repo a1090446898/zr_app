@@ -299,7 +299,7 @@
                     <TextView
                             android:id="@+id/tvSERIALCODE"
                             style="@style/assets_item_tv"
-                            android:text="卡片编号"/>
+                            android:text="资产编号"/>
                     <View
                             android:layout_width="1px"
                             android:layout_height="15dp"

@@ -468,7 +468,7 @@ public class BatchCopyActivity extends BaseCompatActivity {
                     assetsCopy.setCOPY_DOC_ID(assets.getDOCID());
                     // 设置新的条码编号
                     String barCode = SysConfig.getNewAssetsBarcodeByDevice(application.getDeviceNo());
-                    // 卡片编号和条码编号一致
+                    // 资产编号和条码编号一致
                     assetsCopy.setBARCODEID(barCode);
                     assetsCopy.setSERIALCODE(barCode);
                     // 并设置为盘盈
@@ -591,7 +591,7 @@ public class BatchCopyActivity extends BaseCompatActivity {
                 if (item.getSELECTED()) {
                     Assets assets = new Assets();
                     item.toDeepCopyAssets(assets);
-                    assets.setISUPLOAD("0");
+                    assets.setISUPLOAD("02");
                     syncAssets.add(assets);
                     iterator.remove();
                     num++;

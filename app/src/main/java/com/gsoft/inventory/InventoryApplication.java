@@ -30,7 +30,29 @@ import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION
 public class InventoryApplication extends com.orm.SugarApp {
 
 
+    public MyActivityLifecycleCallbacks lifecycleCallbacks;
+    private static Application application = null;
+
+    private Accounts _loginAccount = null;
+    private Gson gson = new Gson();
+
+    private String zcqcyName = "";
+
+    private String zcqcyCode = "";
+    /**
+     * 设备号码1~Z
+     */
+    private static String _deviceNo = "";
+    /**
+     * 打印设备型号
+     */
+    private static String printerDevice = "智软2号";
+
     private static CDFPTKAndroid cdf = null;
+
+    private static String printerEffect = "大条码";
+
+    private LPAPI dtPrinterApi;
 
     public CDFPTKAndroid getJCPrinter() {
         if (cdf == null) {
@@ -39,8 +61,6 @@ public class InventoryApplication extends com.orm.SugarApp {
         return cdf;
     }
 
-    private static Application application = null;
-    public MyActivityLifecycleCallbacks lifecycleCallbacks;
 
     public Accounts getLoginAccount() {
         return _loginAccount;
@@ -58,8 +78,6 @@ public class InventoryApplication extends com.orm.SugarApp {
         printerDevice = deviceNo;
     }
 
-    private Accounts _loginAccount = null;
-    private Gson gson = new Gson();
 
     public String getDeviceNo() {
         return _deviceNo;
@@ -77,7 +95,6 @@ public class InventoryApplication extends com.orm.SugarApp {
         this.zcqcyName = zcqcyName;
     }
 
-    private String zcqcyName = "";
 
     public String getZcqcyCode() {
         return zcqcyCode;
@@ -87,16 +104,6 @@ public class InventoryApplication extends com.orm.SugarApp {
         this.zcqcyCode = zcqcyCode;
     }
 
-    private String zcqcyCode = "";
-    /**
-     * 设备号码1~Z
-     */
-    private static String _deviceNo = "";
-    /**
-     * 打印设备型号
-     */
-    private static String printerDevice = "智软2号";
-
     public void setPrinterEffect(String printeEffect) {
         printerEffect = printeEffect;
     }
@@ -105,7 +112,6 @@ public class InventoryApplication extends com.orm.SugarApp {
         return printerEffect;
     }
 
-    private static String printerEffect = "大条码";
 
     @Override
     public void onCreate() {
@@ -119,13 +125,9 @@ public class InventoryApplication extends com.orm.SugarApp {
         //application.registerActivityLifecycleCallbacks(lifecycleCallbacks);
         //AppCrashHandler crashHandler = AppCrashHandler.instance();
         //crashHandler.init(getApplicationContext(), lifecycleCallbacks);
-        initUpdateService();
-        refreshPrinters();
         printerStateLiveData = new MutableLiveData<>();
+
     }
-
-    private LPAPI dtPrinterApi;
-
 
     @Override
     public void onTerminate() {
@@ -199,61 +201,13 @@ public class InventoryApplication extends com.orm.SugarApp {
             cdf = new CDFPTKAndroidImpl(this, null);
     }
 
-    public void refreshPrinters() {
-        OkHttpUtils.getInstance().get(SysDefine.SERVER_PRINTERS_SYNC(), new StringCallback() {
-            @Override
-            public void onResponseSuccess(String result) {
-                JCPrinter.deleteAll(JCPrinter.class);
-                List<String> results = gson.fromJson(result, new TypeToken<List<String>>() {
-                }.getType());
-                if(results == null || results.size() == 0){
-                    return;
-                }
-                for (String dataline : results) {
-                    if (!dataline.contains("ERROR")) {
-                        DataTransmitHelper.insertPrinters(dataline);
-                    }
-                }
-            }
 
-            @Override
-            public void onResponseFailure(String errMessage) {
-            }
-        });
-    }
 
     public static Application getApplication() {
         return application;
     }
 
-    private void initUpdateService() {
-        XUpdate.get()
-                .debug(true)
-                //默认设置只在wifi下检查版本更新
-                .isWifiOnly(false)
-                //默认设置使用get请求检查版本
-                .isGet(true)
-                //默认设置非自动模式，可根据具体使用配置
-                .isAutoMode(false)
-                //设置默认公共请求参数
-                .param("versionCode", UpdateUtils.getVersionCode(this))
-                .param("appKey", getPackageName())
-                //设置版本更新出错的监听
-                .setOnUpdateFailureListener(new OnUpdateFailureListener() {
-                    @Override
-                    public void onFailure(UpdateError error) {
-                        //对不同错误进行处理
-                        if (error.getCode() != CHECK_NO_NEW_VERSION) {
-                            Toast.makeText(InventoryApplication.this, error.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                })
-                //设置是否支持静默安装，默认是true
-                .supportSilentInstall(true)
-                //这个必须设置！实现网络请求功能。
-                .setIUpdateHttpService(new OkHttpUtilsUpdateService())
-                .init(this);
-    }
+
 
 
 }

@@ -112,9 +112,9 @@ public class BluetoothDeviceActivity extends PrintCompatActivity {
         String[] names = printerAddress.shownName.split("-");
         String printerName = names[names.length - 1];
         List<JCPrinter> findArray = JCPrinter.find(JCPrinter.class, "encryno=?", SecurityUtils.md5(printerName).toUpperCase());
-        if (findArray == null || findArray.size() == 0) {
+        if (findArray == null || findArray.isEmpty()) {
             application.getDTPrinter().closePrinter();
-            showShortText("打印条码驱动失败，请退出重试！");
+            showShortText("该打印机没有授权，请授权后重试。");
             return;
         }
 

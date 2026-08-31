@@ -1,6 +1,7 @@
 package com.gsoft.inventory.data;
 
 import com.gsoft.inventory.data.GridMenuItem;
+import com.gsoft.inventory.utils.StringUtils;
 
 import java.util.List;
 
@@ -19,6 +20,15 @@ public class GridMenuItem {
     // 功能类型（仅功能项有效，用于区分具体逻辑）
     private String functionType;
 
+    private String webUrl;
+
+    private String badgeCount;
+
+    /**
+     * 角标code码
+     */
+    private String badgeCode;
+
     public GridMenuItem() {
     }
 
@@ -35,8 +45,16 @@ public class GridMenuItem {
         this.iconRes = iconRes;
     }
 
-    // 构造方法（功能项）
-    public GridMenuItem(String title, Integer iconRes, String functionType) {
+    public GridMenuItem(String title, boolean isDirectory, int iconRes, String functionType, List<GridMenuItem> subMenus) {
+        this.title = title;
+        this.isDirectory = isDirectory;
+        this.subMenus = subMenus;
+        this.functionType = functionType;
+        this.iconRes = iconRes;
+    }
+
+
+    public GridMenuItem(String title, Integer iconRes, String functionType, String webUrl) {
         this.title = title;
         if(iconRes == null){
             this.iconRes = -1;
@@ -45,6 +63,45 @@ public class GridMenuItem {
         }
         this.isDirectory = false;
         this.functionType = functionType;
+        this.webUrl = webUrl;
+        this.badgeCount = "0";
+    }
+
+    // 构造方法（功能项）
+    public GridMenuItem(String title, Integer iconRes, String functionType, String webUrl, String badgeCount, String badgeCode) {
+        this.title = title;
+        if(iconRes == null){
+            this.iconRes = -1;
+        }else{
+            this.iconRes = iconRes;
+        }
+        this.isDirectory = false;
+        this.functionType = functionType;
+        this.webUrl = webUrl;
+        this.badgeCount = badgeCount;
+        this.badgeCode = badgeCode;
+    }
+
+    public void calculateBadgeCount(){
+        // 自动计算子菜单badgeCount
+        if (isDirectory && subMenus != null) {
+            int count = 0;
+            for (GridMenuItem subMenu : subMenus) {
+                String badgeCount1 = subMenu.getBadgeCount();
+                if("99+".equals(badgeCount1)){
+                    count = 100;
+                    break;
+                }
+                if(!StringUtils.isNullOrEmpty(badgeCount1)){
+                    try {
+                        count += Integer.parseInt(badgeCount1);
+                    } catch (NumberFormatException e) {
+                        // 忽略无效数字
+                    }
+                }
+            }
+            this.badgeCount = count > 99 ? "99+" : String.valueOf(count);
+        }
     }
 
     public String getTitle() {
@@ -85,5 +142,29 @@ public class GridMenuItem {
 
     public void setFunctionType(String functionType) {
         this.functionType = functionType;
+    }
+
+    public String getWebUrl() {
+        return webUrl;
+    }
+
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
+    }
+
+    public String getBadgeCount() {
+        return badgeCount;
+    }
+
+    public void setBadgeCount(String badgeCount) {
+        this.badgeCount = badgeCount;
+    }
+
+    public String getBadgeCode() {
+        return badgeCode;
+    }
+
+    public void setBadgeCode(String badgeCode) {
+        this.badgeCode = badgeCode;
     }
 }

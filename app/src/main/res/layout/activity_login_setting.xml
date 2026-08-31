@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="0dp">
+
+        <com.qmuiteam.qmui.widget.QMUITopBar
+                android:id="@+id/topbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/qmui_topbar_height"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+            <!-- 原有内容保持不变 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="服务器IP："/>
+
+                <EditText
+                        android:id="@+id/editServerIP"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:text=""
+                        android:hint="http://"/>
+            </LinearLayout>
+
+            <!-- 其他所有 LinearLayout 和控件保持不变 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="打印类型："/>
+
+                <EditText
+                        android:id="@+id/editPrinter"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:text=""
+                        android:hint="打印效果"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="打印抬头："/>
+
+                <EditText
+                        android:id="@+id/editPrinterTitle"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:text=""
+                        android:hint="抬头显示"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="打印位置："/>
+
+                <EditText
+                        android:id="@+id/editPrinterPosition"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:text=""
+                        android:hint="打印位置"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="清查人员："/>
+
+                <EditText
+                        android:id="@+id/editQCY"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:text=""
+                        android:hint="清查人员"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="登录方式："/>
+
+                <RadioGroup
+                        android:id="@+id/radioGroupOfflineLogin"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:layout_marginEnd="20dp"
+                        android:orientation="horizontal">
+
+                    <RadioButton
+                            android:id="@+id/radioYes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="60dp"
+                            android:text="在线"
+                            android:checked="true"
+                            android:buttonTint="@color/primary_color"/>
+
+                    <RadioButton
+                            android:id="@+id/radioNo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="离线"
+                            android:checked="false"
+                            android:buttonTint="@color/primary_color"/>
+                </RadioGroup>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="授权导入："/>
+
+                <TextView
+                        android:id="@+id/importAuthorizationCodeBtnId"
+                        style="@style/from_label"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:textColor="@color/primary_color"
+                        android:textSize="14dp"
+                        android:text="本地导入设备码"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="打印字段："/>
+
+                <TextView
+                        style="@style/from_label"
+                        android:id="@+id/textPrinterField"
+                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:textColor="@color/primary_color"
+                        android:textSize="14dp"
+                        android:text="选择打印字段"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="100dp"
+                    android:gravity="center_horizontal">
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/buttonSave"
+                        android:layout_width="280dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_rounded_button"
+                        android:text="确定"
+                        android:textColor="@color/colorWhite"
+                        android:layout_gravity="center_horizontal"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

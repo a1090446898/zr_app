@@ -2,8 +2,10 @@ package com.gsoft.inventory;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.*;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -44,6 +46,11 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
 
     private static final String[] PERMISSION_CAMERASCAN = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.READ_PHONE_STATE"};
 
+    // ==================== 新设备广播扫码 ====================
+    private static final String SCAN_ACTION = "com.android.server.scannerservice.broadcast";
+    private BroadcastReceiver scanReceiver;
+    private boolean isScanReceiverRegistered = false;
+
     DisposeAssetsListAdapter listAdapter;
     ArrayList<DisposeAsset> assetList = new ArrayList<>();
     private Context context;
@@ -51,7 +58,7 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
     private final Gson gson = new Gson();
     SmartRefreshLayout refreshLayout;
     int pageSize = 15;
-    private int offset = 0; // 初始偏移量为0（第一页）
+    private int offset = 0;
     boolean hasMoreData = false;
 
     RelativeLayout mHead;
@@ -65,11 +72,20 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
     private final ScanCodeHandler scanCodeHandler = new ScanCodeHandler(this);
     String seldata = "utf-8";
 
+    // 设备类型标记
+    private boolean isNewDevice;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dispose_assets);
         context = this;
+
+        isNewDevice = ScanDeviceUtils.isNewDevice();
+
+        if (isNewDevice) {
+            initBroadcastScan();
+        }
 
         isOffline = getIntent().getBooleanExtra("isOffline", false);
         initializeView();
@@ -450,20 +466,43 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-       /* if (barcode2DWithSoft == null) {
-            barcode2DWithSoft = Barcode2DWithSoft.getInstance();
-        }*/
-        new InitTask().execute();
+        if (isNewDevice) {
+            if (scanReceiver != null && !isScanReceiverRegistered) {
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(SCAN_ACTION);
+                intentFilter.setPriority(Integer.MAX_VALUE);
+                registerReceiver(scanReceiver, intentFilter);
+                isScanReceiverRegistered = true;
+            }
+        } else {
+            new InitTask().execute();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (isNewDevice && isScanReceiverRegistered) {
+            try {
+                unregisterReceiver(scanReceiver);
+            } catch (IllegalArgumentException e) {
+                Log.e("DisposeAssetsActivity", "注销广播接收器时出错", e);
+            }
+            isScanReceiverRegistered = false;
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (isNewDevice && isScanReceiverRegistered) {
+            try {
+                unregisterReceiver(scanReceiver);
+            } catch (IllegalArgumentException e) {
+                Log.e("DisposeAssetsActivity", "注销广播接收器时出错", e);
+            }
+            isScanReceiverRegistered = false;
+        }
         closeScanDevice();
     }
 
@@ -477,7 +516,7 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == 139) {
+        if (!isNewDevice && keyCode == 139) {
             if (event.getRepeatCount() == 0) {
                 ScanBarcode();
                 return true;
@@ -488,9 +527,8 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == 139) {
+        if (!isNewDevice && keyCode == 139) {
             if (event.getRepeatCount() == 0) {
-//                barcode2DWithSoft.stopScan();
                 stop();
                 return true;
             }
@@ -577,7 +615,6 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO Auto-generated method stub
             boolean reuslt = false;
             /*if (barcode2DWithSoft != null) {
                 reuslt = barcode2DWithSoft.open(mContext);
@@ -658,5 +695,20 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
                 activity.showShortText("扫码失败！");
             }
         }
+    }
+
+    private void initBroadcastScan() {
+        scanReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (SCAN_ACTION.equals(intent.getAction())) {
+                    String code = intent.getStringExtra("scannerdata");
+                    if (!StringUtils.isNullOrEmpty(code)) {
+                        code = code.replace("\n", "").replace("\r", "");
+                        onScanResult(code);
+                    }
+                }
+            }
+        };
     }
 }

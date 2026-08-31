@@ -59,4 +59,15 @@ public class SignaturePerson implements Serializable {
     private String telephone;
     private int amount;
     private String status = "未确认";
+
+    // 原有字段...
+    private boolean selectStatus = false;
+
+    public boolean getSelectStatus() {
+        return this.selectStatus;
+    }
+
+    public void setSelectStatus(boolean selected) {
+        this.selectStatus = selected;
+    }
 }

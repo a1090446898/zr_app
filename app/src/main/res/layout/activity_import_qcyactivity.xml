@@ -12,6 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/qmui_topbar_height" />
 
+    <TextView
+            android:id="@+id/tv_file_path_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@string/import_accounts_hint" />
+
     <com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout
         android:id="@+id/pull_to_refresh"
         android:layout_width="match_parent"

@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">资产管理</string>
+<!--    <string name="app_name">资产管理</string>-->
     <string name="unknow_address">未知地址</string>
     <string name="unknow_name">未知设备</string>
     <string name="turn_on_bt">请先开启蓝牙</string>
     <string name="connect_fail">设备连接失败</string>
-    <string name="protocal_title_1">装备大数据应用管理平台软件移动端</string>
+    <string name="protocal_title_1">固定资产智能动态管理平台软件移动端</string>
     <string name="protocal_title_2">用户许可安装协议</string>
     <string name="tip_downtassets">增量更新</string>
     <string name="tip_checkall">全选</string>
@@ -15,7 +15,11 @@
         <item>小二维码</item>
         <item>网页二维码-二字段</item>
         <item>网页二维码-四字段</item>
+        <item>网页二维码-模板三</item>
         <item>大二维码-五字段</item>
+        <item>大二维码-密级标签</item>
+        <item>试剂二维码-四字段</item>
+        <item>大标签-五字段</item>
     </array>
     <array name="inventory_setting">
         <item>智软盘点</item>
@@ -62,6 +66,7 @@
         <item>无形资产</item>
     </array>
     <array name="printfieldsTitle">
+        <item>条码编号</item>
         <item>资产名称</item>
         <item>规格型号</item>
         <item>品牌</item>
@@ -73,7 +78,7 @@
         <item>资产原值</item>
         <item>管理人</item>
         <item>管理部门</item>
-        <item>卡片编号</item>
+        <item>资产编号</item>
         <item>是否财政资产</item>
         <item>序列号</item>
         <item>生产厂家</item>
@@ -81,14 +86,21 @@
         <item>管理编号</item>
         <item>车牌号</item>
         <item>参数</item>
-        <item>溯源周期</item>
+   <!--     <item>溯源周期</item>
         <item>溯源方式</item>
         <item>检定校准日期</item>
-        <item>有效期至</item>
+        <item>有效期至</item>-->
         <item>所属项目</item>
-        <item>密级</item>
-        <item>配发日期</item>
+      <!--  <item>密级</item>
+        <item>配发日期</item>-->
         <item>备注</item>
+        <item>点位编码</item>
+        <item>采样日期</item>
+        <item>样品编码</item>
+        <item>监测项目</item>
+        <item>保存方法</item>
+        <item>样品状态</item>
+        <item>采样人员</item>
     </array>
 
     <array name="printfieldsTitleCz">
@@ -108,6 +120,7 @@
     </array>
 
     <array name="printfieldsCode">
+        <item>BARCODEID</item>
         <item>ASSETSNAME</item>
         <item>ASSETSSTANDARD</item>
         <item>BRAND</item>
@@ -127,14 +140,21 @@
         <item>MANAGENO</item>
         <item>VEHICLENO</item>
         <item>PARAMETERS</item>
-        <item>TRACEABILITY</item>
+    <!--    <item>TRACEABILITY</item>
         <item>TRACEABILITYPE</item>
         <item>CALIBRATIONDATE</item>
-        <item>VALIDDATE</item>
+        <item>VALIDDATE</item>-->
         <item>PROBELONG</item>
-        <item>CLASSIFICATION</item>
-        <item>ISSUEDATE</item>
+<!--        <item>CLASSIFICATION</item>-->
+<!--        <item>ISSUEDATE</item>-->
         <item>REMARKS</item>
+        <item>DWCODE</item>
+        <item>SAMPLDATE</item>
+        <item>SAMPLCODE</item>
+        <item>MONITORPRO</item>
+        <item>SAVEMETHOD</item>
+        <item>SAMPLESTATE</item>
+        <item>SAMPLEUSER</item>
     </array>
     <array name="qdfs">
         <item>政府采购</item>
@@ -201,6 +221,62 @@
         <item>机密</item>
         <item>秘密</item>
     </array>
+
+    <array name="osArray">
+        <item>Windows</item>
+        <item>Linux</item>
+        <item>macOS</item>
+        <item>Ubuntu</item>
+        <item>银河麒麟KylinOS</item>
+        <item>统信UOS</item>
+        <item>Android</item>
+        <item>iOS/iPadOS</item>
+        <item>HarmonyOS</item>
+        <item>Chrome OS</item>
+    </array>
+
+    <array name="sampleStateFields">
+        <item>待检</item>
+        <item>在检</item>
+        <item>检毕</item>
+    </array>
+
+    <array name="devicePurposeFields">
+        <item>办公</item>
+        <item>教学</item>
+        <item>科研</item>
+        <item>培训</item>
+        <item>办案</item>
+        <item>医疗</item>
+        <item>服务窗口</item>
+        <item>其他</item>
+    </array>
+
+    <array name="netTypeFields">
+        <item>互联网</item>
+        <item>纪检监察内网</item>
+        <item>纪检监察外网</item>
+        <item>电子政务内网</item>
+        <item>电子政务外网</item>
+        <item>专网</item>
+        <item>其它</item>
+    </array>
+
+    <array name="accountBookFields">
+        <item>行政账</item>
+        <item>装备账</item>
+    </array>
+
+    <array name="downInfoFields">
+        <item>行政下发</item>
+        <item>装备下发</item>
+    </array>
+
+    <array name="deviceTypeFields">
+        <item>办公设备</item>
+        <item>实验设备</item>
+    </array>
+
     <array name="assets_fields">
         <item>BARCODEID</item>
         <item>CARDID</item>
@@ -248,11 +324,16 @@
         <item>ASSETSWRITERDATE</item>
         <item>PURCHASINGORGANIZATION</item>
         <item>BRAND</item>
+        <item>EMPTY1</item>
+        <item>EMPTY2</item>
+
+
         <item>PDZT</item>
+        <item>ZT</item>
         <item>ISUPLOAD</item>
-        <item>PDZT</item>
         <item>ISCZ</item>
         <item>DOCID</item>
+
         <item>ASSETSMODEL</item>
         <item>ASSETSSERIALNUMBER</item>
         <item>ASSETSSUPPLIER</item>
@@ -264,9 +345,49 @@
         <item>CALIBRATIONDATE</item>
         <item>VALIDDATE</item>
         <item>PROBELONG</item>
+        <item>PRINTNO</item>
+        <item>BOOKKEEPINGTIME</item>
+        <item>VOUCHERNO</item>
+        <item>PRO</item>
+        <item>ACCOUNTBOOK</item>
+        <item>DOWNINFO</item>
+        <item>SUMCOMPLETEMONTH</item>
+        <item>COMPLETEMONTH</item>
+        <item>MONDEPREVALUE</item>
+        <item>DEVICETYPE</item>
         <item>CLASSIFICATION</item>
         <item>ISSUEDATE</item>
         <item>VENDOR</item>
+        <item>DWCODE</item>
+        <item>SAMPLDATE</item>
+        <item>SAMPLCODE</item>
+        <item>MONITORPRO</item>
+        <item>SAVEMETHOD</item>
+        <item>SAMPLESTATE</item>
+        <item>SAMPLEUSER</item>
+
+        <item>HARDID</item>
+        <item>HARDSN</item>
+        <item>IP</item>
+        <item>MAC</item>
+        <item>INTERNETID</item>
+        <item>PORT</item>
+        <item>PURPOSE</item>
+        <item>INSTALLDATE</item>
+        <item>OS</item>
+        <item>CONCENTRATION</item>
+        <item>PREPARER</item>
+        <item>MEDIA</item>
+        <item>STORAGENEED</item>
+        <item>NETTYPE</item>
+        <item>ISGWC</item>
+        <item>DEPARTMENT</item>
+
+    </array>
+
+    <array name="gwcFields">
+        <item>是</item>
+        <item>否</item>
     </array>
     <string name="title_activity_offline_login">OfflineLoginActivity</string>
     <string name="prompt_email">Email</string>
@@ -277,4 +398,5 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="import_accounts_hint">文件在Download\\zr目录下读取，如果没有zr目录则需要新建，Download目录在有些系统里面可能显示为中文下载</string>
 </resources>

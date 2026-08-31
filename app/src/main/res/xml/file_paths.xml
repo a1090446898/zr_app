@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
     <root-path
-        path=""
-        name="camera_photos" />
+            path=""
+            name="camera_photos"/>
 
-    <external-path name="my_images" path="Android/data/com.gsoft.inventory/files/zcAppTempPic" />
+    <external-path
+            name="my_images"
+            path="Android/data/com.gsoft.inventory/files/zcAppTempPic"/>
+
+    <external-files-path
+            name="temp_pictures"
+            path="temp_pictures/" />
+
+    <external-files-path
+            name="zr_dir"
+            path="zr/" />
+
 </paths>

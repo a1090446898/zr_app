@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.huawei.agconnect'
 
 android {
     compileSdkVersion 30
@@ -7,35 +8,105 @@ android {
         minSdkVersion 23
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 30
-        versionCode 263
-        versionName "2.6.3"
+        versionCode 324
+        versionName "3.2.4"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        ndk {
+            abiFilters 'arm64-v8a'
         }
     }
+
+    packagingOptions {
+        exclude 'AndroidManifest.xml'
+    }
+    // 产品风味，dimension 是 flavor 的维度，用于区分不同的产品风味
+    flavorDimensions "company"
+    productFlavors {
+        mainFlavor {
+            dimension "company"
+            applicationId "com.gsoft.inventory"
+            resValue "string", "app_name", "资产管理"
+        }
+        companyKaiYang {
+            dimension "company"
+            applicationId "com.gsoft.inventory"
+            resValue "string", "app_name", "开检通"
+        }
+
+        companyYJS {
+            dimension "company"
+            applicationId "com.gsoft.inventory"
+            resValue "string", "app_name", "资产管理"
+        }
+    }
+
+    // 添加签名配置
+    signingConfigs {
+        release {
+            // 请替换为你的签名文件路径
+            storeFile file('D:\\ZR\\zc_app\\zc_app\\keystore.jks')
+            // 请替换为你的签名文件密码
+            storePassword 'gsc666666'
+            // 请替换为你的密钥别名
+            keyAlias 'gsoft'
+            // 请替换为你的密钥密码
+            keyPassword 'gsc666666'
+        }
+    }
+    buildTypes {
+        debug {
+            // 确保 debug 构建类型是可调试的
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        }
+    }
+
 
     sourceSets {
         main {
-            jniLibs.srcDirs = ['libs']
-
+//            jniLibs.srcDirs = ['libs']
+            manifest.srcFile 'src/main/AndroidManifest.xml'
         }
     }
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     lintOptions {
+        // 不检查所有警告
+        checkAllWarnings false
+        // 不检查发布版本
         checkReleaseBuilds false
+        // 发现错误时不终止构建
         abortOnError false
+        // 忽略多个 Lint 检查项
+        disable 'MissingTranslation', 'UnusedResources', 'NewApi'
+    }
+
+    // 固定 APK 输出文件名，避免版本号变化后旧 APK 残留导致 IDE 同步失败
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "app-${variant.name}.apk"
+        }
     }
 }
 
+
 dependencies {
+
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     implementation files('libs/LPAPI-2021-02-02-R.jar')
@@ -50,24 +121,24 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation 'com.google.guava:guava:31.1-android'
 
-    // CameraX 相机库
-    implementation 'androidx.camera:camera-core:1.2.0'
-    implementation 'androidx.camera:camera-camera2:1.2.0'
-    implementation 'androidx.camera:camera-view:1.2.0'
-    implementation 'androidx.camera:camera-lifecycle:1.2.0'
+    // PDF预览
+    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 
-    // 谷歌扫码，仅引入本地化条码扫描库（无需 Google Play 服务）
-    implementation 'com.google.mlkit:barcode-scanning:17.1.0'
+    // webView
+    implementation 'androidx.webkit:webkit:1.6.1'
+
+    // 引入华为扫码
+    implementation 'com.huawei.hms:scanplus:2.12.0.301'
+
+    // 发送角标，适配主流手机系统
+    implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
+
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
 
 
-//    implementation files('libs/cw-deviceapi20180628.jar')
-//    implementation files('libs/XUpdate-2.1.4-sources.jar')
-//    implementation files('libs/PhotoView-462338-sources.jar')
-
-    testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-
 
 
     implementation 'com.qmuiteam:qmui:1.4.4'
