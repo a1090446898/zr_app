@@ -62,7 +62,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="条码编号："/>
+                        android:text="条码编号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -83,7 +83,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="CardID："/>
+                        android:text="CardID"/>
             </LinearLayout>
 
             <LinearLayout
@@ -104,7 +104,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="取得方式："/>
+                        android:text="取得方式"/>
             </LinearLayout>
 
             <LinearLayout
@@ -125,7 +125,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="备注："/>
+                        android:text="备注"/>
             </LinearLayout>
 
             <LinearLayout
@@ -146,7 +146,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="产权单位："/>
+                        android:text="产权单位"/>
             </LinearLayout>
 
             <LinearLayout
@@ -167,7 +167,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="发动机号："/>
+                        android:text="发动机号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -189,7 +189,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="所在楼层，空值："/>
+                        android:text="所在楼层，空值"/>
             </LinearLayout>
 
             <LinearLayout
@@ -210,7 +210,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="管理人："/>
+                        android:text="管理人"/>
             </LinearLayout>
 
             <LinearLayout
@@ -231,7 +231,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="车架号："/>
+                        android:text="车架号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -252,7 +252,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="账套编号："/>
+                        android:text="账套编号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -273,7 +273,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="卡片序号："/>
+                        android:text="卡片序号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -294,7 +294,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="资产类别："/>
+                        android:text="资产类别"/>
             </LinearLayout>
 
             <LinearLayout
@@ -315,7 +315,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="资产分类代码："/>
+                        android:text="资产分类代码"/>
             </LinearLayout>
 
             <LinearLayout
@@ -336,7 +336,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="计量单位："/>
+                        android:text="计量单位"/>
             </LinearLayout>
 
             <LinearLayout
@@ -357,7 +357,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="资产编号："/>
+                        android:text="资产编号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -378,7 +378,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="资产名称："/>
+                        android:text="资产名称"/>
             </LinearLayout>
 
             <LinearLayout
@@ -399,7 +399,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="规格："/>
+                        android:text="规格"/>
             </LinearLayout>
 
             <LinearLayout
@@ -420,7 +420,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="型号："/>
+                        android:text="型号"/>
             </LinearLayout>
 
             <LinearLayout
@@ -441,7 +441,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="取得日期："/>
+                        android:text="取得日期"/>
             </LinearLayout>
 
             <LinearLayout
@@ -462,7 +462,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="保修截止日期："/>
+                        android:text="保修截止日期"/>
             </LinearLayout>
 
             <LinearLayout
@@ -483,7 +483,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="预计使用月份："/>
+                        android:text="预计使用月份"/>
             </LinearLayout>
 
             <LinearLayout
@@ -504,7 +504,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="使用状况："/>
+                        android:text="使用状况"/>
             </LinearLayout>
 
             <LinearLayout
@@ -525,7 +525,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="折旧状态："/>
+                        android:text="折旧状态"/>
             </LinearLayout>
 
             <LinearLayout
@@ -546,7 +546,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="存放地点："/>
+                        android:text="存放地点"/>
             </LinearLayout>
 
             <LinearLayout
@@ -567,7 +567,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="使用人："/>
+                        android:text="使用人"/>
             </LinearLayout>
 
             <LinearLayout
@@ -588,7 +588,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
-                        android:text="使用部门："/>
+                        android:text="使用部门"/>
             </LinearLayout>
 
             <LinearLayout

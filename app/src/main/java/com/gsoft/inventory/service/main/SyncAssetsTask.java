@@ -30,7 +30,7 @@ public class SyncAssetsTask implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "0");
+        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
         List<Assets> needCopyImgList = Assets.find(Assets.class, "ISUPIMG=?", "1");
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -85,7 +85,7 @@ public class SyncAssetsTask implements Callable<String> {
             try {
                 responseString = OkHttpUtils.getInstance().postAssetsJson(SysDefine.SERVERHOST_ASSETS(), gson.toJson(jsonArray));
                 List<SyncResult> results = gson.fromJson(responseString, new TypeToken<List<SyncResult>>() {}.getType());
-                if (results == null || results.isEmpty()) {
+                if (results == null || results.isEmpty() || "ERROR".equals(results.get(0).result)) {
                     return "同步失败，请联系技术人员";
                 }
                 for (SyncResult sr : results) {

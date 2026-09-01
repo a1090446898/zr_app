@@ -204,7 +204,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
     /*所属处室*/
     @BindView(R.id.editDEPARTMENT)
-    public EditText editDEPARTMENT;
+    public AutoCompleteTextView editDEPARTMENT;
     /*是否公物仓*/
     @BindView(R.id.editISGWC)
     public EditText editISGWC;
@@ -303,9 +303,9 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindView(R.id.editPRO)
     public EditText editPRO;
     @BindView(R.id.editACCOUNTBOOK)
-    public TextView editACCOUNTBOOK;
+    public EditText editACCOUNTBOOK;
     @BindView(R.id.editDOWNINFO)
-    public TextView editDOWNINFO;
+    public EditText editDOWNINFO;
     @BindView(R.id.editSUMCOMPLETEMONTH)
     public EditText editSUMCOMPLETEMONTH;
     @BindView(R.id.editCOMPLETEMONTH)
@@ -313,7 +313,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindView(R.id.editMONDEPREVALUE)
     public EditText editMONDEPREVALUE;
     @BindView(R.id.editDEVICETYPE)
-    public TextView editDEVICETYPE;
+    public EditText editDEVICETYPE;
 
     @BindView(R.id.editVENDOR)
     public EditText editVENDOR;
@@ -329,14 +329,14 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     public Drawable icon_right;
 
     @BindView(R.id.editBOOKKEEPINGTIME)
-    public TextView editBOOKKEEPINGTIME;
+    public EditText editBOOKKEEPINGTIME;
 
     @BindView(R.id.editDWCODE)
     public EditText editDWCODE;
 
 
     @BindView(R.id.editVOUCHERNO)
-    public TextView editVOUCHERNO;
+    public EditText editVOUCHERNO;
 
     @BindView(R.id.editSAMPLDATE)
     public EditText editSAMPLDATE;
@@ -466,6 +466,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editACCOUNTBOOK.setCompoundDrawables(null, null, icon_right, null);
         editDOWNINFO.setCompoundDrawables(null, null, icon_right, null);
         editDEVICETYPE.setCompoundDrawables(null, null, icon_right, null);
+        editBOOKKEEPINGTIME.setCompoundDrawables(null, null, icon_right, null);
         editSAMPLDATE.setCompoundDrawables(null, null, icon_right, null);
         editSAMPLESTATE.setCompoundDrawables(null, null, icon_right, null);
         editPURPOSE.setCompoundDrawables(null, null, icon_right, null);
@@ -513,15 +514,23 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editYXQZ.setFocusable(false);
         editJDJZRQ.setFocusableInTouchMode(false);
         editJDJZRQ.setFocusable(false);
+
         editSAMPLDATE.setFocusable(false);
         editSAMPLESTATE.setFocusable(false);
         editPURPOSE.setFocusable(false);
         editPURPOSE.setFocusableInTouchMode(false);
         editNETTYPE.setFocusable(false);
         editNETTYPE.setFocusableInTouchMode(false);
+        editACCOUNTBOOK.setFocusable(false);
+        editACCOUNTBOOK.setFocusableInTouchMode(false);
+        editDOWNINFO.setFocusable(false);
+        editDOWNINFO.setFocusableInTouchMode(false);
+        editDEVICETYPE.setFocusable(false);
+        editDEVICETYPE.setFocusableInTouchMode(false);
+        editBOOKKEEPINGTIME.setFocusable(false);
+        editBOOKKEEPINGTIME.setFocusableInTouchMode(false);
         editISGWC.setFocusable(false);
         editISGWC.setFocusableInTouchMode(false);
-//        editOS.setFocusable(false);
         editINSTALLDATE.setFocusable(false);
     }
 
@@ -958,7 +967,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editSAMPLCODE.setText(assetsCreating.getSAMPLCODE());
         editMONITORPRO.setText(assetsCreating.getMONITORPRO());
         editSAVEMETHOD.setText(assetsCreating.getSAVEMETHOD());
-        editSAMPLESTATE.setText(assetsCreating.getSAMPLESTATE());
+        editSAMPLESTATE.setText(DictionaryHelper.getDictionaryName(assetsCreating.getSAMPLESTATE(), sampleStateFields));
         editSAMPLEUSER.setText(assetsCreating.getSAMPLEUSER());
 
         editCONCENTRATION.setText(assetsCreating.getCONCENTRATION());
@@ -1022,6 +1031,20 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 editASSETSDEPT.setText(departAdapter.getItem(i));
             }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        // 所属处室联想搜索（与使用部门逻辑一致）
+        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, bmArray);
+        editDEPARTMENT.setAdapter(departmentAdapter);
+        editDEPARTMENT.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                editDEPARTMENT.setText(departmentAdapter.getItem(i));
+            }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 

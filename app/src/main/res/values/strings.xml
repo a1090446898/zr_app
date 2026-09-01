@@ -20,6 +20,7 @@
         <item>大二维码-密级标签</item>
         <item>试剂二维码-四字段</item>
         <item>大标签-五字段</item>
+        <item>公安警告标签</item>
     </array>
     <array name="inventory_setting">
         <item>智软盘点</item>

@@ -71,6 +71,9 @@ public class AssetsViewActivity extends PrintCompatActivity {
     @BindArray(R.array.accountBookFields)
     String[] accountBookFields;
 
+    @BindArray(R.array.sampleStateFields)
+    String[] sampleStateFields;
+
     @BindArray(R.array.downInfoFields)
     String[] downInfoFields;
     @BindArray(R.array.deviceTypeFields)
@@ -546,7 +549,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
         editSAMPLCODE.setText(assets.getSAMPLCODE());
         editMONITORPRO.setText(assets.getMONITORPRO());
         editSAVEMETHOD.setText(assets.getSAVEMETHOD());
-        editSAMPLESTATE.setText(assets.getSAMPLESTATE());
+        editSAMPLESTATE.setText(DictionaryHelper.getDictionaryName(assets.getSAMPLESTATE(), sampleStateFields));
         editSAMPLEUSER.setText(assets.getSAMPLEUSER());
 
         editCONCENTRATION.setText(assets.getCONCENTRATION());

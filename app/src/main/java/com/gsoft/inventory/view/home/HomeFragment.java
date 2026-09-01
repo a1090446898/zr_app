@@ -556,21 +556,25 @@ public class HomeFragment extends BaseFragment {
     }
 
     private void syncAssetsTaskFun() {
-        if (!NetworkUtils.checkNetConnect(mContext)) {
-            showShortText("当前网络连接不正常，请稍后再试！");
-            return;
-        }
-        long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"0"});
+
+        long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"});
         if (waitingSyncCount == 0) {
             showShortText("当前资产数据已经全部同步，无需同步！");
             return;
         }
         String tips = "共有：".concat(String.valueOf(waitingSyncCount)).concat("条记录未同步，是否开始同步？");
+
+
         new QMUIDialog.MessageDialogBuilder(mContext)
                 .setTitle("系统提示")
                 .setMessage(tips)
                 .addAction("取消", (dialog, index) -> dialog.dismiss())
                 .addAction(0, "开始同步", QMUIDialogAction.ACTION_PROP_NEGATIVE, (dialog, index) -> {
+                    if (!NetworkUtils.checkNetConnect(mContext)) {
+                        showShortText("当前网络连接不正常，请稍后再试！");
+                        return;
+                    }
+
                     showProgressDialog("", "正在同步");
                     SyncAssetsTask task = new SyncAssetsTask(mContext, application.getZcqcyCode());
                     AsyncManager.getInstance().submitWithCallback(task, result -> {

@@ -910,13 +910,14 @@ public class Assets extends SugarRecord implements Serializable {
      * @return 会计账簿名称
      */
     public String getACCOUNTBOOK() {
-        if ("01".equals(ACCOUNTBOOK)) {
+        return ACCOUNTBOOK;
+       /* if ("01".equals(ACCOUNTBOOK)) {
             return "行政账";
         } else if ("02".equals(ACCOUNTBOOK)) {
             return "装备账";
         } else {
             return "";
-        }
+        }*/
     }
 
 
@@ -931,13 +932,15 @@ public class Assets extends SugarRecord implements Serializable {
      * @return 下发情况名称
      */
     public String getDOWNINFO() {
-        if ("01".equals(DOWNINFO)) {
+        return DOWNINFO;
+
+       /* if ("01".equals(DOWNINFO)) {
             return "行政下发";
         } else if ("02".equals(DOWNINFO)) {
             return "装备下发";
         } else {
             return "";
-        }
+        }*/
     }
 
     /**
@@ -980,13 +983,15 @@ public class Assets extends SugarRecord implements Serializable {
      * @return 设备分类名称
      */
     public String getDEVICETYPE() {
-        if ("01".equals(DEVICETYPE)) {
+        return DEVICETYPE;
+
+      /*  if ("01".equals(DEVICETYPE)) {
             return "办公设备";
         } else if ("02".equals(DEVICETYPE)) {
             return "实验设备";
         } else {
             return "";
-        }
+        }*/
     }
 
 
@@ -1224,7 +1229,9 @@ public class Assets extends SugarRecord implements Serializable {
      * @return
      */
     public String getSAMPLESTATE() {
-        if("01".equals(SAMPLESTATE)){
+
+        return SAMPLESTATE;
+      /*  if("01".equals(SAMPLESTATE)){
             return "待检";
         }
         else if("02".equals(SAMPLESTATE)){
@@ -1235,7 +1242,7 @@ public class Assets extends SugarRecord implements Serializable {
         }
         else {
             return "";
-        }
+        }*/
     }
 
     public void setSAMPLESTATE(String SAMPLESTATE) {

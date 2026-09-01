@@ -203,7 +203,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
             else if("大标签-五字段".equals(printerEffect)){
                 big_five(accountName, assets, fieldArray);
             }
-
+            else if("公安警告标签".equals(printerEffect)){
+                printPoliceWarningLabel(accountName);
+            }
         }
     }
 
@@ -580,6 +582,75 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
                     checkmarkSize, LPAPI.FontStyle.BOLD, 0);
         }
     }
+
+
+    /**
+     * 公安警告标签
+     * @param accountName 标题名称
+     */
+    private void printPoliceWarningLabel(String accountName) {
+        // 标签纸尺寸：宽70mm，高25mm
+        final double labelWidth = 70;
+        final double labelHeight = 25;
+        LPAPI dtPrinter = application.getDTPrinter();
+
+        // 1. 启动绘图任务，页面顺时针旋转90度
+        dtPrinter.startJob(labelWidth, labelHeight, 90);
+        // 2. 开启绘制页面
+        dtPrinter.startPage();
+
+        // ---------- 绘制顶部标题 ----------
+        dtPrinter.setItemHorizontalAlignment(LPAPI.ItemAlignment.CENTER);
+        final double titleFontHeight = 3.2;
+        final double titleTopY = 2.0;
+        dtPrinter.drawText(accountName, 0, titleTopY, labelWidth, 0, titleFontHeight);
+
+        // ---------- 绘制圆角外边框 ----------
+        final double borderMarginX = 3.0;
+        final double borderTopY = 8.5;
+        final double borderWidth = labelWidth - borderMarginX * 2;
+        final double borderHeight = 16.0;
+        final double cornerRadius = 2.0;
+        final double borderLineWidth = 0.3;
+        dtPrinter.drawRoundRectangle(
+                borderMarginX,
+                borderTopY,
+                borderWidth,
+                borderHeight,
+                cornerRadius,
+                cornerRadius,
+                borderLineWidth
+        );
+
+        // ---------- 绘制边框内三行警示文本 ----------
+        final double contentFontHeight = 3.2;
+        final double lineSpacing = 1.5;
+
+        // 首行与上边框的内边距（数值越小，首行离上边框越近）
+        final double borderPaddingTop = 1.2;
+        double firstLineTopY = borderTopY + borderPaddingTop;
+
+        String[] warnings = {
+                "公安网专用",
+                "严禁违规与其他网络链接",
+                "严禁存储和处理国家秘密信息"
+        };
+
+        for (int i = 0; i < warnings.length; i++) {
+            double textY = firstLineTopY + i * (contentFontHeight + lineSpacing);
+            dtPrinter.drawText(warnings[i], borderMarginX, textY, borderWidth, 0, contentFontHeight);
+        }
+
+        // 3. 结束当前页面绘制
+        dtPrinter.endPage();
+        // 4. 提交打印任务
+        dtPrinter.commitJob();
+    }
+
+
+
+
+
 
     private void printQRCodeAssets_JC_WebQR_Double(String accountName, Assets assets, String[] fieldArray) throws NoSuchFieldException, IllegalAccessException {
         LPAPI dtPrinter = application.getDTPrinter();

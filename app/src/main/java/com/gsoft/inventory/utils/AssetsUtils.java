@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +27,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import okhttp3.Call;
 
 /**
  * @author 10904
@@ -36,6 +39,7 @@ public class AssetsUtils {
     public static void uploadAssets(Assets assets, Context context) {
         boolean isNet = NetworkUtils.checkNetConnect(context);
         if (!isNet) {
+            showToast(context, "当前没有网络，联网上传失败");
             return;
         }
 
@@ -72,6 +76,11 @@ public class AssetsUtils {
 
             @Override
             public void onResponseFailure(String errMessage) {
+                showToast(context, "联网上传失败");
+            }
+
+            @Override
+            public void onFailure(Call call, IOException e) {
                 showToast(context, "联网上传失败");
             }
         });

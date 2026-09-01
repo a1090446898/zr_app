@@ -22,8 +22,8 @@ public class SysDefine {
     public static final String TRANS_DISPOSE_CODE = "TRANS_DISPOSE_CODE";
     public static final String TRANS_SIGNATURE_PHOTO = "TRANS_SIGNATURE_PHOTO";
 
-//    public static String SERVERHOST = "http://www.zrast.com/";
-    public static String SERVERHOST = "http://192.168.2.156:80/";
+    public static String SERVERHOST = "http://www.zrast.com/";
+//    public static String SERVERHOST = "http://192.168.2.156:80/";
 
     public static String WEB_URL = "http://www.zrast.com:8034";
 //    public static String WEB_URL = "http://192.168.2.103:8082";
