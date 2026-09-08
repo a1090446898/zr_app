@@ -8,8 +8,8 @@ android {
         minSdkVersion 23
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 30
-        versionCode 325
-        versionName "3.2.5"
+        versionCode 326
+        versionName "3.2.6"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
         ndk {
@@ -104,16 +104,26 @@ android {
     }
 }
 
+configurations.all {
+    exclude group: 'com.android.support'
+}
 
 dependencies {
 
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['platform_sdk_v4.0.0802.jar'])
 
     implementation files('libs/LPAPI-2021-02-02-R.jar')
-    implementation files('libs/platform_sdk_v4.0.0802.jar')
+    compileOnly files('libs/platform_sdk_v4.0.0802.jar')
     implementation files('libs/DeviceAPI_ver20241125_release.aar')
+    // 得实DSPDA手持设备RFID识别SDK（RFIDModule内含URFIDLibrary/libDevice，libUHF需单独引入）
+    implementation files('libs/RFIDModuleS005.5.3.1.aar')
+    implementation files('libs/libUHF_v3.6.6_20260202.aar')
+    implementation files('libs/libDevice_v1.8.3_2025-03-25.aar')
+    implementation files('libs/URFIDLibrary-v2.5.1110.aar')
     implementation files('libs/CDFPSKAndroid.jar')
     implementation files('libs/IGLBarDecoder.jar')
+    // AAR引用了Kotlin运行时，防止类缺失
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.10'
 
     // 核心依赖
     implementation 'androidx.appcompat:appcompat:1.3.0'
@@ -142,8 +152,8 @@ dependencies {
 
 
     implementation 'com.qmuiteam:qmui:1.4.4'
+//    implementation 'com.qmuiteam:qmui:2.1.0'
     implementation 'com.github.satyan:sugar:1.5'
-
     implementation 'com.contrarywind:Android-PickerView:4.1.6'
     implementation 'com.jakewharton:butterknife:10.2.3'
     implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.5.1'

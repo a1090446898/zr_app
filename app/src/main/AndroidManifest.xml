@@ -86,7 +86,7 @@
         <!--数据库版本号，生成表需要更新该版本号,在assets，sugar_upgrades目录下新建version.sql文件-->
         <meta-data
             android:name="VERSION"
-            android:value="61" />
+            android:value="62" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />
@@ -98,7 +98,13 @@
             android:name=".Activity111"
             android:launchMode="singleTask" />
         <activity android:name=".BluetoothDeviceActivity" />
+        <activity android:name=".RfidReadActivity" />
         <activity android:name=".PrintLabelActivity" />
+        <!--更新安装失败引导页-->
+        <activity
+            android:name=".update.UpdateManualInstallActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity android:name=".ImportAssetsActivity" />
         <activity android:name=".AssetsQueryActivity" />
         <activity android:name=".AssetsViewActivity" />

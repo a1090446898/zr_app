@@ -337,6 +337,27 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
+                android:text="资产位置："/>
+
+        <EditText
+                android:id="@+id/editGROUNDSETPOS"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="资产位置"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
                 android:text="管理部门："/>
 
         <EditText
@@ -1213,6 +1234,29 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
+                android:text="出厂日期："/>
+
+        <EditText
+                android:id="@+id/editFACTORYDATE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="出厂日期"
+                android:inputType="date"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
                 android:text="管理编号："/>
 
         <EditText
@@ -1221,6 +1265,90 @@
                 android:layout_width="0dp"
                 android:layout_weight="3"
                 android:hint="管理编号"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="特种设备："/>
+
+        <EditText
+                android:id="@+id/editSPECIALDEVICE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="特种设备"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="设备注册代码："/>
+
+        <EditText
+                android:id="@+id/editDEVICECODE"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="设备注册代码"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="2"
+                android:text="特种设备出厂编号："/>
+
+        <EditText
+                android:id="@+id/editSPECIALFACTORYNO"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="特种设备出厂编号"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="使用登记证编号："/>
+
+        <EditText
+                android:id="@+id/editCERTIFICATENUMBER"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="使用登记证编号"/>
     </LinearLayout>
 
     <LinearLayout

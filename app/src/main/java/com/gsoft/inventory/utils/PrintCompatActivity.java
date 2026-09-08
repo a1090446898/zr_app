@@ -630,15 +630,17 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         final double borderPaddingTop = 1.2;
         double firstLineTopY = borderTopY + borderPaddingTop;
 
-        String[] warnings = {
-                "公安网专用",
-                "严禁违规与其他网络链接",
-                "严禁存储和处理国家秘密信息"
-        };
+        // 警示内容支持设置页自定义（KEY_POLICE_WARNING_CONTENT），未配置时使用默认文案
+        String[] warnings = getPoliceWarningContent();
 
         for (int i = 0; i < warnings.length; i++) {
             double textY = firstLineTopY + i * (contentFontHeight + lineSpacing);
-            dtPrinter.drawText(warnings[i], borderMarginX, textY, borderWidth, 0, contentFontHeight);
+            // 单行超长时自动缩小字号，避免文字溢出边框（框内宽约64mm，3.2mm字号约容纳20个汉字）
+            double lineFontHeight = contentFontHeight;
+            if (warnings[i].length() > 20) {
+                lineFontHeight = Math.max(2.0, borderWidth / warnings[i].length());
+            }
+            dtPrinter.drawText(warnings[i], borderMarginX, textY, borderWidth, 0, lineFontHeight);
         }
 
         // 3. 结束当前页面绘制
@@ -647,8 +649,26 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         dtPrinter.commitJob();
     }
 
-
-
+    /**
+     * 获取公安警告标签警示内容：优先取设置页自定义内容，未配置时使用默认文案
+     */
+    private String[] getPoliceWarningContent() {
+        String content = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_POLICE_WARNING_CONTENT, "");
+        if (StringUtils.isNullOrEmpty(content)) {
+            content = SysConfig.POLICE_WARNING_DEFAULT;
+        }
+        List<String> validLines = new ArrayList<>();
+        for (String line : content.split("\n")) {
+            String trimLine = line.trim();
+            if (!StringUtils.isNullOrEmpty(trimLine) && validLines.size() < 3) {
+                validLines.add(trimLine);
+            }
+        }
+        if (validLines.isEmpty()) {
+            return SysConfig.POLICE_WARNING_DEFAULT.split("\n");
+        }
+        return validLines.toArray(new String[0]);
+    }
 
 
 

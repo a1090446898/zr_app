@@ -109,7 +109,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                         startActivity(intentScan);
                         break;
                     case "导入资产":
-                        boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"0"}) > 0;
+                        boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"}) > 0;
                         if (hasLocalRecord) {
                             QMUIDialog.MessageDialogBuilder builder = new QMUIDialog.MessageDialogBuilder(mContext);
                             builder.setTitle("系统提示")
@@ -470,7 +470,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "0");
+            List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
             StringBuilder stringBuilder = new StringBuilder();
             if (assetsList.size() > 0) {
                 JsonArray jsonArray = new JsonArray();

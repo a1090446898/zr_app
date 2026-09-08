@@ -212,6 +212,10 @@ public class EditAssetsActivity extends AssetsBaseActivity {
             changes.append("存放地点, ");
             hasChanges = true;
         }
+        if (!Objects.equals(oldAsset.getGROUNDSETPOS(), newAsset.getGROUNDSETPOS())) {
+            changes.append("资产位置, ");
+            hasChanges = true;
+        }
         if (!Objects.equals(oldAsset.getGROUNDMANAGEDEPT(), newAsset.getGROUNDMANAGEDEPT())) {
             changes.append("管理部门, ");
             hasChanges = true;
@@ -377,9 +381,29 @@ public class EditAssetsActivity extends AssetsBaseActivity {
             changes.append("出厂编号, ");
             hasChanges = true;
         }
+        if (!Objects.equals(oldAsset.getFACTORYDATE(), newAsset.getFACTORYDATE())) {
+            changes.append("出厂日期, ");
+            hasChanges = true;
+        }
 
         if (!Objects.equals(oldAsset.getMANAGENO(), newAsset.getMANAGENO())) {
             changes.append("管理编号, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getSPECIALDEVICE(), newAsset.getSPECIALDEVICE())) {
+            changes.append("特种设备, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getDEVICECODE(), newAsset.getDEVICECODE())) {
+            changes.append("设备注册代码, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getSPECIALFACTORYNO(), newAsset.getSPECIALFACTORYNO())) {
+            changes.append("特种设备出厂编号, ");
+            hasChanges = true;
+        }
+        if (!Objects.equals(oldAsset.getCERTIFICATENUMBER(), newAsset.getCERTIFICATENUMBER())) {
+            changes.append("使用登记证编号, ");
             hasChanges = true;
         }
         if (!Objects.equals(oldAsset.getPARAMETERS(), newAsset.getPARAMETERS())) {

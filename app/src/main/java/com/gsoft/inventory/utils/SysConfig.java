@@ -36,6 +36,14 @@ public class SysConfig {
      * 照片文件夹
      */
     public static String apk_temp_file = Environment.getExternalStorageDirectory().getPath() + "/inventory/files/inventory.apk";
+    /**
+     * 更新包下载文件夹（公共目录，安装失败时便于用户手动安装）
+     */
+    public static String apkUpdateDirectory = Environment.getExternalStorageDirectory().getPath() + "/inventory/apk/";
+    /**
+     * 公安警告标签默认警示文案（每行一条，\n分隔）
+     */
+    public static final String POLICE_WARNING_DEFAULT = "公安网专用\n严禁违规与其他网络链接\n严禁存储和处理国家秘密信息";
 
     public static String[] assetsFieldsArray =  null;
 
@@ -59,6 +67,10 @@ public class SysConfig {
             File filePhoto = new File(photoDirectory);
             if (!filePhoto.exists()) {
                 filePhoto.mkdirs();
+            }
+            File fileApk = new File(apkUpdateDirectory);
+            if (!fileApk.exists()) {
+                fileApk.mkdirs();
             }
         }
     }

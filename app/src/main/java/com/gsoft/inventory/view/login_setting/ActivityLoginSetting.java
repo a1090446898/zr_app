@@ -3,6 +3,7 @@ package com.gsoft.inventory.view.login_setting;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.*;
 import butterknife.BindArray;
@@ -169,12 +170,16 @@ public class ActivityLoginSetting extends BaseCompatActivity {
         // 设置监听事件
         editPrinter.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
                 .addItems(printeEffectArray, (dialog, which) -> {
-                    editPrinter.setText(printeEffectArray[which]);
-                    if ("网页二维码-二字段".equals(printeEffectArray[which])) {
+                    String effect = printeEffectArray[which];
+                    editPrinter.setText(effect);
+                    dialog.dismiss();
+                    if ("网页二维码-二字段".equals(effect)) {
                         SharedPreferencesUtils.deleShare(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE);
                         SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, fields);
+                    } else if ("公安警告标签".equals(effect)) {
+                        // 选择公安警告标签后，弹出警示内容编辑框
+                        showPoliceWarningEditDialog();
                     }
-                    dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
 
@@ -343,6 +348,37 @@ public class ActivityLoginSetting extends BaseCompatActivity {
         });
 
         builder.create(mCurrentDialogStyle).show();
+    }
+
+
+    /**
+     * 编辑公安警告标签警示内容（最多3行，每行建议不超过20个汉字）
+     */
+    private void showPoliceWarningEditDialog() {
+        String savedContent = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_POLICE_WARNING_CONTENT, "");
+        if (StringUtils.isNullOrEmpty(savedContent)) {
+            savedContent = SysConfig.POLICE_WARNING_DEFAULT;
+        }
+        final QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(mContext);
+        builder.setTitle("公安警告标签内容")
+                .setPlaceholder("每行一条警示语，最多3行，每行不超过20个汉字")
+                .setDefaultText(savedContent)
+                .setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                .addAction("取消", (dialog, index) -> dialog.dismiss())
+                .addAction("确定", (dialog, index) -> {
+                    String content = builder.getEditText().getText().toString().trim();
+                    if (StringUtils.isNullOrEmpty(content)) {
+                        showShortText("内容不能为空，未保存");
+                        return;
+                    }
+                    if (content.split("\n").length > 3) {
+                        showShortText("最多3行警示语，未保存");
+                        return;
+                    }
+                    SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_POLICE_WARNING_CONTENT, content);
+                    showShortText("公安警告标签内容已保存");
+                })
+                .create(mCurrentDialogStyle).show();
     }
 
 

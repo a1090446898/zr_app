@@ -150,7 +150,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String ISMODIFY = "0";*/
 
     /*是否上传*/
-    private String ISUPLOAD = "0";
+    private String ISUPLOAD = "02";
 
     public Integer getIDNUM() {
         if(IDNUM == null){

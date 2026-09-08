@@ -156,6 +156,9 @@ public class AssetsViewActivity extends PrintCompatActivity {
     /*存放地点*/
     @BindView(R.id.tvASSETSLAYADD)
     TextView tvASSETSLAYADD;
+    /*资产位置*/
+    @BindView(R.id.tvGROUNDSETPOS)
+    TextView tvGROUNDSETPOS;
     /*使用人*/
     @BindView(R.id.tvASSETSUSER)
     TextView tvASSETSUSER;
@@ -248,6 +251,16 @@ public class AssetsViewActivity extends PrintCompatActivity {
     TextView editCCBH;
     @BindView(R.id.editGLBH)
     TextView editGLBH;
+    @BindView(R.id.tvFACTORYDATE)
+    TextView tvFACTORYDATE;
+    @BindView(R.id.tvSPECIALDEVICE)
+    TextView tvSPECIALDEVICE;
+    @BindView(R.id.tvDEVICECODE)
+    TextView tvDEVICECODE;
+    @BindView(R.id.tvSPECIALFACTORYNO)
+    TextView tvSPECIALFACTORYNO;
+    @BindView(R.id.tvCERTIFICATENUMBER)
+    TextView tvCERTIFICATENUMBER;
     @BindView(R.id.editCANSHU)
     TextView editCANSHU;
     @BindView(R.id.editSYZQ)
@@ -460,6 +473,8 @@ public class AssetsViewActivity extends PrintCompatActivity {
         tvDPRECIATIONTYPE.setText(DictionaryHelper.getDictionaryName(assets.getDPRECIATIONTYPE(), zjztArray));
         /*存放地点*/
         tvASSETSLAYADD.setText(assets.getASSETSLAYADD() + "");
+        /*资产位置*/
+        tvGROUNDSETPOS.setText(assets.getGROUNDSETPOS() + "");
         /*使用人*/
         tvASSETSUSER.setText(assets.getASSETSUSER() + "");
         /*使用部门*/
@@ -522,7 +537,12 @@ public class AssetsViewActivity extends PrintCompatActivity {
         editSCCJ.setText(assets.getASSETSSUPPLIER() + "");
         editVENDOR.setText(assets.getVENDOR() + "");
         editCCBH.setText(assets.getFACTORYNO() + "");
+        tvFACTORYDATE.setText(assets.getFACTORYDATE() + "");
         editGLBH.setText(assets.getMANAGENO() + "");
+        tvSPECIALDEVICE.setText(assets.getSPECIALDEVICE() + "");
+        tvDEVICECODE.setText(assets.getDEVICECODE() + "");
+        tvSPECIALFACTORYNO.setText(assets.getSPECIALFACTORYNO() + "");
+        tvCERTIFICATENUMBER.setText(assets.getCERTIFICATENUMBER() + "");
         editCANSHU.setText(assets.getPARAMETERS() + "");
         editSYZQ.setText(assets.getTRACEABILITY() + "");
         editSYFS.setText(DictionaryHelper.getDictionaryName(assets.getTRACEABILITYPE(), syfsArray));
@@ -574,7 +594,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
         // 同步情况
         String isUpload = assets.getISUPLOAD();
         String isuploadStr = "已同步";
-        if("0".equals(isUpload)){
+        if("02".equals(isUpload)){
             isuploadStr = "未同步";
         }
         editISUPLOAD.setText(isuploadStr);

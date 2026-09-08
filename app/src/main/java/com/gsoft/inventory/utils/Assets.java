@@ -112,7 +112,7 @@ public class Assets extends SugarRecord implements Serializable {
     /*是否修改
     private String ISMODIFY = "0";*/
 
-    /*是否上传*/
+    /*是否上传,02未传，01已传*/
     private String ISUPLOAD = "02";
 
     /*是否财政资产*/
@@ -362,6 +362,31 @@ public class Assets extends SugarRecord implements Serializable {
      * 所属处室
      */
     private String DEPARTMENT;
+
+    /**
+     * 资产位置
+     */
+    private String GROUNDSETPOS;
+    /**
+     * 出厂日期
+     */
+    private String FACTORYDATE;
+    /**
+     * 特种设备
+     */
+    private String SPECIALDEVICE;
+    /**
+     * 设备注册代码
+     */
+    private String DEVICECODE;
+    /**
+     * 特种设备出厂编号
+     */
+    private String SPECIALFACTORYNO;
+    /**
+     * 使用登记证编号
+     */
+    private String CERTIFICATENUMBER;
 
     public String getISCZ() {
         return ISCZ;
@@ -1377,5 +1402,53 @@ public class Assets extends SugarRecord implements Serializable {
 
     public void setDEPARTMENT(String DEPARTMENT) {
         this.DEPARTMENT = DEPARTMENT;
+    }
+
+    public String getGROUNDSETPOS() {
+        return GROUNDSETPOS;
+    }
+
+    public void setGROUNDSETPOS(String GROUNDSETPOS) {
+        this.GROUNDSETPOS = GROUNDSETPOS;
+    }
+
+    public String getFACTORYDATE() {
+        return FACTORYDATE;
+    }
+
+    public void setFACTORYDATE(String FACTORYDATE) {
+        this.FACTORYDATE = FACTORYDATE;
+    }
+
+    public String getSPECIALDEVICE() {
+        return SPECIALDEVICE;
+    }
+
+    public void setSPECIALDEVICE(String SPECIALDEVICE) {
+        this.SPECIALDEVICE = SPECIALDEVICE;
+    }
+
+    public String getDEVICECODE() {
+        return DEVICECODE;
+    }
+
+    public void setDEVICECODE(String DEVICECODE) {
+        this.DEVICECODE = DEVICECODE;
+    }
+
+    public String getSPECIALFACTORYNO() {
+        return SPECIALFACTORYNO;
+    }
+
+    public void setSPECIALFACTORYNO(String SPECIALFACTORYNO) {
+        this.SPECIALFACTORYNO = SPECIALFACTORYNO;
+    }
+
+    public String getCERTIFICATENUMBER() {
+        return CERTIFICATENUMBER;
+    }
+
+    public void setCERTIFICATENUMBER(String CERTIFICATENUMBER) {
+        this.CERTIFICATENUMBER = CERTIFICATENUMBER;
     }
 }

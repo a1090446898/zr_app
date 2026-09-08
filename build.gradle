@@ -6,6 +6,8 @@ buildscript {
     }
     dependencies {
 //        classpath 'com.android.tools.build:gradle:3.2.1'
+        // 升级R8/D8以兼容新版Kotlin编译的AAR（dstp2x/得实DSPDA SDK），必须声明在AGP之前
+        classpath 'com.android.tools:r8:8.3.37'
         classpath 'com.android.tools.build:gradle:3.6.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
         classpath "com.huawei.agconnect:agcp:1.6.0.300"
@@ -15,15 +17,18 @@ buildscript {
 allprojects {
     repositories {
 
-        // 官方仓库
-        google()
-        mavenCentral()
-
-        maven { url 'https://www.jitpack.io' }
         // 国内镜像仓库放在前面提高下载速度
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
+
+        // 官方仓库
+        google()
+        mavenCentral()
+
+
+        maven { url 'https://www.jitpack.io' }
+
         // 华为仓库
         maven { url 'https://developer.huawei.com/repo/' }
         // 其他仓库

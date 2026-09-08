@@ -383,6 +383,12 @@
         <item>NETTYPE</item>
         <item>ISGWC</item>
         <item>DEPARTMENT</item>
+        <item>GROUNDSETPOS</item>
+        <item>FACTORYDATE</item>
+        <item>SPECIALDEVICE</item>
+        <item>DEVICECODE</item>
+        <item>SPECIALFACTORYNO</item>
+        <item>CERTIFICATENUMBER</item>
 
     </array>
 

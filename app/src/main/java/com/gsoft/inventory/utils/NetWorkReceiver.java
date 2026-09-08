@@ -146,7 +146,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
             return;
         }
         lastSyncAssetsTime = System.currentTimeMillis();
-        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "0");
+        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
         if (!assetsList.isEmpty()) {
             ///一分半的同步时间，超时退出
             JsonArray jsonArray = new JsonArray();
@@ -164,7 +164,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"0"});
+                long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"});
                 if (waitingSyncCount == 0) {
                     isSyncAssets = false;
                 }

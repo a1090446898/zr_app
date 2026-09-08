@@ -44,7 +44,7 @@ public class DataTransmitHelper {
     }
 
     public static void onExportAssetsOver() {
-        Iterator<Assets> assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "0");
+        Iterator<Assets> assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "02");
         while (assetsIterator.hasNext()) {
             Assets assets = assetsIterator.next();
             assets.setISUPLOAD("01");
@@ -81,7 +81,7 @@ public class DataTransmitHelper {
     public static String exportAssets(String saveFilePath, boolean isAll) {
         Iterator<Assets> assetsIterator = null;
         if (isAll) assetsIterator = Assets.findAll(Assets.class);
-        else assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "0");
+        else assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "02");
         return exportAssets(assetsIterator, saveFilePath);
     }
 
@@ -359,6 +359,14 @@ public class DataTransmitHelper {
         /*是否公物仓、所属处室：兼容本地导出文件（98字段）与服务器导入数据（99字段）*/
         assets.setISGWC(safeGet(rowStrArray, 98));
         assets.setDEPARTMENT(safeGet(rowStrArray, 99));
+
+        /*101-106：资产位置/出厂日期/特种设备/设备注册代码/特种设备出厂编号/使用登记证编号*/
+        assets.setGROUNDSETPOS(safeGet(rowStrArray, 100));
+        assets.setFACTORYDATE(safeGet(rowStrArray, 101));
+        assets.setSPECIALDEVICE(safeGet(rowStrArray, 102));
+        assets.setDEVICECODE(safeGet(rowStrArray, 103));
+        assets.setSPECIALFACTORYNO(safeGet(rowStrArray, 104));
+        assets.setCERTIFICATENUMBER(safeGet(rowStrArray, 105));
 
     }
 

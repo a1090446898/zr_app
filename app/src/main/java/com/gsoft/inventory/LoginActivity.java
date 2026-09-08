@@ -20,6 +20,7 @@ import com.gsoft.inventory.service.login.SyncPrintLogTask;
 import com.gsoft.inventory.service.login.SyncServerAccountsTask;
 import com.gsoft.inventory.service.login.SyncZCQCYTask;
 import com.gsoft.inventory.update.OkHttpUtilsUpdateService;
+import com.gsoft.inventory.update.GuideInstallListener;
 import com.gsoft.inventory.utils.*;
 import com.gsoft.inventory.view.home.MainActivity;
 import com.gsoft.inventory.view.login_setting.ActivityLoginSetting;
@@ -35,6 +36,7 @@ import java.util.List;
 
 import static com.gsoft.inventory.const_data.Log_file_name.gson;
 import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION;
+import static com.xuexiang.xupdate.entity.UpdateError.ERROR.INSTALL_FAILED;
 
 /**
  * 联网登录页面
@@ -321,13 +323,17 @@ public class LoginActivity extends BaseCompatActivity {
                     @Override
                     public void onFailure(UpdateError error) {
                         //对不同错误进行处理
-                        if (error.getCode() != CHECK_NO_NEW_VERSION) {
+                        if (error.getCode() != CHECK_NO_NEW_VERSION && error.getCode() != INSTALL_FAILED) {
                             Toast.makeText(LoginActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 })
+                //设置apk下载缓存目录到公共目录，安装失败时用户可直接前往手动安装
+                .setApkCacheDir(SysConfig.apkUpdateDirectory)
                 //设置是否支持静默安装，默认是true
-                .supportSilentInstall(true)
+                .supportSilentInstall(false)
+                //设置安装监听，自动安装失败时引导用户手动覆盖安装
+                .setOnInstallListener(new GuideInstallListener())
                 //这个必须设置！实现网络请求功能。
                 .setIUpdateHttpService(new OkHttpUtilsUpdateService())
                 .init(getApplication());

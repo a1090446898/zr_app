@@ -317,6 +317,7 @@ public class HomeFragment extends BaseFragment {
         rootMenus.add(new GridMenuItem("数字签名", R.drawable.icon_check_1_colorful, "数字签名", ""));
         rootMenus.add(new GridMenuItem("批量复制", R.drawable.icon_check_2_colorful, "批量复制", ""));
         rootMenus.add(new GridMenuItem("照片清除", R.drawable.icon_save_colorful, "照片清除", ""));
+        rootMenus.add(new GridMenuItem("RFID盘点", R.drawable.icon_barcode, "RFID盘点", ""));
 
         topBar.addRightTextButton("签名", R.id.qmui_tab_segment_item_id).setOnClickListener(v -> {
             startActivity(new Intent(mContext, SignatureActivity.class));
@@ -504,7 +505,7 @@ public class HomeFragment extends BaseFragment {
                 startActivity(intentScan);
                 break;
             case "导入资产":
-                boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"0"}) > 0;
+                boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"}) > 0;
                 if (hasLocalRecord) {
                     showShortText("当前有未上传的资产数据，请先上传同步！");
                     break;
@@ -550,6 +551,10 @@ public class HomeFragment extends BaseFragment {
                 break;
             case "照片清除":
                 this.cleanPhoto();
+                break;
+            case "RFID盘点":
+                Intent intentRfid = new Intent(mContext, RfidReadActivity.class);
+                startActivity(intentRfid);
                 break;
 
         }

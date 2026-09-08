@@ -195,6 +195,9 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     /*存放地点*/
     @BindView(R.id.editASSETSLAYADD)
     public EditText editASSETSLAYADD;
+    /*资产位置*/
+    @BindView(R.id.editGROUNDSETPOS)
+    public EditText editGROUNDSETPOS;
     /*使用人*/
     @BindView(R.id.editASSETSUSER)
     public AutoCompleteTextView editASSETSUSER;
@@ -283,8 +286,27 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     public EditText editSCCJ;
     @BindView(R.id.editCCBH)
     public EditText editCCBH;
+
+    /*出厂日期*/
+    @BindView(R.id.editFACTORYDATE)
+    public EditText editFACTORYDATE;
+
     @BindView(R.id.editGLBH)
     public EditText editGLBH;
+
+    /*特种设备*/
+    @BindView(R.id.editSPECIALDEVICE)
+    public EditText editSPECIALDEVICE;
+    /*设备注册代码*/
+    @BindView(R.id.editDEVICECODE)
+    public EditText editDEVICECODE;
+    /*特种设备出厂编号*/
+    @BindView(R.id.editSPECIALFACTORYNO)
+    public EditText editSPECIALFACTORYNO;
+    /*使用登记证编号*/
+    @BindView(R.id.editCERTIFICATENUMBER)
+    public EditText editCERTIFICATENUMBER;
+
     @BindView(R.id.editCANSHU)
     public EditText editCANSHU;
     @BindView(R.id.editSYZQ)
@@ -515,6 +537,9 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editJDJZRQ.setFocusableInTouchMode(false);
         editJDJZRQ.setFocusable(false);
 
+        editFACTORYDATE.setFocusableInTouchMode(false);
+        editFACTORYDATE.setFocusable(false);
+
         editSAMPLDATE.setFocusable(false);
         editSAMPLESTATE.setFocusable(false);
         editPURPOSE.setFocusable(false);
@@ -639,6 +664,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setASSETSENDUSEDATE(editASSETSENDUSEDATE.getText().toString());
         assetsCreating.setYEARCOUNT(editYEARCOUNT.getText().toString());
         assetsCreating.setASSETSLAYADD(editASSETSLAYADD.getText().toString());
+        assetsCreating.setGROUNDSETPOS(editGROUNDSETPOS.getText().toString());
         assetsCreating.setASSETSDEPT(editASSETSDEPT.getText().toString());
         String zichanStr = getZichanStr();
         assetsCreating.setASSETSCURRPRICE(zichanStr);
@@ -669,7 +695,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setASSETSSUPPLIER(editSCCJ.getText().toString());
         assetsCreating.setVENDOR(editVENDOR.getText().toString());
         assetsCreating.setFACTORYNO(editCCBH.getText().toString());
+        assetsCreating.setFACTORYDATE(editFACTORYDATE.getText().toString());
         assetsCreating.setMANAGENO(editGLBH.getText().toString());
+        assetsCreating.setSPECIALDEVICE(editSPECIALDEVICE.getText().toString());
+        assetsCreating.setDEVICECODE(editDEVICECODE.getText().toString());
+        assetsCreating.setSPECIALFACTORYNO(editSPECIALFACTORYNO.getText().toString());
+        assetsCreating.setCERTIFICATENUMBER(editCERTIFICATENUMBER.getText().toString());
         assetsCreating.setPARAMETERS(editCANSHU.getText().toString());
         assetsCreating.setTRACEABILITY(editSYZQ.getText().toString());
         assetsCreating.setCALIBRATIONDATE(editJDJZRQ.getText().toString());
@@ -876,6 +907,9 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editDPRECIATIONTYPE.setText(DictionaryHelper.getDictionaryName(assetsCreating.getDPRECIATIONTYPE(), zjztArray));
         /*存放地点*/
         editASSETSLAYADD.setText(assetsCreating.getASSETSLAYADD());
+
+        /*资产位置*/
+        editGROUNDSETPOS.setText(assetsCreating.getGROUNDSETPOS());
         /*使用人*/
         editASSETSUSER.setText(assetsCreating.getASSETSUSER());
         /*使用部门*/
@@ -935,7 +969,12 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editSCCJ.setText(assetsCreating.getASSETSSUPPLIER());
         editVENDOR.setText(assetsCreating.getVENDOR());
         editCCBH.setText(assetsCreating.getFACTORYNO());
+        editFACTORYDATE.setText(assetsCreating.getFACTORYDATE());
         editGLBH.setText(assetsCreating.getMANAGENO());
+        editSPECIALDEVICE.setText(assetsCreating.getSPECIALDEVICE());
+        editDEVICECODE.setText(assetsCreating.getDEVICECODE());
+        editSPECIALFACTORYNO.setText(assetsCreating.getSPECIALFACTORYNO());
+        editCERTIFICATENUMBER.setText(assetsCreating.getCERTIFICATENUMBER());
         editCANSHU.setText(assetsCreating.getPARAMETERS());
         editSYZQ.setText(assetsCreating.getTRACEABILITY());
         //editSYFS.setText(assetsCreating.getTRACEABILITYPE());
@@ -1141,6 +1180,25 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                 editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
             }
         }, mYear, mMonth, mDay).show());
+
+        editYXQZ.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+                Calendar tCalendar = Calendar.getInstance();
+                tCalendar.set(year, month, dayOfMonth);
+                editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
+            }
+        }, mYear, mMonth, mDay).show());
+
+        editFACTORYDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
+                Calendar tCalendar = Calendar.getInstance();
+                tCalendar.set(year, month, dayOfMonth);
+                editFACTORYDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
+            }
+        }, mYear, mMonth, mDay).show());
+
         editIsSueDate.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
             Calendar tCalendar = Calendar.getInstance();
             tCalendar.set(year, month, dayOfMonth);

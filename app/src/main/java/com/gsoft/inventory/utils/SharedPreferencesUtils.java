@@ -20,6 +20,8 @@ public class SharedPreferencesUtils {
     public static final String KEY_PRINT_EFFECT = "KEY_PRINT_EFFECT";
     public static final String KEY_PRINT_TITLE = "KEY_PRINT_TITLE";
     public static final String KEY_PRINT_POSITION = "KEY_PRINT_POSITION";
+    // 公安警告标签警示文案（多行，\n分隔，支持设置页自定义）
+    public static final String KEY_POLICE_WARNING_CONTENT = "KEY_POLICE_WARNING_CONTENT";
     public static final String SP_KEY_SERVERHOST = "SP_KEY_SERVERHOST";
     public static final String KEY_ZCQCYNAME = "SP_KEY_ZCQCYNAME";
     public static final String KEY_ZCQCYCODE = "SP_KEY_ZCQCYCODE";
@@ -29,6 +31,12 @@ public class SharedPreferencesUtils {
     public static final String KEY_PRINTER_NAME = "KEY_PRINTER_NAME";
     public static final String KEY_PRINTER_TYPE = "KEY_PRINTER_TYPE";
     public static final String KEY_OFFLINE_LOGIN = "KEY_OFFLINE_LOGIN";
+
+    // RFID手持机UHF模块扫描参数
+    public static final String KEY_UHF_POWER = "KEY_UHF_POWER";
+    public static final String KEY_UHF_MODE = "KEY_UHF_MODE";
+    public static final String KEY_UHF_SESSION = "KEY_UHF_SESSION";
+    public static final String KEY_UHF_REGION = "KEY_UHF_REGION";
 
     // 用来保存记录打印信息，存放为JSON格式
     public static final String KEY_SAVE_PRINT_INFO = "KEY_SAVE_PRINT_INFO";
