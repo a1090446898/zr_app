@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_white"
+    android:orientation="vertical"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp">
+
+    <!-- 部门/地点名称：不限行数，任何长度完整折行显示 -->
+    <TextView
+        android:id="@+id/tvDeptName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="部门名称"
+        android:textColor="@color/colorText"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <!-- 三列等分：数值在上(动态字号)标签在下 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvCounted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/inventory_count_green"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="已盘"
+                android:textColor="#999999"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvUncounted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/inventory_count_red"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="未盘"
+                android:textColor="#999999"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/inventory_count_black"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="全部"
+                android:textColor="#999999"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

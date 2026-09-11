@@ -73,6 +73,11 @@
 
     <!-- ColorHelper 颜色工具 -->
     <color name="colorHelper_square_alpha_background">@color/app_color_theme_4</color>
-    <color name="colorHelper_square_from_ratio_background">@color/app_color_blue</color>
+    <color name="colorHelper_square_from_ratio_background">@color/app_color_theme_3</color>
     <color name="colorHelper_square_to_ratio_background">@color/app_color_theme_3</color>
+
+    <!-- RFID盘点统计：已盘数量绿色 / 全部数量红色 -->
+    <color name="inventory_count_green">#2E9E5B</color>
+    <color name="inventory_count_red">#E53935</color>
+    <color name="inventory_count_black">#333333</color>
 </resources>

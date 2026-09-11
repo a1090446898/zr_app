@@ -396,6 +396,16 @@
         <item>是</item>
         <item>否</item>
     </array>
+
+    <array name="specialDeviceFields">
+        <item>是</item>
+        <item>否</item>
+    </array>
+
+    <array name="inventoryFilterFields">
+        <item>已盘</item>
+        <item>未盘</item>
+    </array>
     <string name="title_activity_offline_login">OfflineLoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

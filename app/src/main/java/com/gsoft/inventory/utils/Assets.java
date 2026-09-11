@@ -104,9 +104,10 @@ public class Assets extends SugarRecord implements Serializable {
 
     private String EMPTY1 = "";
     private String EMPTY2 = "";
-    /*盘点表1*/
+
+    /*盘点情况，01: 待盘点，02：盘实，03：盘盈，04：待核实*/
     private String PDZT;
-    /*盘点表2*/
+    /*盘点状态，01：未盘，02：已盘，空值也是未盘，未盘查询通常为ZT != 02*/
     private String ZT;
 
     /*是否修改

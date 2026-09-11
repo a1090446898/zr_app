@@ -111,6 +111,10 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindArray(R.array.gwcFields)
     public String[] gwcFields;
 
+    /*特种设备*/
+    @BindArray(R.array.specialDeviceFields)
+    public String[] specialDeviceFields;
+
     /*会计账簿*/
     @BindArray(R.array.accountBookFields)
     public String[] accountBookFields;
@@ -495,6 +499,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editNETTYPE.setCompoundDrawables(null, null, icon_right, null);
 
         editISGWC.setCompoundDrawables(null, null, icon_right, null);
+        editSPECIALDEVICE.setCompoundDrawables(null, null, icon_right, null);
 //        editOS.setCompoundDrawables(null, null, icon_right, null);
         editINSTALLDATE.setCompoundDrawables(null, null, icon_right, null);
     }
@@ -556,6 +561,8 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editBOOKKEEPINGTIME.setFocusableInTouchMode(false);
         editISGWC.setFocusable(false);
         editISGWC.setFocusableInTouchMode(false);
+        editSPECIALDEVICE.setFocusable(false);
+        editSPECIALDEVICE.setFocusableInTouchMode(false);
         editINSTALLDATE.setFocusable(false);
     }
 
@@ -697,7 +704,15 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setFACTORYNO(editCCBH.getText().toString());
         assetsCreating.setFACTORYDATE(editFACTORYDATE.getText().toString());
         assetsCreating.setMANAGENO(editGLBH.getText().toString());
-        assetsCreating.setSPECIALDEVICE(editSPECIALDEVICE.getText().toString());
+        /*特种设备：01是 02否，默认空*/
+        String specialDeviceStr = editSPECIALDEVICE.getText().toString();
+        assetsCreating.setSPECIALDEVICE("");
+        for (int i = 0; i < specialDeviceFields.length; i++) {
+            if (specialDeviceFields[i].equals(specialDeviceStr)) {
+                assetsCreating.setSPECIALDEVICE(String.format("%02d", i + 1));
+                break;
+            }
+        }
         assetsCreating.setDEVICECODE(editDEVICECODE.getText().toString());
         assetsCreating.setSPECIALFACTORYNO(editSPECIALFACTORYNO.getText().toString());
         assetsCreating.setCERTIFICATENUMBER(editCERTIFICATENUMBER.getText().toString());
@@ -971,7 +986,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editCCBH.setText(assetsCreating.getFACTORYNO());
         editFACTORYDATE.setText(assetsCreating.getFACTORYDATE());
         editGLBH.setText(assetsCreating.getMANAGENO());
-        editSPECIALDEVICE.setText(assetsCreating.getSPECIALDEVICE());
+        editSPECIALDEVICE.setText(DictionaryHelper.getDictionaryName(assetsCreating.getSPECIALDEVICE(), specialDeviceFields));
         editDEVICECODE.setText(assetsCreating.getDEVICECODE());
         editSPECIALFACTORYNO.setText(assetsCreating.getSPECIALFACTORYNO());
         editCERTIFICATENUMBER.setText(assetsCreating.getCERTIFICATENUMBER());
@@ -1360,7 +1375,18 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                     dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
-
+        // 特种设备选择：01是 02否
+        editSPECIALDEVICE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(specialDeviceFields, (dialog, which) -> {
+                    if (assetsCreating == null) {
+                        showShortText("请先选择资产");
+                        return;
+                    }
+                    editSPECIALDEVICE.setText(specialDeviceFields[which]);
+                    assetsCreating.setSPECIALDEVICE(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
         editGETMODE.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
                 .addItems(qdfsArray, (dialog, which) -> {
                     editGETMODE.setText(qdfsArray[which]);

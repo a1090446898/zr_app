@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F2F3F5"
+    android:orientation="vertical">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/qmui_topbar_height" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="盘点状态："
+            android:textColor="@color/colorText"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvInventoryFilter"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorDivider"
+            android:gravity="left"
+            android:padding="8dp"
+            android:text="已盘"
+            android:textColor="@color/primary_color"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 表头 -->
+            <LinearLayout
+                android:layout_width="490dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="110dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="资产名称"
+                    android:textColor="@color/colorFootMenu_text_checked"
+                    android:textSize="15sp" />
+
+                <View
+                    android:layout_width="1px"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/colorDark" />
+
+                <TextView
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="条码编号"
+                    android:textColor="@color/colorFootMenu_text_checked"
+                    android:textSize="15sp" />
+
+                <View
+                    android:layout_width="1px"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/colorDark" />
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="盘点情况"
+                    android:textColor="@color/colorFootMenu_text_checked"
+                    android:textSize="15sp" />
+
+                <View
+                    android:layout_width="1px"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/colorDark" />
+
+                <TextView
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="盘点状态"
+                    android:textColor="@color/colorFootMenu_text_checked"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/listStats"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/tvTotalCount"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/colorDivider"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textColor="@color/colorPrimary"
+        android:textSize="16sp" />
+</LinearLayout>

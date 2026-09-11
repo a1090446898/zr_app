@@ -318,6 +318,7 @@ public class HomeFragment extends BaseFragment {
         rootMenus.add(new GridMenuItem("批量复制", R.drawable.icon_check_2_colorful, "批量复制", ""));
         rootMenus.add(new GridMenuItem("照片清除", R.drawable.icon_save_colorful, "照片清除", ""));
         rootMenus.add(new GridMenuItem("RFID盘点", R.drawable.icon_barcode, "RFID盘点", ""));
+        rootMenus.add(new GridMenuItem("盘点统计", R.drawable.icon_inventory_count, "盘点统计", ""));
 
         topBar.addRightTextButton("签名", R.id.qmui_tab_segment_item_id).setOnClickListener(v -> {
             startActivity(new Intent(mContext, SignatureActivity.class));
@@ -553,8 +554,12 @@ public class HomeFragment extends BaseFragment {
                 this.cleanPhoto();
                 break;
             case "RFID盘点":
-                Intent intentRfid = new Intent(mContext, RfidReadActivity.class);
+                Intent intentRfid = new Intent(mContext, RfidStatsActivity.class);
                 startActivity(intentRfid);
+                break;
+            case "盘点统计":
+                Intent intentStats = new Intent(mContext, InventoryStatsActivity.class);
+                startActivity(intentStats);
                 break;
 
         }

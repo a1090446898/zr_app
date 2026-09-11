@@ -110,10 +110,12 @@ configurations.all {
 
 dependencies {
 
-    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['platform_sdk_v4.0.0802.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['platform_sdk_v4.0.0802.jar', 'uhf.jar'])
 
     implementation files('libs/LPAPI-2021-02-02-R.jar')
     compileOnly files('libs/platform_sdk_v4.0.0802.jar')
+    // 东集(SEUIC)UHF为系统包(com.seuic.uhf)，仅编译期引用，运行期由设备系统提供
+    compileOnly files('libs/uhf.jar')
     implementation files('libs/DeviceAPI_ver20241125_release.aar')
     // 得实DSPDA手持设备RFID识别SDK（RFIDModule内含URFIDLibrary/libDevice，libUHF需单独引入）
     implementation files('libs/RFIDModuleS005.5.3.1.aar')

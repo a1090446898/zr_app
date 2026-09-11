@@ -1285,7 +1285,7 @@
                 style="@style/from_value"
                 android:layout_width="0dp"
                 android:layout_weight="3"
-                android:hint="特种设备"/>
+                android:hint="请选择特种设备"/>
     </LinearLayout>
 
     <LinearLayout

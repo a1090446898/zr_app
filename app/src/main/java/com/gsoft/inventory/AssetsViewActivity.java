@@ -80,6 +80,9 @@ public class AssetsViewActivity extends PrintCompatActivity {
     String[] deviceTypeFields;
     @BindArray(R.array.osArray)
     public String[] osArray;
+    /*特种设备*/
+    @BindArray(R.array.specialDeviceFields)
+    String[] specialDeviceFields;
     //region  控件定义
     /*条码编号*/
     @BindView(R.id.tvDOCID)
@@ -234,10 +237,10 @@ public class AssetsViewActivity extends PrintCompatActivity {
     /*品牌*/
     @BindView(R.id.tvBRAND)
     TextView tvBRAND;
-    /*盘点表2*/
+    /*盘点状态：02已盘，其余(含空)未盘，页面底部显示*/
     @BindView(R.id.tvZT)
     TextView tvZT;
-    /*盘点表1*/
+    /*盘点情况：01待盘点 02盘实 03盘盈 04待核实，页面底部显示*/
     @BindView(R.id.tvPDZT)
     TextView tvPDZT;
     @BindView(R.id.tvISCZ)
@@ -525,10 +528,10 @@ public class AssetsViewActivity extends PrintCompatActivity {
         tvPURCHASINGORGANIZATION.setText(DictionaryHelper.getDictionaryName(assets.getPURCHASINGORGANIZATION(), cgzzxsArray));
         /*品牌*/
         tvBRAND.setText(assets.getBRAND() + "");
-        /*盘点表2*/
-        tvZT.setText(assets.getZTString());
-        /*盘点表1*/
-        tvPDZT.setText(assets.getPDZT() + "");
+        /*盘点状态（ZT）：02已盘，其余(含空)未盘*/
+        tvZT.setText(ztName(assets.getZT()));
+        /*盘点情况（PDZT）：01待盘点 02盘实 03盘盈 04待核实*/
+        tvPDZT.setText(pdztName(assets.getPDZT()));
         /*是否财政资产*/
         tvISCZ.setText("02".equals(assets.getISCZ()) ? "是" : "否");
 
@@ -539,7 +542,7 @@ public class AssetsViewActivity extends PrintCompatActivity {
         editCCBH.setText(assets.getFACTORYNO() + "");
         tvFACTORYDATE.setText(assets.getFACTORYDATE() + "");
         editGLBH.setText(assets.getMANAGENO() + "");
-        tvSPECIALDEVICE.setText(assets.getSPECIALDEVICE() + "");
+        tvSPECIALDEVICE.setText(DictionaryHelper.getDictionaryName(assets.getSPECIALDEVICE(), specialDeviceFields));
         tvDEVICECODE.setText(assets.getDEVICECODE() + "");
         tvSPECIALFACTORYNO.setText(assets.getSPECIALFACTORYNO() + "");
         tvCERTIFICATENUMBER.setText(assets.getCERTIFICATENUMBER() + "");
@@ -703,6 +706,32 @@ public class AssetsViewActivity extends PrintCompatActivity {
                     }
                 })
                 .build().show();
+    }
+
+    /**
+     * 盘点情况名称：01待盘点 02盘实 03盘盈 04待核实
+     */
+    private static String pdztName(String pdzt) {
+        if ("01".equals(pdzt)) {
+            return "待盘点";
+        }
+        if ("02".equals(pdzt)) {
+            return "盘实";
+        }
+        if ("03".equals(pdzt)) {
+            return "盘盈";
+        }
+        if ("04".equals(pdzt)) {
+            return "待核实";
+        }
+        return "";
+    }
+
+    /**
+     * 盘点状态名称：02已盘，其余(含空)未盘
+     */
+    private static String ztName(String zt) {
+        return "02".equals(zt) ? "已盘" : "未盘";
     }
 
 }

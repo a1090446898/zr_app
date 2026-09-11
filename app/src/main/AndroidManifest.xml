@@ -58,6 +58,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true">
+        <!-- 东集(SEUIC)UHF系统库：required=false保证得实等其他设备可正常安装运行 -->
+        <uses-library
+            android:name="com.seuic.uhf"
+            android:required="false" />
         <activity
             android:name=".ImportQCYActivity"
             android:exported="false" />
@@ -99,6 +103,7 @@
             android:launchMode="singleTask" />
         <activity android:name=".BluetoothDeviceActivity" />
         <activity android:name=".RfidReadActivity" />
+        <activity android:name=".RfidStatsActivity" android:exported="false" />
         <activity android:name=".PrintLabelActivity" />
         <!--更新安装失败引导页-->
         <activity
@@ -140,6 +145,7 @@
                   android:hardwareAccelerated="true"/>
 
         <activity android:name=".BatchCopyActivity" android:exported="false"  />
+        <activity android:name=".InventoryStatsActivity" android:exported="false" />
 
         <activity android:name=".ProtocolActivity" >
             <intent-filter>

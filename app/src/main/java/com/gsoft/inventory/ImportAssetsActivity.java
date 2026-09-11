@@ -95,7 +95,6 @@ public class ImportAssetsActivity extends BaseCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
         if (resultCode != Activity.RESULT_OK) {
             Log.e("ImportAssets", "onActivityResult() error, resultCode: " + resultCode);
             super.onActivityResult(requestCode, resultCode, data);

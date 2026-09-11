@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="490dp"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/tvASSETSNAME"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="@color/colorText"
+        android:textSize="15sp" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:background="@color/colorDark" />
+
+    <TextView
+        android:id="@+id/tvBARCODEID"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:ellipsize="middle"
+        android:gravity="center"
+        android:singleLine="true"
+        android:textColor="@color/colorText"
+        android:textSize="15sp" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:background="@color/colorDark" />
+
+    <TextView
+        android:id="@+id/tvPDZT"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:textColor="@color/colorText"
+        android:textSize="15sp" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:background="@color/colorDark" />
+
+    <TextView
+        android:id="@+id/tvZT"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:textColor="@color/colorText"
+        android:textSize="15sp" />
+</LinearLayout>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F2F3F5"
+    android:orientation="vertical">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/qmui_topbar_height" />
+
+    <!-- 全局盘点进度卡片：三列等分，数值在上(动态字号)标签在下 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_card_white"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="盘点统计"
+            android:textColor="@color/colorText"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvCountedTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/inventory_count_green"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="已盘"
+                    android:textColor="@color/inventory_count_green"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvUncountedTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/inventory_count_red"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="未盘"
+                    android:textColor="@color/inventory_count_red"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvAllTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/inventory_count_black"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="全部"
+                    android:textColor="@color/inventory_count_black"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSectionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp"
+        android:text="部门盘点统计"
+        android:textColor="@color/colorText"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- RecyclerView两列网格：行位置按行内最高卡片计算，长名称卡片不会溢出贴压下一行 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerDept"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="暂无资产数据"
+            android:textColor="#999999"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+
+</LinearLayout>
