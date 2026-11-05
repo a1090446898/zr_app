@@ -31,6 +31,12 @@ public class BadgeNotificationManager {
 
     // 申请通知栏权限以及桌面角标权限
     public void requestNotificationAndBadgePermissions() {
+        // 仅在首次登录时提示一次，后续不再提示
+        if (SharedPreferencesUtils.getBoolean(mContext, SharedPreferencesUtils.KEY_BADGE_PERMISSION_PROMPTED, false)) {
+            return;
+        }
+        SharedPreferencesUtils.putBoolean(mContext, SharedPreferencesUtils.KEY_BADGE_PERMISSION_PROMPTED, true);
+
         // 1. 申请通知栏权限（Android 13及以上）
         if (Build.VERSION.SDK_INT >= 33) {
             if (!NotificationUtils.checkNotificationPermission(mContext)) {

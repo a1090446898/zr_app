@@ -71,9 +71,11 @@
                     android:layout_marginRight="50dp"
                     android:layout_marginBottom="10dp"
                     android:drawablePadding="10dp"
-                    android:hint="请选择设备号"
+                    android:hint="设备号（自动生成）"
                     android:inputType="text"
                     android:maxLength="2"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
                     android:typeface="sans"/>
 
             <EditText

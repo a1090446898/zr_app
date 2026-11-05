@@ -5,19 +5,17 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import butterknife.BindView;
+import android.view.ViewTreeObserver;
+import android.widget.ScrollView;
 import butterknife.ButterKnife;
 import com.gsoft.inventory.abs.AssetsBaseActivity;
-import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.AssetsUtils;
 import com.gsoft.inventory.utils.StringUtils;
 import com.gsoft.inventory.utils.SysDefine;
-import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 
 import java.util.Objects;
-
-import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
 /**
  * @author 10904
@@ -53,12 +51,8 @@ public class EditAssetsActivity extends AssetsBaseActivity {
                 showShortText("资产信息错误，请先填写信息并保存！");
                 return;
             }
-            if (!isPrinterConnected()) {
-                Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-                startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-                return;
-            }
-            printAssets(editACCTSUITEID.getText().toString(), assetsCreating);
+            // 打印统一走基类requestPrintAssets：品牌分发/连接检查/连接后续打全在基类（新增打印机无需改动本页）
+            requestPrintAssets(editACCTSUITEID.getText().toString(), assetsCreating, () -> markBarcodePrinted(assetsCreating));
         });
 
         buttonSave.setOnClickListener(view -> saveData());
@@ -113,7 +107,37 @@ public class EditAssetsActivity extends AssetsBaseActivity {
 
         fillAssetsData();
 
+        // 一键变更跳转而来（携带标记）：自动滚动到"使用人"字段，便于继续变更
+        if (getIntent().getBooleanExtra(SysDefine.IntentExtra_ScrollToUser, false)) {
+            scrollToUserField();
+        }
+    }
 
+    /**
+     * 自动滚动到"使用人"字段：等布局完成后定位（onCreate时视图尚未测量，getTop无意义），
+     * 逐层累加字段相对滚动容器的纵向偏移，并预留约屏高1/3的上方空间，滚动后字段位于屏幕上部便于编辑
+     */
+    private void scrollToUserField() {
+        ScrollView scrollView = findViewById(R.id.scrollAssetsForm);
+        if (scrollView == null || editASSETSUSER == null) {
+            return;
+        }
+        // 布局完成后执行一次滚动定位
+        scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                scrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                // 滚动容器的一级子视图（表单根布局）
+                View content = scrollView.getChildAt(0);
+                int offset = 0;
+                View view = editASSETSUSER;
+                while (view != null && view != content) {
+                    offset += view.getTop();
+                    view = view.getParent() instanceof View ? (View) view.getParent() : null;
+                }
+                scrollView.smoothScrollTo(0, Math.max(0, offset - scrollView.getHeight() / 3));
+            }
+        });
     }
 
     private void saveData(){
@@ -491,6 +515,10 @@ public class EditAssetsActivity extends AssetsBaseActivity {
             changes.append("所属处室, ");
             hasChanges = true;
         }
+        if (!Objects.equals(oldAsset.getMADEINCHINA(), newAsset.getMADEINCHINA())) {
+            changes.append("是否国产设备, ");
+            hasChanges = true;
+        }
 
         if (hasChanges) {
             Log.d("AssetsUpdate", changes.toString());
@@ -499,20 +527,5 @@ public class EditAssetsActivity extends AssetsBaseActivity {
         }
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQESTCODE_WAITINGBLUETOOTH) {
-                if (!isPrinterConnected()) {
-                    showShortText("打印机连接失败！");
-                    return;
-                }
-                //printAssets(editACCTSUITEID.getText().toString(), assetsCreating.getBARCODEID(), assetsCreating.getASSETSNAME(), StringUtils.isNullOrEmpty(assetsCreating.getASSETSUSER()) ? assetsCreating.getCUSTODIAN() : assetsCreating.getASSETSUSER());
-                printAssets(editACCTSUITEID.getText().toString(), assetsCreating);
-            }
-        }
-    }
 
 }

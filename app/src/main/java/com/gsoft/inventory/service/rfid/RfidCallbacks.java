@@ -13,4 +13,14 @@ public interface RfidCallbacks {
 
     /** 运行期硬件错误（如启动盘点失败） */
     void onHardwareError(RfidError error);
+
+    /**
+     * 枪柄类设备(非触屏按键)按下：语义等同页面"开始扫描"
+     * <p>
+     * 适配器不直接启动盘点（页面持有scanning状态与UI），统一经此回调由页面走startScan()
+     */
+    void onTriggerKeyDown();
+
+    /** 枪柄类设备按键抬起：语义等同页面"停止扫描" */
+    void onTriggerKeyUp();
 }

@@ -2,6 +2,7 @@ package com.gsoft.inventory.view.login_setting;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -32,6 +33,8 @@ public class ActivityLoginSetting extends BaseCompatActivity {
     EditText editServerIP;
     EditText editPrinter;
 
+    EditText editDeviceNo;
+
     EditText editPrinterTitle;
 
     EditText editPrinterPosition;
@@ -47,15 +50,6 @@ public class ActivityLoginSetting extends BaseCompatActivity {
     TextView importAuthorizationCodeBtnId;
 
 
-    @BindArray(R.array.printe_effect)
-    String[] printeEffectArray;
-
-    @BindArray(R.array.print_title_select)
-    String[] printTitleSelect;
-
-    @BindArray(R.array.print_position_select)
-    String[] printPositionSelect;
-
     @BindArray(R.array.printfieldsTitleCz)
     String[] printfieldsTitleCz;
 
@@ -68,6 +62,11 @@ public class ActivityLoginSetting extends BaseCompatActivity {
     @BindArray(R.array.printfieldsCode)
     String[] printfieldsCode;
 
+    @BindArray(R.array.print_title_select)
+    String[] printTitleSelect;
+
+    @BindArray(R.array.print_position_select)
+    String[] printPositionSelect;
 
     private Map<String, String> filedsMap = new HashMap<>();
 
@@ -101,6 +100,7 @@ public class ActivityLoginSetting extends BaseCompatActivity {
         topBar = findViewById(R.id.topbar);
         editServerIP = findViewById(R.id.editServerIP);
         editPrinter = findViewById(R.id.editPrinter);
+        editDeviceNo = findViewById(R.id.editDeviceNo);
         editPrinterTitle = findViewById(R.id.editPrinterTitle);
         editPrinterPosition = findViewById(R.id.editPrinterPosition);
         textPrinterField = findViewById(R.id.textPrinterField);
@@ -130,6 +130,13 @@ public class ActivityLoginSetting extends BaseCompatActivity {
         qcyName = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ZCQCYNAME, "");
         qcyCode = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ZCQCYCODE, "");
         offlineLogin = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_OFFLINE_LOGIN, "在线");
+
+        // 设备号：首次启动自动生成并持久化，此处可直接修改（两位，首位大写字母）
+        String deviceNo = application.getDeviceNo();
+        if (StringUtils.isNullOrEmpty(deviceNo)) {
+            deviceNo = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_DEVICENO, "");
+        }
+        editDeviceNo.setText(deviceNo);
 
         // 赋值
         editServerIP.setText(serverHost);
@@ -168,20 +175,11 @@ public class ActivityLoginSetting extends BaseCompatActivity {
 
 
         // 设置监听事件
-        editPrinter.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-                .addItems(printeEffectArray, (dialog, which) -> {
-                    String effect = printeEffectArray[which];
-                    editPrinter.setText(effect);
-                    dialog.dismiss();
-                    if ("网页二维码-二字段".equals(effect)) {
-                        SharedPreferencesUtils.deleShare(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE);
-                        SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, fields);
-                    } else if ("公安警告标签".equals(effect)) {
-                        // 选择公安警告标签后，弹出警示内容编辑框
-                        showPoliceWarningEditDialog();
-                    }
-                })
-                .create(mCurrentDialogStyle).show());
+        editPrinter.setOnClickListener(view -> {
+            Intent intent = new Intent(mContext, PrintLabelSelectActivity.class);
+            intent.putExtra(PrintLabelSelectActivity.EXTRA_CURRENT_LABEL, editPrinter.getText().toString());
+            startActivityForResult(intent, SysDefine.REQESTCODE_SELECT_PRINT_LABEL);
+        });
 
         editPrinterTitle.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
 
@@ -232,6 +230,12 @@ public class ActivityLoginSetting extends BaseCompatActivity {
                 String printerPosition = editPrinterPosition.getText().toString();
                 String printFieldsCode = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, "");
 
+                // 先校验设备号格式，不通过时给出对应提示并阻止保存
+                String deviceNo = editDeviceNo.getText().toString().trim();
+                if (!checkDeviceNo(deviceNo)) {
+                    return;
+                }
+
                 if (!serverHost.startsWith("http://")) {
                     serverHost = "http://".concat(serverHost);
                 }
@@ -241,13 +245,17 @@ public class ActivityLoginSetting extends BaseCompatActivity {
 
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.SP_KEY_SERVERHOST, serverHost);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_EFFECT, printer);
+                // 同步内存中的打印类型，保存后立即生效（避免必须重新登录才切换标签）
+                application.setPrinterEffect(printer);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_TITLE, printerTitle);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_POSITION, printerPosition);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, printFieldsCode);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_ZCQCYNAME, qcyName);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_ZCQCYCODE, qcyCode);
                 SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_OFFLINE_LOGIN, offlineLogin);
-
+                // 设备号持久化，并同步到内存供条码生成使用
+                SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_DEVICENO, deviceNo);
+                application.setDeviceNo(deviceNo);
 
                 SysDefine.setServerHost(serverHost);
                 showShortText("保存成功");
@@ -259,6 +267,39 @@ public class ActivityLoginSetting extends BaseCompatActivity {
         importAuthorizationCodeBtnId.setOnClickListener((view)-> {
             this.searchImportAuthorCodeTask();
         });
+    }
+
+    /**
+     * 校验设备号格式：必须两位，第一位为大写字母(A-Z)，第二位为数字(0-9)且不能为4
+     * 校验不通过时直接提示具体原因
+     *
+     * @param deviceNo 用户输入的设备号（已去除首尾空格）
+     * @return 是否通过校验
+     */
+    private boolean checkDeviceNo(String deviceNo) {
+        if (StringUtils.isNullOrEmpty(deviceNo)) {
+            showShortText("设备号不能为空");
+            return false;
+        }
+        if (deviceNo.length() != 2) {
+            showShortText("设备号必须为两位，如：A1");
+            return false;
+        }
+        char first = deviceNo.charAt(0);
+        if (first < 'A' || first > 'Z') {
+            showShortText("设备号第一位必须为大写字母（A-Z）");
+            return false;
+        }
+        char second = deviceNo.charAt(1);
+        if (second < '0' || second > '9') {
+            showShortText("设备号第二位必须为数字（0-9）");
+            return false;
+        }
+        if (second == '4') {
+            showShortText("设备号第二位不能为4");
+            return false;
+        }
+        return true;
     }
 
 
@@ -474,8 +515,6 @@ public class ActivityLoginSetting extends BaseCompatActivity {
     }
 
 
-
-
     // 读取文件内容
     private String readAuthorizationCode(FileBean fileBean) {
         try (java.io.FileInputStream fis = new java.io.FileInputStream(fileBean.getPath())) {
@@ -486,5 +525,33 @@ public class ActivityLoginSetting extends BaseCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+
+    /**
+     * 打印标签选择页返回：更新显示，并保留原弹框选择时的联动处理
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != SysDefine.REQESTCODE_SELECT_PRINT_LABEL || resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        String effect = data.getStringExtra(PrintLabelSelectActivity.EXTRA_SELECTED_LABEL);
+        if (StringUtils.isNullOrEmpty(effect)) {
+            return;
+        }
+        editPrinter.setText(effect);
+        if ("网页二维码-二字段".equals(effect)) {
+            String fields = "BARCODEID,ASSETSNAME";
+            SharedPreferencesUtils.deleShare(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE);
+            SharedPreferencesUtils.putString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, fields);
+            setTextPrinterField("资产名称");
+        } else if ("公安警告标签".equals(effect)) {
+            // 选择公安警告标签后，弹出警示内容编辑框
+            showPoliceWarningEditDialog();
+        }
+        // 同步内存中的打印类型，选择后立即生效
+        application.setPrinterEffect(effect);
     }
 }

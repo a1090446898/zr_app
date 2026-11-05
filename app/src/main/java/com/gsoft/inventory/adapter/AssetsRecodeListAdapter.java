@@ -1,24 +1,18 @@
 package com.gsoft.inventory.adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.gsoft.inventory.AssetsViewActivity;
 import com.gsoft.inventory.R;
 import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Assets;
-import com.gsoft.inventory.utils.AssetsCategory;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 import com.gsoft.inventory.utils.AssetsCategoryHelper;
-import com.gsoft.inventory.utils.DictionaryHelper;
-import com.gsoft.inventory.utils.FixedHScrollView;
-import com.gsoft.inventory.utils.SysDefine;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AssetsRecodeListAdapter extends BaseAdapter {

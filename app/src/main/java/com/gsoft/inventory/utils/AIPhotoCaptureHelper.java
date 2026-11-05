@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import android.graphics.Bitmap;
 import androidx.core.content.FileProvider;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
 import id.zelory.compressor.Compressor;
 
 import androidx.activity.result.ActivityResultLauncher;

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,7 +13,7 @@ import android.widget.ListView;
 
 import com.gsoft.inventory.adapter.FileListAdapter;
 import com.gsoft.inventory.entities.ZCQCY;
-import com.gsoft.inventory.utils.Accounts;
+import com.gsoft.inventory.utils.domain.Accounts;
 import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.DataTransmitHelper;
 import com.gsoft.inventory.utils.FileBean;

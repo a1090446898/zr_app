@@ -4,11 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.gsoft.inventory.AssetsViewActivity;
@@ -16,18 +16,36 @@ import com.gsoft.inventory.NewAssetsActivity;
 import com.gsoft.inventory.R;
 import com.gsoft.inventory.pojo.JumPagePojo;
 import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.AssetsCategoryHelper;
-import com.gsoft.inventory.utils.BluetoothDeviceDetail;
 import com.gsoft.inventory.utils.DictionaryHelper;
 import com.gsoft.inventory.utils.FixedHScrollView;
 import com.gsoft.inventory.utils.SysDefine;
+import com.gsoft.inventory.utils.print_batch.BatchPrintConfig;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * 资产列表适配器（查询页/资产选择页共用）
+ * <p>
+ * 勾选模式：用于批量打印，选中态按资产Id记录（SugarORM实体无SELECTED字段，且列表会分页/复用，
+ * 不能用position），默认关闭，不影响原调用页。
+ *
+ * @author 10904
+ */
 public class AssetsListAdapter extends BaseAdapter {
+
+    /** 勾选变化回调（批量打印模式） */
+    public interface OnSelectionChangedListener {
+        /** 选中条数变化（用于更新底部统计与表头全选态） */
+        void onSelectionChanged(int selectedCount);
+
+        /** 勾选数达到上限（用于提示分批打印） */
+        void onSelectLimitReached(int maxCount);
+    }
 
     private ArrayList<Assets> assetsArrayList;
     public List<ViewContainer> mHolderList = new ArrayList<ViewContainer>();
@@ -36,6 +54,14 @@ public class AssetsListAdapter extends BaseAdapter {
 
     private JumPagePojo jumPagePojo;
     ViewGroup mHead;
+
+    /** 勾选模式开关（批量打印） */
+    private boolean selectMode;
+    /** 已勾选资产Id（稳定key，跨分页/复用不丢） */
+    private final Set<Long> selectedIds = new HashSet<>();
+    /** 单次最多勾选数 */
+    private int maxSelectCount = BatchPrintConfig.MAX_BATCH_SIZE;
+    private OnSelectionChangedListener selectionListener;
 
     public AssetsListAdapter(ArrayList<Assets> assetsList, Context context, ViewGroup mHead, JumPagePojo jumPagePojo) {
         super();
@@ -69,6 +95,7 @@ public class AssetsListAdapter extends BaseAdapter {
             synchronized (mContext) {
                 view = mInflator.inflate(R.layout.assets_list_item, null);
                 viewContainer = new ViewContainer();
+                viewContainer.cbSelect = view.findViewById(R.id.allCheck);
                 FixedHScrollView scrollView = (FixedHScrollView) view.findViewById(R.id.scrollView);
                 viewContainer.scrollView = scrollView;
                 //viewContainer.tvACCTSUITEID = view.findViewById(R.id.tvACCTSUITEID);
@@ -130,7 +157,15 @@ public class AssetsListAdapter extends BaseAdapter {
 
         viewContainer.tvUSESTATE.setText(DictionaryHelper.getDictionaryName(assets.getUSESTATE(), R.array.syzk, mContext));
 
+        bindSelection(viewContainer.cbSelect, assets);
+
+        final CheckBox cbSelect = viewContainer.cbSelect;
         viewContainer.tvASSETSNAME.setOnClickListener(view1 -> {
+            // 勾选模式下点名称即切换勾选，不跳转详情
+            if (selectMode) {
+                cbSelect.toggle();
+                return;
+            }
             Long assetsId = assets.getId();
             if(jumPagePojo != null){
                 if(jumPagePojo.getIsJumpPage()){
@@ -169,8 +204,132 @@ public class AssetsListAdapter extends BaseAdapter {
         return result;
     }
 
+    // ==================== 批量打印勾选 ====================
+
+    /** 进入/退出勾选模式：退出时清空已选，避免脏状态带到下次 */
+    public void setSelectMode(boolean selectMode) {
+        if (this.selectMode == selectMode) {
+            return;
+        }
+        this.selectMode = selectMode;
+        selectedIds.clear();
+        notifyDataSetChanged();
+        notifySelectionChanged();
+    }
+
+    public boolean isSelectMode() {
+        return selectMode;
+    }
+
+    public void setOnSelectionChangedListener(OnSelectionChangedListener listener) {
+        this.selectionListener = listener;
+    }
+
+    public void setMaxSelectCount(int maxSelectCount) {
+        this.maxSelectCount = maxSelectCount;
+    }
+
+    public int getSelectedCount() {
+        return selectedIds.size();
+    }
+
+    /** 当前已加载列表是否全部勾选（用于表头全选框状态） */
+    public boolean isAllSelected() {
+        if (assetsArrayList.isEmpty()) {
+            return false;
+        }
+        for (Assets assets : assetsArrayList) {
+            if (assets.getId() == null || !selectedIds.contains(assets.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** 全选当前已加载列表：超出上限只选前N条并提示，避免用户误以为已全选 */
+    public void selectAll() {
+        boolean limitReached = false;
+        for (Assets assets : assetsArrayList) {
+            Long id = assets.getId();
+            if (id == null || selectedIds.contains(id)) {
+                continue;
+            }
+            if (selectedIds.size() >= maxSelectCount) {
+                limitReached = true;
+                break;
+            }
+            selectedIds.add(id);
+        }
+        notifyDataSetChanged();
+        notifySelectionChanged();
+        if (limitReached && selectionListener != null) {
+            selectionListener.onSelectLimitReached(maxSelectCount);
+        }
+    }
+
+    public void clearSelection() {
+        selectedIds.clear();
+        notifyDataSetChanged();
+        notifySelectionChanged();
+    }
+
+    /** 已勾选资产（按列表顺序，仅返回当前列表内存在的数据） */
+    public List<Assets> getSelectedAssets() {
+        List<Assets> result = new ArrayList<>();
+        for (Assets assets : assetsArrayList) {
+            if (assets.getId() != null && selectedIds.contains(assets.getId())) {
+                result.add(assets);
+            }
+        }
+        return result;
+    }
+
+    /** 绑定单项勾选态：先解监听再setChecked，避免复用触发出错误的选中事件 */
+    private void bindSelection(CheckBox checkBox, final Assets assets) {
+        if (checkBox == null) {
+            return;
+        }
+        checkBox.setOnCheckedChangeListener(null);
+        if (!selectMode) {
+            checkBox.setChecked(false);
+            checkBox.setVisibility(android.view.View.GONE);
+            return;
+        }
+        checkBox.setVisibility(android.view.View.VISIBLE);
+        checkBox.setChecked(assets.getId() != null && selectedIds.contains(assets.getId()));
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Long id = assets.getId();
+            if (id == null) {
+                buttonView.setChecked(false);
+                return;
+            }
+            if (isChecked) {
+                if (selectedIds.size() >= maxSelectCount) {
+                    buttonView.setChecked(false);
+                    if (selectionListener != null) {
+                        selectionListener.onSelectLimitReached(maxSelectCount);
+                    }
+                    return;
+                }
+                selectedIds.add(id);
+            } else {
+                selectedIds.remove(id);
+            }
+            notifySelectionChanged();
+        });
+    }
+
+    private void notifySelectionChanged() {
+        if (selectionListener != null) {
+            selectionListener.onSelectionChanged(selectedIds.size());
+        }
+    }
+
     //cell
     public class ViewContainer {
+        /*批量打印勾选框*/
+        CheckBox cbSelect;
+
         /*条码编号*/
         TextView tvBARCODEID;
 

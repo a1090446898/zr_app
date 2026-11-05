@@ -1,6 +1,6 @@
 package com.gsoft.inventory.pojo;
 
-import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.domain.Assets;
 
 import java.util.List;
 

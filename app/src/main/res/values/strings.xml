@@ -21,6 +21,11 @@
         <item>试剂二维码-四字段</item>
         <item>大标签-五字段</item>
         <item>公安警告标签</item>
+        <item>财政二维码</item>
+        <item>RFID二维码60*25</item>
+        <item>RFID二维码70*25</item>
+        <item>得实二维码60*25</item>
+        <item>得实二维码70*25</item>
     </array>
     <array name="inventory_setting">
         <item>智软盘点</item>
@@ -255,8 +260,8 @@
 
     <array name="netTypeFields">
         <item>互联网</item>
-        <item>纪检监察内网</item>
-        <item>纪检监察外网</item>
+        <item>JJJC内网</item>
+        <item>JJJC外网</item>
         <item>电子政务内网</item>
         <item>电子政务外网</item>
         <item>专网</item>
@@ -389,6 +394,8 @@
         <item>DEVICECODE</item>
         <item>SPECIALFACTORYNO</item>
         <item>CERTIFICATENUMBER</item>
+        <item>ISPRINTBARCODE</item>
+        <item>MADEINCHINA</item>
 
     </array>
 
@@ -397,15 +404,41 @@
         <item>否</item>
     </array>
 
+    <array name="printStateFields">
+        <item>未打印</item>
+        <item>已打印</item>
+    </array>
+
+    <!-- 盘点情况字典：01待盘点 02盘实 03盘盈 04待核实 -->
+    <array name="pdztFields">
+        <item>待盘点</item>
+        <item>盘实</item>
+        <item>盘盈</item>
+        <item>待核实</item>
+    </array>
+
+    <!-- 盘点状态字典：01未盘 02已盘（空值按未盘显示） -->
+    <array name="ztFields">
+        <item>未盘</item>
+        <item>已盘</item>
+    </array>
+
+    <!-- 补打状态字典：01待补打 02已打印（空值显示未标记） -->
+    <array name="reprintStateFields">
+        <item>待补打</item>
+        <item>已打印</item>
+    </array>
+
     <array name="specialDeviceFields">
         <item>是</item>
         <item>否</item>
     </array>
 
-    <array name="inventoryFilterFields">
-        <item>已盘</item>
-        <item>未盘</item>
+    <array name="madeInChinaFields">
+        <item>是</item>
+        <item>否</item>
     </array>
+
     <string name="title_activity_offline_login">OfflineLoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

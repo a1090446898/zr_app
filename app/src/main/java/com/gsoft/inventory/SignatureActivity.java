@@ -42,11 +42,15 @@ public class SignatureActivity extends BaseCompatActivity {
 
     @Override
     public void initializeView() {
+
+
         QMUITopBar topBar = findViewById(R.id.topbar);
         topBar.setTitle("资产盘点确认");
         topBar.addLeftBackImageButton().setOnClickListener(v -> finish());
         topBar.addRightTextButton("签名网址", R.id.topbar_right_change_button).setOnClickListener(v -> {
-            String url = "http://www.zrast.com:8034/pages/phone_check/index";
+            // 正式环境拼接type=0，其他环境拼接type=1
+            String ztbh = application.getLoginAccount().getZTBH();
+            String url = "http://www.zrast.com:8034/pages/phone_check/index?type=" + (isZrastServer() ? "0" : "1") + "&acct="+ztbh;
             // 点击复制到剪切板
             ClipboardUtils.copy(mContext, url);
         });
@@ -161,6 +165,7 @@ public class SignatureActivity extends BaseCompatActivity {
             return;
         }
         AtomicBoolean isSuccess = new AtomicBoolean(true);
+        String linkHost = getSignatureLinkHost();
         CommonUtils.getExecutor().execute(() -> {
             String fileName = "";
             try {
@@ -196,7 +201,7 @@ public class SignatureActivity extends BaseCompatActivity {
                         if(!person.getSelectStatus()){
                             continue;
                         }
-                        String url = String.format("固定资产确认通知：尊敬的 %s，请点击链接http://www.zrast.com/signature.html?phone=%s核实您名下的固定资产信息，并签字确认。", person.getName(), person.getTelephone());
+                        String url = String.format("固定资产确认通知：尊敬的 %s，请点击链接%s/signature.html?phone=%s核实您名下的固定资产信息，并签字确认。", person.getName(), linkHost, person.getTelephone());
                         String line = String.format("%s，%s，%s，%s，%s\n",
                                 escapeCsvField(person.getDepart()),
                                 escapeCsvField(person.getName()),
@@ -242,6 +247,17 @@ public class SignatureActivity extends BaseCompatActivity {
             return "\"" + field.replace("\"", "\"\"") + "\"";
         }
         return field;
+    }
+
+    // 当前服务器是否为正式环境www.zrast.com
+    private boolean isZrastServer() {
+        String serverHost = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.SP_KEY_SERVERHOST, SysDefine.SERVERHOST);
+        return serverHost.contains("www.zrast.com");
+    }
+
+    // 复制/导出通知文案中的签名链接域名
+    private String getSignatureLinkHost() {
+        return isZrastServer() ? "http://www.zrast.com" : "http://47.110.252.199:8080";
     }
 
     private void searchAssetPersonTask(){

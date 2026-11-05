@@ -221,7 +221,7 @@ public class MainActivity extends BaseCompatActivity {
      * 点击两次退出程序
      */
     private void exit() {
-        BaseFragment currentFragment = fragmentList.get(viewPager2.getCurrentItem());
+        BaseFragment currentFragment = getCurrentFragment();
 
         if (currentFragment instanceof WebHomeFragment) {
             WebHomeFragment webFragment = (WebHomeFragment) currentFragment;
@@ -235,7 +235,8 @@ public class MainActivity extends BaseCompatActivity {
         if (!isExit) {
             isExit = true;
             showShortText("再按一次退出程序");
-            mainHandler.sendEmptyMessageDelayed(0, 2000);
+            // 2秒内没有再次返回则重置标记，避免超时后仍直接退出
+            mainHandler.postDelayed(() -> isExit = false, 2000);
         } else {
             finish();
             if (application.lifecycleCallbacks != null) {
@@ -243,6 +244,26 @@ public class MainActivity extends BaseCompatActivity {
             }
             System.exit(0);
         }
+    }
+
+    /**
+     * 获取当前显示的Fragment
+     * <p>
+     * 菜单同步是异步的，initTab()执行前fragmentList可能为空；
+     * 登录信息异常时initializeView()会提前返回，viewPager2也可能为空。
+     * 这里统一做空值和下标越界保护，避免返回键/onActivityResult触发空指针。
+     *
+     * @return 当前Fragment；页面未初始化完成时返回null
+     */
+    private BaseFragment getCurrentFragment() {
+        if (viewPager2 == null || fragmentList == null || fragmentList.isEmpty()) {
+            return null;
+        }
+        int currentItem = viewPager2.getCurrentItem();
+        if (currentItem < 0 || currentItem >= fragmentList.size()) {
+            return null;
+        }
+        return fragmentList.get(currentItem);
     }
 
     @Override
@@ -286,8 +307,8 @@ public class MainActivity extends BaseCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // 将结果转发给当前显示的 Fragment
-        BaseFragment currentFragment = fragmentList.get(viewPager2.getCurrentItem());
+        // 将结果转发给当前显示的 Fragment（页面未初始化完成时不做处理）
+        BaseFragment currentFragment = getCurrentFragment();
         if (currentFragment != null) {
             currentFragment.onActivityResult(requestCode, resultCode, data);
         }

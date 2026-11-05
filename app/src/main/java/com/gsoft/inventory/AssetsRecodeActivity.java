@@ -8,8 +8,8 @@ import android.widget.ListView;
 
 import com.gsoft.inventory.adapter.AssetsRecodeListAdapter;
 import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.FileSearchHelper;
 import com.gsoft.inventory.utils.PrintCompatActivity;
 import com.gsoft.inventory.utils.StringUtils;
@@ -24,8 +24,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
 public class AssetsRecodeActivity extends PrintCompatActivity {
 
@@ -111,15 +109,8 @@ public class AssetsRecodeActivity extends PrintCompatActivity {
                                             .addAction(0, "打印", QMUIDialogAction.ACTION_PROP_NEGATIVE, new QMUIDialogAction.ActionListener() {
                                                 @Override
                                                 public void onClick(QMUIDialog dialog, int index) {
-
-                                                    if (!isPrinterConnected()) {
-                                                        Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-                                                        intentBluetooth.putExtra(SysDefine.IntentExtra_ASSETS_ARRAY_INDEX, assetsIndex);
-                                                        startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-                                                        return;
-                                                    }
-                                                    //printAssets(accountsName, assets.getBARCODEID(), assets.getASSETSNAME(), StringUtils.isNullOrEmpty(assets.getASSETSUSER()) ? assets.getCUSTODIAN() : assets.getASSETSUSER());
-                                                    printAssets(accountsName, assets);
+                                                    // 打印统一走基类requestPrintAssets：品牌分发/连接检查/连接后续打全在基类（新增打印机无需改动本页）
+                                                    requestPrintAssets(accountsName, assets, () -> markBarcodePrinted(assets));
                                                     dialog.dismiss();
                                                 }
                                             })
@@ -190,31 +181,5 @@ public class AssetsRecodeActivity extends PrintCompatActivity {
                     }
                 })
                 .build().show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQESTCODE_WAITINGBLUETOOTH) {
-                if (!isPrinterConnected()) {
-                    showShortText("打印机连接失败！");
-                    return;
-                }
-                if (data != null) {
-                    int assetsIndex = data.getIntExtra(SysDefine.IntentExtra_ASSETS_ARRAY_INDEX, -1);
-                    if (assetsIndex > -1) {
-                        Assets query_assets = assetsList.get(assetsIndex);
-                        if (query_assets != null) {
-                            Accounts accounts = AccountHelper.getACCTSUITEID(query_assets.getACCTSUITEID());
-                            String accountsName = accounts == null ? "" : accounts.getZTMC();
-                            //printAssets(accountsName, query_assets.getBARCODEID(), query_assets.getASSETSNAME(), StringUtils.isNullOrEmpty(query_assets.getASSETSUSER()) ? query_assets.getCUSTODIAN() : query_assets.getASSETSUSER());
-                            printAssets(accountsName, query_assets);
-                        }
-                    }
-                }
-
-            }
-        }
     }
 }

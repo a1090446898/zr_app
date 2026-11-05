@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,22 +13,25 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gsoft.inventory.adapter.RfidDeptStatsAdapter;
-import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.AsyncManager;
-import com.gsoft.inventory.utils.Assets;
-import com.gsoft.inventory.utils.BaseCompatActivity;
-import com.gsoft.inventory.utils.CountValueHelper;
-import com.gsoft.inventory.utils.StringUtils;
-import com.qmuiteam.qmui.layout.QMUIButton;
+import com.gsoft.inventory.adapter.RfidTagAdapter;
+import com.gsoft.inventory.abs.InventoryScanBaseActivity;
+
+import com.gsoft.inventory.const_data.Const;
+import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.view.web.WebIndex;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBar;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,17 +45,32 @@ import butterknife.ButterKnife;
  * <p>
  * 部门层(MODE_DEPT，默认)：
  * 1. 顶部卡片展示全局已盘(绿)/未盘(红)/全部(黑)数量
- * 2. 网格展示全部部门（部门字典来自Accounts表，与导入资产页一致），每个部门显示 已盘/未盘/全部
+ * 2. 网格展示有资产的部门（全部数量为0的部门不展示），每个部门显示 已盘/未盘/全部
  * 3. 点击部门 → 复用本页面进入该部门的存放地点层
  * <p>
  * 存放地点层(MODE_LOCATION)：
- * 1. 顶部卡片展示该部门已盘(绿)/未盘(红)/全部(黑)数量
- * 2. 网格展示该部门下的存放地点(ASSETSLAYADD分组)，每个地点显示 已盘/未盘/全部
+ * 1. 顶部卡片展示该部门已盘(绿)/未盘(红)/全部(黑)数量（部门相关口径：管理部门或使用部门为当前部门）
+ * 2. 网格展示该部门涉及的存放地点(按ASSETSLAYADD去重)，每个地点按纯地点口径显示 已盘/未盘/全部
+ *    （不加入部门条件，与点击进入后的盘点扫描页统计口径一致）；
+ *    首位固定展示"空白地点（临时）"虚拟入口（不显示三列统计），
+ *    点击后不限制部门/存放地点扫描，扫到资产后可手动指定实际存放地点并同步使用部门
  * 3. 点击存放地点 → 进入原有RFID盘点扫描页(RfidReadActivity)
  * <p>
- * 其他：底部"开始RFID盘点"按钮两级均跳转原有RFID扫描页；onResume自动刷新统计
+ * 下钻：顶部三列统计(已盘/未盘/全部)点击 → 盘点明细页(InventoryStatsActivity)，
+ * 部门层查全部数据+对应状态，存放地点层带当前部门(管理或使用)+对应状态
+ * <p>
+ * 功能操作卡片（两级统一显示，位于统计卡片下方）：
+ * 资产移交/资产处置/盘亏处理/补打条码/上传数据/数字签名六个入口，
+ * 其中资产移交、资产处置、数字签名通过WebView(WebIndex)打开，补打条码进入补打条码页(ReprintBarcodeActivity)，
+ * 上传数据执行资产同步（与首页"同步上传"一致），盘亏处理暂未开放
+ * <p>
+ * 其他：onResume自动刷新统计
+ * @author 10904
  */
 public class RfidStatsActivity extends BaseCompatActivity {
+
+    /** 日志标签（[DIAG]诊断日志用，问题定位完成后可删除） */
+    private static final String TAG = "RfidStatsActivity";
 
     /** 层级：部门统计 */
     public static final int MODE_DEPT = 1;
@@ -66,14 +86,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
      * 如需改回使用部门(ASSETSDEPT)，修改此处即可
      */
     private static final String DEPT_FIELD = "GROUNDMANAGEDEPT";
-
-    // ==================== 【临时测试】模拟数字开关：验证已盘/未盘/全部显示（测试完成后删除本区域） ====================
-    /** 【临时测试】true=顶部与分组卡片渲染模拟数字，false=恢复正常统计 */
-    private static final boolean TEST_COUNT_DISPLAY = false;
-    /** 【临时测试】模拟已盘数量（超过十） */
-    private static final int TEST_COUNTED = 3676845;
-    /** 【临时测试】模拟全部数量（未盘=全部-已盘，自动为42） */
-    private static final int TEST_TOTAL = 9999999;
+    /** 使用部门字段：部门相关资产查询时与管理部门按"或"匹配 */
+    private static final String USE_DEPT_FIELD = "ASSETSDEPT";
 
     /** 标题栏 */
     @BindView(R.id.topbar)
@@ -87,6 +101,9 @@ public class RfidStatsActivity extends BaseCompatActivity {
     /** 全部数量（黑色显示） */
     @BindView(R.id.tvAllTotal)
     TextView tvAllTotal;
+    /** 个人资产数量（"盘点统计"下方，按管理人匹配当前登录人） */
+    @BindView(R.id.tvPersonalAssetTotal)
+    TextView tvPersonalAssetTotal;
     /** 分组列表标题：部门层显示"部门盘点统计"，存放地点层显示"存放地点盘点统计" */
     @BindView(R.id.tvSectionTitle)
     TextView tvSectionTitle;
@@ -96,7 +113,9 @@ public class RfidStatsActivity extends BaseCompatActivity {
     /** 无数据空提示 */
     @BindView(R.id.tvEmpty)
     TextView tvEmpty;
-
+    /** 统计加载中转圈提示（数据量大时避免页面空置） */
+    @BindView(R.id.layoutLoading)
+    View layoutLoading;
 
     /** 分组网格适配器（两级复用） */
     private RfidDeptStatsAdapter statsAdapter;
@@ -104,6 +123,11 @@ public class RfidStatsActivity extends BaseCompatActivity {
     private int mode = MODE_DEPT;
     /** 存放地点层对应的部门名称 */
     private String deptName = "";
+
+    /**
+     * 访问服务器地址
+     */
+    private String serverHost;
 
     /**
      * 页面创建：加载布局、绑定视图、初始化界面
@@ -125,6 +149,7 @@ public class RfidStatsActivity extends BaseCompatActivity {
      */
     @Override
     public void initializeView() {
+        serverHost = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.SP_KEY_SERVERHOST, SysDefine.SERVERHOST);
         // 读取层级参数：默认部门层；存放地点层附带部门名称
         mode = getIntent().getIntExtra(EXTRA_MODE, MODE_DEPT);
         deptName = getIntent().getStringExtra(EXTRA_DEPT_NAME);
@@ -133,8 +158,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
         }
 
         // 标题与分组标题随层级切换
-        topBar.setTitle(mode == MODE_LOCATION ? deptName + "盘点统计" : "RFID盘点统计");
-        tvSectionTitle.setText(mode == MODE_LOCATION ? "存放地点盘点统计" : "部门盘点统计");
+        topBar.setTitle(mode == MODE_LOCATION ? deptName + "盘点统计" : "资产盘点统计");
+        tvSectionTitle.setText(mode == MODE_LOCATION ? "存放地点列表" : "部门列表");
         tvEmpty.setText(mode == MODE_LOCATION ? "暂无存放地点数据" : "暂无资产数据");
         topBar.addLeftBackImageButton().setOnClickListener(v -> finish());
 
@@ -151,22 +176,93 @@ public class RfidStatsActivity extends BaseCompatActivity {
                 Intent intent = new Intent(mContext, RfidStatsActivity.class);
                 intent.putExtra(EXTRA_MODE, MODE_LOCATION);
                 intent.putExtra(EXTRA_DEPT_NAME, stats.deptName);
-                startActivity(intent);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "[DIAG] 跳转统计页失败", e);
+                }
+            } else if (stats.isBackup) {
+                // 空白地点（临时）：扫描不设范围限制，扫到资产后卡片提供"变更地点"手动指定地点
+                showScanModeDialog(deptName, Const.BACKUP_LOCATION_NAME, true);
             } else {
-                // 存放地点层：点击存放地点 → 进入RFID盘点扫描页，携带管理部门+存放地点过滤条件
-                Intent intentRfid = new Intent(mContext, RfidReadActivity.class);
-                intentRfid.putExtra(RfidReadActivity.EXTRA_DEPT_NAME, deptName);
-                intentRfid.putExtra(RfidReadActivity.EXTRA_LOCATION, stats.deptName);
-                startActivity(intentRfid);
+                // 存放地点层：点击存放地点 → 弹窗选择扫描方式（RFID扫描/红外线扫描/摄像头扫描），
+                // 选择后携带管理部门+存放地点过滤条件进入对应扫描页
+                showScanModeDialog(deptName, stats.deptName, false);
             }
         });
 
-        // 底部按钮两级均跳转原有RFID盘点扫描页（保留原盘点流程）
-//        buttonStartRfid.setOnClickListener(v ->
-//                startActivity(new Intent(mContext, RfidReadActivity.class)));
-//
-        // 首次加载统计数据
-        loadStats();
+        // 顶部三列统计点击：下钻盘点明细页查看对应数据（部门层全量、存放地点层带当前部门条件）
+        findViewById(R.id.columnCounted).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_COUNTED));
+        findViewById(R.id.columnUncounted).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_UNCOUNTED));
+        findViewById(R.id.columnAll).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_ALL));
+
+        // 初始化功能操作卡片入口点击
+        initToolsPage();
+
+    }
+
+    /**
+     * 顶部统计点击下钻：跳转盘点明细页查看对应数据
+     * <p>
+     * 部门层不带范围条件（查全部数据）；存放地点层带当前部门作为条件，且按"管理部门或使用部门"
+     * 匹配（与顶部统计口径一致，保证明细数量与顶部数字相同）；状态由点击的列决定
+     */
+    private void openInventoryStatsDetail(int filter) {
+        Intent intent = new Intent(mContext, InventoryStatsActivity.class);
+        intent.putExtra(InventoryStatsActivity.EXTRA_FILTER, filter);
+        if (mode == MODE_LOCATION && !StringUtils.isNullOrEmpty(deptName)) {
+            intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_NAME, deptName);
+            // 存放地点层顶部统计按"管理部门或使用部门"口径，明细页需同口径
+            intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_MATCH_USE, true);
+        }
+        startActivity(intent);
+    }
+
+    /**
+     * 选择扫描方式弹窗（居中弹窗，三个按钮竖排）：RFID扫描 / 红外线扫描 / 摄像头扫描
+     * <p>
+     * 1. RFID扫描 → RFID盘点扫描页(RfidReadActivity)
+     * 2. 红外线扫描 → 红外线盘点扫描页(InfraredReadActivity)，仅新设备可用物理扫描键触发
+     * 3. 摄像头扫描 → 摄像头盘点扫描页(CameraReadActivity)，页面内嵌相机预览连续扫码
+     * <p>
+     * 三个入口均携带当前盘点范围（管理部门+存放地点）过滤条件；
+     * 空白地点（临时）模式额外携带备用标记，扫描页不限制部门/存放地点
+     */
+    private void showScanModeDialog(String deptName, String locationName, boolean backupMode) {
+        QMUIDialog.CustomDialogBuilder builder = new QMUIDialog.CustomDialogBuilder(mContext);
+        builder.setLayout(R.layout.dialog_scan_mode_choose);
+        final QMUIDialog dialog = builder.create();
+        dialog.findViewById(R.id.btnScanRfid).setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intentRfid = new Intent(mContext, RfidReadActivity.class);
+            intentRfid.putExtra(RfidReadActivity.EXTRA_DEPT_NAME, deptName);
+            intentRfid.putExtra(RfidReadActivity.EXTRA_LOCATION, locationName);
+            if (backupMode) {
+                intentRfid.putExtra(InventoryScanBaseActivity.EXTRA_BACKUP_MODE, true);
+            }
+            startActivity(intentRfid);
+        });
+        dialog.findViewById(R.id.btnScanInfrared).setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intentInfrared = new Intent(mContext, InfraredReadActivity.class);
+            intentInfrared.putExtra(InfraredReadActivity.EXTRA_DEPT_NAME, deptName);
+            intentInfrared.putExtra(InfraredReadActivity.EXTRA_LOCATION, locationName);
+            if (backupMode) {
+                intentInfrared.putExtra(InventoryScanBaseActivity.EXTRA_BACKUP_MODE, true);
+            }
+            startActivity(intentInfrared);
+        });
+        dialog.findViewById(R.id.btnScanCamera).setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intentCamera = new Intent(mContext, CameraReadActivity.class);
+            intentCamera.putExtra(CameraReadActivity.EXTRA_DEPT_NAME, deptName);
+            intentCamera.putExtra(CameraReadActivity.EXTRA_LOCATION, locationName);
+            if (backupMode) {
+                intentCamera.putExtra(InventoryScanBaseActivity.EXTRA_BACKUP_MODE, true);
+            }
+            startActivity(intentCamera);
+        });
+        dialog.show();
     }
 
     /**
@@ -185,10 +281,16 @@ public class RfidStatsActivity extends BaseCompatActivity {
      * 结果通过mainHandler切回主线程更新UI，并做页面销毁防护
      */
     private void loadStats() {
+        // 统计耗时随数据量增加，先显示转圈提示，避免大数据量时页面长时间空置
+        layoutLoading.setVisibility(View.VISIBLE);
+        // 统计期间先隐藏上次的空提示，避免与转圈重叠
+        tvEmpty.setVisibility(View.GONE);
         // 提交统计任务到线程池，buildStats在后台线程执行
         AsyncManager.getInstance().submitWithCallback(this::buildStats, result -> {
             // 回调在子线程触发，切回主线程刷新界面
             mainHandler.post(() -> {
+                // 统计结束先隐藏转圈提示（失败时同样隐藏，避免一直转圈）
+                layoutLoading.setVisibility(View.GONE);
                 // 统计失败或页面已销毁时直接返回，避免空指针
                 if (!result.isSuccess() || isFinishing() || isDestroyed()) {
                     return;
@@ -200,6 +302,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
                 CountValueHelper.showTopCardCount(tvCountedTotal, data.countedTotal, maxDigits);
                 CountValueHelper.showTopCardCount(tvUncountedTotal, uncountedTotal, maxDigits);
                 CountValueHelper.showTopCardCount(tvAllTotal, data.totalCount, maxDigits);
+                // 个人资产数量：按管理人(CUSTODIAN)匹配当前登录人，千分位显示
+                tvPersonalAssetTotal.setText(String.format(Locale.CHINA, "个人资产数量 %,d", data.personalCount));
                 // 刷新分组网格数据
                 statsAdapter.setData(data.deptList);
                 statsAdapter.notifyDataSetChanged();
@@ -215,45 +319,46 @@ public class RfidStatsActivity extends BaseCompatActivity {
      * @return 顶部统计与分组明细数据
      */
     private DeptStatsData buildStats() {
-        // 【临时测试】开关开启时直接返回模拟数据渲染，不查库（测试完成后删除本if块与buildTestStats方法）
-        if (TEST_COUNT_DISPLAY) {
-            return buildTestStats();
-        }
-        if (mode == MODE_LOCATION) {
-            return buildLocationStats();
-        }
-        return buildDeptStats();
+        DeptStatsData data = mode == MODE_LOCATION ? buildLocationStats() : buildDeptStats();
+        // 个人资产数量：按管理人匹配当前登录人，两级页面取同一口径
+        data.personalCount = countPersonalAssets();
+        return data;
     }
 
     /**
-     * 【临时测试】构造模拟统计数据：顶部三列与分组卡片均使用模拟数字（均超过十）
-     * <p>
-     * 分组卡片预置3条：两位数、两位数、四位数(含千分位)，分别验证分组卡片字号档位与千分位显示；
-     * 测试完成后删除本方法
+     * 统计个人资产数量（后台线程执行）：按管理人(CUSTODIAN)匹配当前登录人，
+     * 兼容数据源存姓名或存用户编号两种情况
+     *
+     * @return 本人管理人的本机资产条数
      */
-    private DeptStatsData buildTestStats() {
-        DeptStatsData data = new DeptStatsData();
-        data.countedTotal = TEST_COUNTED;
-        data.totalCount = TEST_TOTAL;
-        List<RfidDeptStatsAdapter.DeptStats> list = new ArrayList<>();
-        String[] names = {"测试部门一", "测试部门二", "测试部门三"};
-        int[][] values = {{TEST_COUNTED, TEST_TOTAL}, {23, 57}, {1234, 1567}};
-        for (int i = 0; i < names.length; i++) {
-            RfidDeptStatsAdapter.DeptStats stats = new RfidDeptStatsAdapter.DeptStats();
-            stats.deptName = names[i];
-            stats.counted = values[i][0];
-            stats.total = values[i][1];
-            list.add(stats);
+    private int countPersonalAssets() {
+        Accounts loginAccount = application.getLoginAccount();
+        if (loginAccount == null) {
+            return 0;
         }
-        data.deptList = list;
-        return data;
+        String userName = StringUtils.trim(loginAccount.getYHXM());
+        String userNo = StringUtils.trim(loginAccount.getYHBH());
+        List<String> whereParts = new ArrayList<>();
+        List<String> args = new ArrayList<>();
+        if (!StringUtils.isNullOrEmpty(userName)) {
+            whereParts.add("CUSTODIAN = ?");
+            args.add(userName);
+        }
+        if (!StringUtils.isNullOrEmpty(userNo)) {
+            whereParts.add("CUSTODIAN = ?");
+            args.add(userNo);
+        }
+        if (whereParts.isEmpty()) {
+            return 0;
+        }
+        return (int) Assets.count(Assets.class, TextUtils.join(" OR ", whereParts), args.toArray(new String[0]));
     }
 
     /**
      * 部门层统计（后台线程执行）
      * <p>
-     * 1. 部门以导入资产时的部门字典为准：按当前账套从Accounts表取出全部部门（与导入资产页一致），
-     *    即使该部门尚未导入资产也展示为 0/0；
+     * 1. 部门以导入资产时的部门字典为准：按当前账套从Accounts表取出部门名称，
+     *    用于数据分组与排序；未导入资产的部门（全部数量为0）不展示；
      * 2. 遍历本地全部资产累加统计：已盘数量(ZT=02) / 部门资产总数，
      *    部门按管理部门(GROUNDMANAGEDEPT)分组，与DEPT_FIELD口径一致；
      * 3. GROUNDMANAGEDEPT字段中编号与中文名称并存（新建资产存单位编号DWBH，导入资产存Excel原文），
@@ -264,6 +369,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
     private DeptStatsData buildDeptStats() {
         // 部门名称 → [已盘数量, 资产总数]
         Map<String, int[]> deptMap = new HashMap<>();
+        // 部门/单位名称 → 编号（部门名称对应BMBH，单位名称对应DWBH），用于分组列表按编号排序
+        Map<String, String> deptCodeMap = new HashMap<>();
         // 编号 → 中文名称映射（单位编号DWBH→DWMC、部门编号BMBH→BMMC）
         Map<String, String> codeToNameMap = new HashMap<>();
         // 中文名称集合（部门名称/单位名称），用于判断字段中存的原文是否已是名称
@@ -299,6 +406,13 @@ public class RfidStatsActivity extends BaseCompatActivity {
                 if (!StringUtils.isNullOrEmpty(unitCode) && !StringUtils.isNullOrEmpty(unitName)) {
                     codeToNameMap.put(unitCode, unitName);
                 }
+                // 名称→编号：部门按BMBH、单位按DWBH，供部门层列表按编号排序使用
+                if (!StringUtils.isNullOrEmpty(deptName) && !StringUtils.isNullOrEmpty(deptCode)) {
+                    deptCodeMap.put(deptName, deptCode);
+                }
+                if (!StringUtils.isNullOrEmpty(unitName) && !StringUtils.isNullOrEmpty(unitCode)) {
+                    deptCodeMap.put(unitName, unitCode);
+                }
             }
         }
 
@@ -328,8 +442,29 @@ public class RfidStatsActivity extends BaseCompatActivity {
         DeptStatsData data = new DeptStatsData();
         data.totalCount = allAssets.size();
         data.countedTotal = countedTotal;
-        data.deptList = buildSortedList(deptMap);
+        data.deptList = buildSortedList(deptMap, deptCodeMap);
+        // 全部数量为0的部门不展示：部门字典中存在但本地未导入任何资产的部门
+        removeEmptyDeptStats(data.deptList);
         return data;
+    }
+
+    /**
+     * 过滤全部数量为0的部门：部门字典中有该部门但本地没有资产时不展示
+     * <p>
+     * 不使用 Collection.removeIf（Android API 24 才提供），改用 Iterator 保证低版本兼容
+     *
+     * @param statsList 部门统计列表
+     */
+    private static void removeEmptyDeptStats(List<RfidDeptStatsAdapter.DeptStats> statsList) {
+        if (statsList == null || statsList.isEmpty()) {
+            return;
+        }
+        Iterator<RfidDeptStatsAdapter.DeptStats> iterator = statsList.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().total <= 0) {
+                iterator.remove();
+            }
+        }
     }
 
     /**
@@ -366,25 +501,33 @@ public class RfidStatsActivity extends BaseCompatActivity {
     /**
      * 存放地点层统计（后台线程执行）
      * <p>
-     * 先按管理部门过滤出该部门的全部资产（DEPT_FIELD，默认GROUNDMANAGEDEPT），
-     * 再按存放地点(ASSETSLAYADD)分组统计每个地点的已盘数量(ZT=02)与资产总数，
-     * 地点为空的归入"未设置存放地点"
+     * 1. 部门相关资产：管理部门(GROUNDMANAGEDEPT)或使用部门(ASSETSDEPT)为当前部门的资产，
+     *    用于顶部三列统计与确定存放地点列表范围；
+     * 2. 存放地点列表：按部门相关资产涉及的存放地点去重展示；
+     * 3. 地点卡片数字：按纯地点口径统计（不加入部门作为限制），与列表是否属于该部门无关
      *
      * @return 该部门顶部统计与各存放地点明细数据
      */
     private DeptStatsData buildLocationStats() {
-        // 存放地点 → [已盘数量, 资产总数]
-        Map<String, int[]> locationMap = new HashMap<>();
-        // 按部门查询该部门的全部资产（字段中名称与编号两种历史取值都兼容，避免漏统计）
-        List<Assets> deptAssets = findDeptAssets(deptName);
-        // 该部门已盘累计数量
+        // 管理部门或使用部门为当前部门的资产（名称/部门编号/单位编号历史取值兼容）
+        List<Assets> deptAssets = findDeptRelatedAssets(deptName);
+        // 部门相关资产已盘累计数量与涉及的存放地点集合
         int countedTotal = 0;
+        Set<String> relatedLocations = new HashSet<>();
         for (Assets assets : deptAssets) {
-            // 按存放地点分组，去除首尾空格
-            String location = StringUtils.trim(assets.getASSETSLAYADD());
-            // 地点为空时归入"未设置存放地点"
-            if (StringUtils.isNullOrEmpty(location)) {
-                location = "未设置存放地点";
+            if ("02".equals(assets.getZT())) {
+                countedTotal++;
+            }
+            relatedLocations.add(normalizeLocationName(assets.getASSETSLAYADD()));
+        }
+
+        // 存放地点 → [已盘数量, 资产总数]：纯地点统计，不加入部门作为限制
+        Map<String, int[]> locationMap = new HashMap<>();
+        for (Assets assets : Assets.listAll(Assets.class)) {
+            String location = normalizeLocationName(assets.getASSETSLAYADD());
+            // 只统计本部门相关资产涉及的存放地点，避免展示与当前部门无关的地点
+            if (!relatedLocations.contains(location)) {
+                continue;
             }
             int[] stat = locationMap.get(location);
             if (stat == null) {
@@ -393,10 +536,9 @@ public class RfidStatsActivity extends BaseCompatActivity {
             }
             // 地点资产总数+1
             stat[1]++;
-            // 盘点状态ZT=02表示已盘，地点已盘数与部门已盘数同时+1
+            // 盘点状态ZT=02表示已盘
             if ("02".equals(assets.getZT())) {
                 stat[0]++;
-                countedTotal++;
             }
         }
 
@@ -404,61 +546,84 @@ public class RfidStatsActivity extends BaseCompatActivity {
         DeptStatsData data = new DeptStatsData();
         data.totalCount = deptAssets.size();
         data.countedTotal = countedTotal;
-        data.deptList = buildSortedList(locationMap);
+        data.deptList = buildSortedList(locationMap, null);
+        // 空白地点（临时）：每个部门固定展示的虚拟入口，不参与真实地点统计，固定排在第一位
+        RfidDeptStatsAdapter.DeptStats backupStats = new RfidDeptStatsAdapter.DeptStats();
+        backupStats.deptName = Const.BACKUP_LOCATION_NAME;
+        backupStats.isBackup = true;
+        data.deptList.add(0, backupStats);
         return data;
     }
 
+    /** 存放地点归一化：去除首尾空格，空值归"未设置存放地点" */
+    private static String normalizeLocationName(String raw) {
+        String value = StringUtils.trim(raw);
+        return StringUtils.isNullOrEmpty(value) ? RfidTagAdapter.LOCATION_NONE_NAME : value;
+    }
+
     /**
-     * 按部门名称查询该部门的全部资产（后台线程调用）
+     * 按部门名称查询部门相关资产（后台线程调用）
      * <p>
-     * GROUNDMANAGEDEPT字段历史数据中编号与中文名称并存，
-     * 查询时同时匹配名称与对应编号（部门编号BMBH/单位编号DWBH），避免漏统计；
-     * "未分配部门"占位名匹配数据库空值
+     * 部门相关口径：管理部门(GROUNDMANAGEDEPT)或使用部门(ASSETSDEPT)为当前部门，满足其一即可；
+     * 字段历史数据中编号与中文名称并存（使用部门可能存部门编号BMBH），查询时同时匹配名称与对应编号
+     * （部门编号BMBH/单位编号DWBH），避免漏统计；"未分配部门"占位名匹配任一字段为空的数据
      *
      * @param deptName 部门中文名称
-     * @return 该部门的全部资产
+     * @return 与部门相关的全部资产
      */
-    private List<Assets> findDeptAssets(String deptName) {
+    private List<Assets> findDeptRelatedAssets(String deptName) {
         if (StringUtils.isNullOrEmpty(deptName)) {
             return Assets.listAll(Assets.class);
         }
-        // "未分配部门"：匹配字段为空的数据
-        if ("未分配部门".equals(deptName)) {
-            return Assets.find(Assets.class, "(" + DEPT_FIELD + " IS NULL OR " + DEPT_FIELD + " = '')");
+        // "未分配部门"：管理部门或使用部门为空均视为相关
+        if (RfidTagAdapter.DEPT_NONE_NAME.equals(deptName)) {
+            return Assets.find(Assets.class,
+                    "(" + DEPT_FIELD + " IS NULL OR TRIM(" + DEPT_FIELD + ") = ''"
+                            + " OR " + USE_DEPT_FIELD + " IS NULL OR TRIM(" + USE_DEPT_FIELD + ") = '')");
         }
         // 名称 → 编号转换（部门编号BMBH/单位编号DWBH），与名称一并匹配
+        List<String> values = new ArrayList<>();
+        values.add(deptName);
         String ztbh = "";
         Accounts loginAccount = application.getLoginAccount();
         if (loginAccount != null && !StringUtils.isNullOrEmpty(loginAccount.getZTBH())) {
             ztbh = loginAccount.getZTBH();
         }
-        List<String> args = new ArrayList<>();
-        args.add(deptName);
         if (!StringUtils.isNullOrEmpty(ztbh)) {
             String deptCode = AccountHelper.getDepartCode(ztbh, deptName);
-            if (!StringUtils.isNullOrEmpty(deptCode) && !deptCode.equals(deptName)) {
-                args.add(deptCode);
+            if (!StringUtils.isNullOrEmpty(deptCode) && !values.contains(deptCode)) {
+                values.add(deptCode);
             }
         }
         String unitCode = AccountHelper.getDanweiCode(deptName);
-        if (!StringUtils.isNullOrEmpty(unitCode) && !unitCode.equals(deptName)) {
-            args.add(unitCode);
+        if (!StringUtils.isNullOrEmpty(unitCode) && !values.contains(unitCode)) {
+            values.add(unitCode);
         }
-        // GROUNDMANAGEDEPT = 名称 OR = 编号...（两种历史取值都覆盖）
-        StringBuilder where = new StringBuilder(DEPT_FIELD + " = ?");
-        for (int i = 1; i < args.size(); i++) {
-            where.append(" OR ").append(DEPT_FIELD).append(" = ?");
+        // 管理部门或使用部门命中任一匹配值
+        List<String> args = new ArrayList<>();
+        List<String> orParts = new ArrayList<>();
+        for (String field : new String[]{DEPT_FIELD, USE_DEPT_FIELD}) {
+            for (String value : values) {
+                orParts.add("TRIM(" + field + ") = ?");
+                args.add(value);
+            }
         }
-        return Assets.find(Assets.class, where.toString(), args.toArray(new String[0]));
+        return Assets.find(Assets.class, TextUtils.join(" OR ", orParts), args.toArray(new String[0]));
     }
 
     /**
-     * 将分组Map转换为适配器数据列表，并按中文拼音排序分组名称
+     * 将分组Map转换为适配器数据列表
+     * <p>
+     * 排序规则：
+     * 1. 传入编号映射时按编号升序（部门层按BMBH，纯数字编号按数值比较）；
+     * 2. 无编号的分组（"未分配部门"、字典外部门等）排在有编号分组之后；
+     * 3. 无编号分组之间或编号相同时按中文拼音排序，保证顺序稳定
      *
      * @param groupMap 分组名称 → [已盘数量, 资产总数]
+     * @param codeMap  分组名称 → 编号（传null时全部按名称拼音排序，如存放地点层）
      * @return 排序后的分组明细列表
      */
-    private static List<RfidDeptStatsAdapter.DeptStats> buildSortedList(Map<String, int[]> groupMap) {
+    private static List<RfidDeptStatsAdapter.DeptStats> buildSortedList(Map<String, int[]> groupMap, Map<String, String> codeMap) {
         List<RfidDeptStatsAdapter.DeptStats> statsList = new ArrayList<>();
         for (Map.Entry<String, int[]> entry : groupMap.entrySet()) {
             RfidDeptStatsAdapter.DeptStats stats = new RfidDeptStatsAdapter.DeptStats();
@@ -467,10 +632,37 @@ public class RfidStatsActivity extends BaseCompatActivity {
             stats.total = entry.getValue()[1];
             statsList.add(stats);
         }
-        // 按中文拼音排序，保证展示顺序稳定美观
         Collator collator = Collator.getInstance(Locale.CHINA);
-        Collections.sort(statsList, (o1, o2) -> collator.compare(o1.deptName, o2.deptName));
+        Collections.sort(statsList, (o1, o2) -> {
+            String code1 = codeMap == null ? null : codeMap.get(o1.deptName);
+            String code2 = codeMap == null ? null : codeMap.get(o2.deptName);
+            boolean noCode1 = StringUtils.isNullOrEmpty(code1);
+            boolean noCode2 = StringUtils.isNullOrEmpty(code2);
+            if (noCode1 != noCode2) {
+                // 无编号的分组统一排在最后
+                return noCode1 ? 1 : -1;
+            }
+            if (!noCode1) {
+                int codeCompare = compareDeptCode(code1, code2);
+                if (codeCompare != 0) {
+                    return codeCompare;
+                }
+            }
+            // 编号相同或无编号时按中文拼音兜底，保证顺序稳定
+            return collator.compare(o1.deptName, o2.deptName);
+        });
         return statsList;
+    }
+
+    /**
+     * 部门编号比较：均为纯数字时按数值比较（避免"10"排在"2"前面），否则按字典序
+     */
+    private static int compareDeptCode(String code1, String code2) {
+        try {
+            return Long.compare(Long.parseLong(code1), Long.parseLong(code2));
+        } catch (NumberFormatException e) {
+            return code1.compareTo(code2);
+        }
     }
 
     /**
@@ -483,6 +675,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
         int totalCount;
         /** 已盘数量 */
         int countedTotal;
+        /** 个人资产数量（管理人=当前登录人的本机资产条数） */
+        int personalCount;
         /** 分组明细列表（部门层为部门列表，存放地点层为地点列表） */
         List<RfidDeptStatsAdapter.DeptStats> deptList;
     }
@@ -571,4 +765,71 @@ public class RfidStatsActivity extends BaseCompatActivity {
             outRect.top = row == 0 ? 0 : rowSpace;
         }
     }
+
+    /**
+     * 功能操作卡片入口点击绑定（位于统计卡片下方，两级页面统一显示）
+     * <p>
+     * 资产移交 → WebView(/pages/asset_transfer/index)
+     * 资产处置 → WebView(/pages/asset_scrap/index)
+     * 补打条码 → 补打条码页(ReprintBarcodeActivity)
+     * 上传数据 → 资产同步（与首页"同步上传"一致）
+     * 数字签名 → 校验未上传数据后，WebView打开签名页
+     * 盘亏处理 → 功能暂未开放，点击提示
+     */
+    private void initToolsPage() {
+        findViewById(R.id.btnAssetTransfer).setOnClickListener(v -> openWebPage("/pages/asset_transfer/index?back=false"));
+        findViewById(R.id.btnAssetDispose).setOnClickListener(v -> openWebPage("/pages/asset_scrap/index?back=false"));
+        findViewById(R.id.btnLossHandle).setOnClickListener(v -> showShortText("功能开发中"));
+        findViewById(R.id.btnReprintBarcode).setOnClickListener(v ->
+                startActivity(new Intent(mContext, ReprintBarcodeActivity.class)));
+        findViewById(R.id.btnUploadData).setOnClickListener(v -> startSyncAssetsTask());
+        findViewById(R.id.btnDigitalSign).setOnClickListener(v -> openDigitalSignPage());
+    }
+
+    /**
+     * 数字签名入口：
+     * 1. 先校验本地是否还有未上传数据（口径与上传流程一致：Assets.ISUPLOAD=02），
+     *    有则弹窗提示先上传，可直接跳转现有上传流程，避免签名页取到不完整的服务器数据
+     * 2. 校验通过后通过项目WebView(WebIndex)打开签名页，phone取当前登录账号手机号
+     */
+    private void openDigitalSignPage() {
+        long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{Const.NOT_UPLOAD});
+        if (waitingSyncCount > 0) {
+            new QMUIDialog.MessageDialogBuilder(mContext)
+                    .setTitle("系统提示")
+                    .setMessage("当前有 " + waitingSyncCount + " 条数据未上传，请先上传数据后再进行数字签名。")
+                    .addAction("取消", (dialog, index) -> dialog.dismiss())
+                    .addAction(0, "去上传", QMUIDialogAction.ACTION_PROP_NEGATIVE, (dialog, index) -> {
+                        dialog.dismiss();
+                        startSyncAssetsTask();
+                    })
+                    .show();
+            return;
+        }
+        String phone = application.getLoginAccount() == null ? "" : application.getLoginAccount().getPHONE();
+        if (StringUtils.isNullOrEmpty(phone)) {
+            showShortText("当前登录账号缺少手机号，无法进行数字签名");
+            return;
+        }
+        // 签名页部署在独立站点：正式环境域名 / 测试环境IP（与原逻辑一致）
+        String linkHost = (serverHost != null && serverHost.contains("www.zrast.com"))
+                ? "http://www.zrast.com" : "http://47.110.252.199:8080";
+        String signUrl = linkHost + "/signature.html?phone=" + phone;
+        // 绝对地址交给WebIndex加载（http/https开头不再拼接服务器前缀）
+        Intent intent = new Intent(mContext, WebIndex.class);
+        intent.putExtra("webUrl", signUrl);
+        startActivity(intent);
+    }
+
+    /**
+     * 打开WebView页面（相对路径，WebIndex内部自动拼接服务器地址）
+     *
+     * @param webUrl 页面相对路径，如 /pages/asset_transfer/index
+     */
+    private void openWebPage(String webUrl) {
+        Intent intent = new Intent(mContext, WebIndex.class);
+        intent.putExtra("webUrl", webUrl);
+        startActivity(intent);
+    }
+
 }

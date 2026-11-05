@@ -16,4 +16,9 @@
             name="zr_dir"
             path="zr/" />
 
+    <!-- H5 附件下载目录：Download/zr_app/ -->
+    <external-path
+            name="zr_app_downloads"
+            path="Download/zr_app/" />
+
 </paths>

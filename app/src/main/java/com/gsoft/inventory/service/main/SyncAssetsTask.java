@@ -4,9 +4,11 @@ import android.content.Context;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.const_data.Log_file_name;
 import com.gsoft.inventory.entities.SyncResult;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Assets;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -30,7 +32,8 @@ public class SyncAssetsTask implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
+        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", Const.NOT_UPLOAD);
+        // 查询是否需要复制图片，ISUPIMG是是否需要复制图片的字段，以前不用的字段改的
         List<Assets> needCopyImgList = Assets.find(Assets.class, "ISUPIMG=?", "1");
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -96,7 +99,7 @@ public class SyncAssetsTask implements Callable<String> {
                             if ("待删除".equals(ast.getREMARKS())) {
                                 ast.delete();
                             } else {
-                                ast.setISUPLOAD("01");
+                                ast.setISUPLOAD(Const.UPLOADED);
                                 ast.save();
                             }
                         }

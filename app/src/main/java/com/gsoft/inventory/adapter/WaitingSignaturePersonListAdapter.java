@@ -108,7 +108,9 @@ public class WaitingSignaturePersonListAdapter extends BaseAdapter {
 
 
         viewContainer.button_copy.setOnClickListener(v -> {
-            String urlContent = String.format("固定资产确认通知：尊敬的 %s，请点击链接http://www.zrast.com/signature.html?phone=%s核实您名下的固定资产信息，并签字确认。", dispose.getName(), dispose.getTelephone());
+            String serverHost = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.SP_KEY_SERVERHOST, SysDefine.SERVERHOST);
+            String linkHost = serverHost.contains("www.zrast.com") ? "http://www.zrast.com" : "http://47.110.252.199:8080";
+            String urlContent = String.format("固定资产确认通知：尊敬的 %s，请点击链接%s/signature.html?phone=%s核实您名下的固定资产信息，并签字确认。", dispose.getName(), linkHost, dispose.getTelephone());
             // 将urlContent复制到用户剪切板，并弹框提示已经复制到剪切板
             ClipboardUtils.copy(mContext, urlContent);
         });

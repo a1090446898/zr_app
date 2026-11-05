@@ -65,6 +65,11 @@ public class DongjiRfidReader implements IRfidReader {
     }
 
     @Override
+    public boolean requiresLocationPermission() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTid() {
         return false;
     }
@@ -72,6 +77,12 @@ public class DongjiRfidReader implements IRfidReader {
     @Override
     public int[] getPowerRange() {
         return new int[]{5, 33};
+    }
+
+    @Override
+    public int getDefaultPower() {
+        // 非优博讯设备：默认功率33dBm（取值上限）
+        return 33;
     }
 
     @Override
@@ -183,15 +194,23 @@ public class DongjiRfidReader implements IRfidReader {
         final RfidConfig config = lastConfig;
         CommonUtils.getExecutor().execute(() -> {
             try {
-                // 功率5~33dBm
-                mService.setPower(clamp(config.power, 5, 33));
-                // 会话S0/S1（东集取值0~3，业务统一0/1为子集）
-                mService.setParameters(UHFService.PARAMETER_INVENTORY_SESSION, config.session);
-                // 频段：文档setRegion仅注明FCC/ETSI，China1需真机验证，失败仅告警不阻断
+                // 功率5~33dBm（文档§7：setPower范围5~33，返回false为失败）
+                if (!mService.setPower(clamp(config.power, 5, 33))) {
+                    Log.w(TAG, "设置功率失败 power=" + config.power);
+                }
+                // 会话S0/S1（文档§22：setParameters返回false为失败；东集取值0~3，业务统一0/1为子集）
+                if (!mService.setParameters(UHFService.PARAMETER_INVENTORY_SESSION, config.session)) {
+                    Log.w(TAG, "设置会话失败 session=" + config.session);
+                }
+                // 频段：文档setRegion取值仅支持"FCC"/"ETSI"；中国区域不可设，保持模块内置频段(China1，920~925MHz)
                 String region = mapRegion(config.region);
-                boolean regionOk = mService.setRegion(region);
-                if (!regionOk) {
-                    Log.w(TAG, "设置频段失败 region=" + region);
+                if (region != null) {
+                    boolean regionOk = mService.setRegion(region);
+                    if (!regionOk) {
+                        Log.w(TAG, "设置频段失败 region=" + region);
+                    }
+                } else {
+                    Log.i(TAG, "中国频率区域使用模块内置频段，跳过setRegion");
                 }
                 // 输出隐藏PC号，与得实侧业务解码(超32位去PC字头)口径一致
                 mService.setParameters(UHFService.PARAMETER_HIDE_PC, 1);
@@ -204,7 +223,7 @@ public class DongjiRfidReader implements IRfidReader {
         });
     }
 
-    /** 统一频率区域 → 东集字符串取值 */
+    /** 统一频率区域 → 东集setRegion字符串取值（文档：setRegion仅支持"FCC"/"ETSI"，中国区域不可设返回null） */
     private static String mapRegion(int region) {
         switch (region) {
             case RfidConfig.REGION_EU:
@@ -212,7 +231,7 @@ public class DongjiRfidReader implements IRfidReader {
             case RfidConfig.REGION_USA:
                 return "FCC";
             default:
-                return "China1";
+                return null;
         }
     }
 

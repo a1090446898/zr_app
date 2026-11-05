@@ -1,27 +1,14 @@
-
-
 package com.gsoft.inventory;
 
-
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-
-import com.google.gson.reflect.TypeToken;
 import com.gsoft.inventory.abs.AssetsBaseActivity;
-import com.gsoft.inventory.const_data.Log_file_name;
-import com.gsoft.inventory.utils.AIPhotoCaptureHelper;
-import com.gsoft.inventory.utils.Assets;
-import com.gsoft.inventory.utils.AssetsCopy;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.AssetsUtils;
 import com.gsoft.inventory.utils.DataConvert;
-import com.gsoft.inventory.utils.SharedPreferencesUtils;
 import com.gsoft.inventory.utils.StringUtils;
 import com.gsoft.inventory.utils.SysConfig;
 import com.gsoft.inventory.utils.SysDefine;
@@ -30,29 +17,13 @@ import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
-import java.io.File;
-import java.util.List;
-
 import butterknife.ButterKnife;
-
-import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
 /**
  * @author 10904
  */
 public class NewAssetsActivity extends AssetsBaseActivity {
     private boolean isAdd = true;
-
-    // 接收批量复制传值
-    private AssetsCopy assetsCopy;
-    /**
-     * 复制传过来的id，和盘实无关
-     */
-    private String assetsCopyDocId;
-
-    private boolean copyFrom = false;
-    private String copyImg = "";
-
 
     View queryButton;
 
@@ -68,11 +39,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
 
         initializeView();
     }
-
-
-
-
-
 
 
     @Override
@@ -106,7 +72,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         // 初始化AI拍照工具类（父类方法）
         initAIPhotoHelper();
 
-
         // 初始化数据
         this.initData();
         this.initData2();
@@ -116,12 +81,8 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         viewStateSetting();
         // 监听设置
         viewClickSetting();
-        // 接收从批量复制跳转过来的参数
-        receiveCopyValue();
+
     }
-
-
-
 
 
     private void initData2() {
@@ -132,12 +93,8 @@ public class NewAssetsActivity extends AssetsBaseActivity {
                 showShortText("资产信息错误，请先填写信息并保存！");
                 return;
             }
-            if (!isPrinterConnected()) {
-                Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-                startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-                return;
-            }
-            printAssets(editACCTSUITEID.getText().toString(), assetsCreating);
+            // 打印统一走基类requestPrintAssets：品牌分发/连接检查/连接后续打全在基类（新增打印机无需改动本页）
+            requestPrintAssets(editACCTSUITEID.getText().toString(), assetsCreating, () -> markBarcodePrinted(assetsCreating));
         });
 
         assetsCreating = (Assets) getIntent().getSerializableExtra(SysDefine.IntentExtra_AssetsView);
@@ -166,13 +123,13 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         } else {
             fillAssetsData();
         }
-        // 注意是单位名称
+        // 管理部门统一存部门编号 BMBH：新增时不继承上一张卡片的值
         editGROUNDMANAGEDEPT.setText("");
         assetsCreating.setGROUNDMANAGEDEPT("");
 
         editASSETSWRITER.setText(application.getZcqcyName());
         assetsCreating.setASSETSWRITER(application.getZcqcyCode());
-        editASSETSWRITERDATE.setText(DataConvert.FormatDate2Day());
+        editASSETSWRITERDATE.setText(DataConvert.FormatDate2HMS());
 
         // 保存监听处理
         if (buttonSave != null) {
@@ -184,7 +141,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         if (buttonCopy != null) {
             buttonCopy.setOnClickListener(view -> copyData());
         }
-
 
     }
 
@@ -200,7 +156,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         // 输入框赋值
         this.setAssetProperties();
         // 联网上传
-        upLodeCopyImg();
+        uploadData();
         // 本地保存
         assetsCreating.save();
         showShortText("保存成功");
@@ -225,12 +181,8 @@ public class NewAssetsActivity extends AssetsBaseActivity {
                 .addAction("取消", (dialog, index) -> dialog.dismiss())
                 .addAction(0, "打印", QMUIDialogAction.ACTION_PROP_NEGATIVE, (dialog, index) -> {
                     dialog.dismiss();
-                    if (!isPrinterConnected()) {
-                        Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-                        startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-                        return;
-                    }
-                    printAssets(editACCTSUITEID.getText().toString(), assetsCreating);
+                    // 打印统一走基类requestPrintAssets：品牌分发/连接检查/连接后续打全在基类（新增打印机无需改动本页）
+                    requestPrintAssets(editACCTSUITEID.getText().toString(), assetsCreating, () -> markBarcodePrinted(assetsCreating));
                 })
                 .create(mCurrentDialogStyle).show();
     }
@@ -271,6 +223,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         String assetsUseDepart = assetsCreating.getASSETSDEPT();
         String assetsISGWC = assetsCreating.getISGWC();
         String assetsDepartment = assetsCreating.getDEPARTMENT();
+        String assetsMadeInChina = assetsCreating.getMADEINCHINA();
         String assetsGROUNDMANAGEDEPT = assetsCreating.getGROUNDMANAGEDEPT();
         String assetsISSueDate = assetsCreating.getISSUEDATE();
         String assetsClassification = assetsCreating.getCLASSIFICATION();
@@ -281,7 +234,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         editBARCODEID.setText("");
 
         buttonPrintLabel.setVisibility(View.INVISIBLE);
-//        buttonCopy.setVisibility(View.INVISIBLE);
+        //  buttonCopy.setVisibility(View.INVISIBLE);
         assetsCreating.setASSETSDEPT(assetsUseDepart);
         assetsCreating.setASSETSUSER(assetsUseMan);
         assetsCreating.setACCTSUITEID(assetsACCTSUITEID);
@@ -298,6 +251,7 @@ public class NewAssetsActivity extends AssetsBaseActivity {
         assetsCreating.setCLASSIFICATION(assetsClassification);
         assetsCreating.setISGWC(assetsISGWC);
         assetsCreating.setDEPARTMENT(assetsDepartment);
+        assetsCreating.setMADEINCHINA(assetsMadeInChina);
         showShortText("复制完毕，请设置资产编号");
         addQueryButton();
     }
@@ -316,37 +270,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
 
     }
 
-    private void upLodeCopyImg() {
-        if (copyFrom) {
-            if ("是".equals(copyImg) && assetsCopy != null) {
-                String copyDocId = assetsCopy.getCOPY_DOC_ID();
-                // 调用复制图片的接口
-                assetsCreating.setISUPIMG(1);
-                assetsCreating.setCOPY_DOC_ID(copyDocId);
-                AssetsUtils.copyImgs(assetsCreating, copyDocId, assetsCreating.getDOCID(), assetsCreating.getBARCODEID(),
-                        application.getZcqcyCode(), mContext, new AssetsUtils.OnCopyCallback() {
-                            @Override
-                            public void onCopySuccess(Assets assets) {
-                                uploadData();
-                                showShortText("联网图片复制成功");
-                            }
-
-                            @Override
-                            public void onCopyFailure(String errorMessage) {
-                                showShortText("联网图片复制失败");
-                            }
-                        });
-            } else {
-                uploadData();
-            }
-            // 删除复制的内容，并重新保存
-            AssetsCopy.deleteJson(mContext, assetsCopyDocId);
-            assetsCopy = null;
-        } else {
-            uploadData();
-        }
-    }
-
     private void uploadData() {
         if (isAdd) {
             AssetsUtils.uploadAssets(assetsCreating, mContext);
@@ -354,36 +277,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
             AssetsUtils.uploadAddAssets(assetsCreating, mContext);
         }
     }
-
-    private void receiveCopyValue() {
-        Intent intent = getIntent();
-        assetsCopyDocId = intent.getStringExtra("docId");
-        copyFrom = intent.getBooleanExtra("fromCopy", false);
-        if (!StringUtils.isNullOrEmpty(assetsCopyDocId) && copyFrom) {
-            // 说明有值
-            String assetsCopyListJson = SharedPreferencesUtils.getString(NewAssetsActivity.this, "COPY_ASSETS_JSON", "");
-            if (!TextUtils.isEmpty(assetsCopyListJson)) {
-                List<AssetsCopy> assetsCopyList = Log_file_name.gson.fromJson(assetsCopyListJson, new TypeToken<List<AssetsCopy>>() {
-                }.getType());
-                for (AssetsCopy item : assetsCopyList) {
-                    if (assetsCopyDocId.equals(item.getDOCID())) {
-                        assetsCopy = item;
-                        break;
-                    }
-                }
-                copyImg = assetsCopy.getCOPY_IMG();
-                Assets assets = new Assets();
-                assetsCopy.toDeepCopyAssets(assets);
-                assets.setPDZT("02");
-                assets.setREMARKS("盘盈");
-                // 深拷贝赋值
-                assetsCreating = assets;
-                // 复制给表单页面
-                fillAssetsData();
-            }
-        }
-    }
-
 
     private void jumpToQuery() {
         // 创建 Intent
@@ -433,13 +326,6 @@ public class NewAssetsActivity extends AssetsBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQESTCODE_WAITINGBLUETOOTH) {
-                if (!isPrinterConnected()) {
-                    showShortText("打印机连接失败！");
-                    return;
-                }
-                printAssets(editACCTSUITEID.getText().toString(), assetsCreating);
-            }
             if (requestCode == 10) {
                 receivedPageValue(data);
             }

@@ -2,27 +2,16 @@ package com.gsoft.inventory;
 
 import android.app.Application;
 import android.util.Log;
-import android.widget.Toast;
 import androidx.lifecycle.MutableLiveData;
 import androidx.multidex.MultiDex;
 import com.dothantech.lpapi.LPAPI;
 import com.dothantech.printer.IDzPrinter;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.gsoft.inventory.entities.JCPrinter;
-import com.gsoft.inventory.update.OkHttpUtilsUpdateService;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
 import com.orm.SugarContext;
 import com.postek.cdf.CDFPTKAndroid;
 import com.postek.cdf.CDFPTKAndroidImpl;
-import com.xuexiang.xupdate.XUpdate;
-import com.xuexiang.xupdate.entity.UpdateError;
-import com.xuexiang.xupdate.listener.OnUpdateFailureListener;
-import com.xuexiang.xupdate.utils.UpdateUtils;
-
-import java.util.List;
-
-import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION;
 
 /**
  * @author 10904
@@ -39,8 +28,13 @@ public class InventoryApplication extends com.orm.SugarApp {
     private String zcqcyName = "";
 
     private String zcqcyCode = "";
+
     /**
-     * 设备号码1~Z
+     * 照片上传提示标志：本次登录后第一次拍照提示一次，避免每拍一张都弹框
+     */
+    private boolean photoUploadTipShown = false;
+    /**
+     * 设备号：首次进入APP时随机生成并持久化（KEY_DEVICENO），之后保持不变，可在登录设置页修改
      */
     private static String _deviceNo = "";
     /**
@@ -68,6 +62,24 @@ public class InventoryApplication extends com.orm.SugarApp {
 
     public void setLoginAccount(Accounts loginAccount) {
         _loginAccount = loginAccount;
+        // 每次登录（在线/离线登录都会走这里）重置提示标志，下次登录后第一次拍照会再次提示
+        photoUploadTipShown = false;
+    }
+
+    /**
+     * 本次登录后是否还需要提示“照片待上传”
+     *
+     * @return true 表示本次登录还没提示过，需要弹框
+     */
+    public boolean needShowPhotoUploadTip() {
+        return !photoUploadTipShown;
+    }
+
+    /**
+     * 标记本次登录已提示过照片上传，后续拍照不再重复弹框
+     */
+    public void markPhotoUploadTipShown() {
+        photoUploadTipShown = true;
     }
 
     public String getPrinterDevice() {
@@ -118,6 +130,13 @@ public class InventoryApplication extends com.orm.SugarApp {
         super.onCreate();
         MultiDex.install(this);
         application = this;
+        // 设备号只在首次进入APP时随机生成并保存，后续启动保持不变（可在登录设置页修改）
+        String savedDeviceNo = SharedPreferencesUtils.getString(this, SharedPreferencesUtils.KEY_DEVICENO, "");
+        if (StringUtils.isNullOrEmpty(savedDeviceNo)) {
+            savedDeviceNo = CommonUtils.getRandomTwoString();
+            SharedPreferencesUtils.putString(this, SharedPreferencesUtils.KEY_DEVICENO, savedDeviceNo);
+        }
+        _deviceNo = savedDeviceNo;
         SysConfig.checkSoftStorage();
         SysConfig.assetsFieldsArray = getResources().getStringArray(R.array.assets_fields);
         SugarContext.init(this);

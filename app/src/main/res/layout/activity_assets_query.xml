@@ -58,8 +58,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:cacheColorHint="@android:color/transparent"
+                android:clipToPadding="false"
                 android:dividerHeight="1px"
-                android:overScrollMode="never"></ListView>
+                android:overScrollMode="never"
+                android:paddingBottom="76dp"></ListView>
         </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
 
@@ -71,6 +73,21 @@
             android:padding="5dp"
             android:textAlignment="center"
             android:textColor="@color/colorSkeyBlue" />
+
+        <!-- 批量打印悬浮按钮：仅在批量模式下显示 -->
+        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+            android:id="@+id/btnBatchPrint"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:layout_above="@+id/tv_assets_msg"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="16dp"
+            android:text="打印"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:qmui_backgroundColor="@color/primary_color"
+            app:qmui_radius="24dp" />
     </RelativeLayout>
 
     <LinearLayout

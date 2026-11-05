@@ -28,6 +28,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -90,7 +92,7 @@
         <!--数据库版本号，生成表需要更新该版本号,在assets，sugar_upgrades目录下新建version.sql文件-->
         <meta-data
             android:name="VERSION"
-            android:value="62" />
+            android:value="65" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />
@@ -98,11 +100,16 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="com.gsoft.inventory" />
 
-        <activity
-            android:name=".Activity111"
-            android:launchMode="singleTask" />
+<!--        <activity-->
+<!--            android:name=".Activity111"-->
+<!--            android:launchMode="singleTask" />-->
         <activity android:name=".BluetoothDeviceActivity" />
+        <!-- 宝威打印机连接与打印页（RFID移动端网页二维码打印类型） -->
+        <activity android:name=".BwPrintActivity" />
+        <activity android:name=".DsPrintActivity" />
         <activity android:name=".RfidReadActivity" />
+        <activity android:name=".InfraredReadActivity" />
+        <activity android:name=".CameraReadActivity" />
         <activity android:name=".RfidStatsActivity" android:exported="false" />
         <activity android:name=".PrintLabelActivity" />
         <!--更新安装失败引导页-->
@@ -140,12 +147,19 @@
 
         <activity android:name=".view.AssetDiscardActivity" />
         <activity android:name=".view.login_setting.ActivityLoginSetting" />
+        <!-- 打印标签选择页（通用/宝威/得实 横向Tab） -->
+        <activity android:name=".view.login_setting.PrintLabelSelectActivity" />
 
         <activity android:name=".view.home.MainActivity"
                   android:hardwareAccelerated="true"/>
 
         <activity android:name=".BatchCopyActivity" android:exported="false"  />
+        <activity android:name=".BatchCopyOptionsActivity" android:exported="false" />
+        <activity android:name=".BatchCopySelectActivity" android:exported="false" />
+        <!-- 公共选择页：使用部门/管理部门/人员 -->
+        <activity android:name=".CommonSelectActivity" android:exported="false" />
         <activity android:name=".InventoryStatsActivity" android:exported="false" />
+        <activity android:name=".ReprintBarcodeActivity" android:exported="false" />
 
         <activity android:name=".ProtocolActivity" >
             <intent-filter>
@@ -173,6 +187,10 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- H5 附件下载完成通知的点击入口（仅应用内显式广播） -->
+        <receiver
+            android:name=".service.download.OpenDownloadedFileReceiver"
+            android:exported="false" />
 
         <!-- 高德定位服务 -->
         <receiver android:name=".utils.NetWorkReceiver">

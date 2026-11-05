@@ -32,6 +32,13 @@ public class SharedPreferencesUtils {
     public static final String KEY_PRINTER_TYPE = "KEY_PRINTER_TYPE";
     public static final String KEY_OFFLINE_LOGIN = "KEY_OFFLINE_LOGIN";
 
+    // 宝威打印机上次连接信息（仅存最后一次，重新连接其他设备即覆盖；用于下次打开打印页自动重连）
+    public static final String KEY_BW_CONN_TYPE = "KEY_BW_CONN_TYPE";
+    public static final String KEY_BW_BT_MAC = "KEY_BW_BT_MAC";
+    public static final String KEY_BW_BT_NAME = "KEY_BW_BT_NAME";
+    public static final String KEY_BW_WIFI_IP = "KEY_BW_WIFI_IP";
+    public static final String KEY_BW_WIFI_PORT = "KEY_BW_WIFI_PORT";
+
     // RFID手持机UHF模块扫描参数
     public static final String KEY_UHF_POWER = "KEY_UHF_POWER";
     public static final String KEY_UHF_MODE = "KEY_UHF_MODE";
@@ -40,6 +47,12 @@ public class SharedPreferencesUtils {
 
     // 用来保存记录打印信息，存放为JSON格式
     public static final String KEY_SAVE_PRINT_INFO = "KEY_SAVE_PRINT_INFO";
+
+    // 盘点扫描提示音开关（RFID/红外/摄像头三种盘点方式共用，默认开启）
+    public static final String KEY_SCAN_SOUND_ENABLED = "KEY_SCAN_SOUND_ENABLED";
+
+    // 通知栏/桌面角标权限引导是否已提示过（仅在首次登录时提示一次，后续不再提示）
+    public static final String KEY_BADGE_PERMISSION_PROMPTED = "KEY_BADGE_PERMISSION_PROMPTED";
 
     //键 值
     public static void putInt(Context mContext, String key, int value) {

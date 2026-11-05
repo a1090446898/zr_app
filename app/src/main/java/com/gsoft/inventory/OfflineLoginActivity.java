@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -20,7 +18,8 @@ import com.google.gson.reflect.TypeToken;
 import com.gsoft.inventory.entities.JCPrinter;
 import com.gsoft.inventory.entities.ZCQCY;
 import com.gsoft.inventory.utils.*;
-import com.gsoft.inventory.view.login_setting.ActivityLoginSetting;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.view.login_setting.PrintLabelSelectActivity;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -29,11 +28,7 @@ import com.xuexiang.xupdate.utils.UpdateUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import butterknife.BindArray;
@@ -62,7 +57,6 @@ public class OfflineLoginActivity extends BaseCompatActivity {
     EditText editInventorySetting;
     @BindArray(R.array.inventory_setting)
     String[] inventorySettingArray;
-    @BindArray(R.array.printe_effect) String[] printeEffectArray;
 
     @BindArray(R.array.print_title_select)
     String[] printTitleSelect;
@@ -142,7 +136,6 @@ public class OfflineLoginActivity extends BaseCompatActivity {
         String ztmc = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ZTMC, "");
         String yhbh = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHBH, "");
         String yhmm = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHMM, "");
-        String sbhm = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_DEVICENO, "");
         String printerTitle = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_TITLE, "单位名称");
         String printerPosition = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_POSITION, "打印位置");
         String inventorySetting = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_INVENTORY_SETTING, "");
@@ -163,9 +156,8 @@ public class OfflineLoginActivity extends BaseCompatActivity {
         if (!StringUtils.isNullOrEmpty(yhmm)) {
             editPass.setText(yhmm);
         }
-        if (!StringUtils.isNullOrEmpty(sbhm)) {
-            editDeviceNo.setText(sbhm);
-        }
+        // 设备号首次启动生成并持久化，可在登录设置页修改，此处只读展示
+        editDeviceNo.setText(application.getDeviceNo());
         if (!StringUtils.isNullOrEmpty(printer)) {
             editPrinter.setText(printer);
         }
@@ -222,13 +214,11 @@ public class OfflineLoginActivity extends BaseCompatActivity {
                 })
                 .create(mCurrentDialogStyle).show());
 
-        editPrinter.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-                
-                .addItems(printeEffectArray, (dialog, which) -> {
-                    editPrinter.setText(printeEffectArray[which]);
-                    dialog.dismiss();
-                })
-                .create(mCurrentDialogStyle).show());
+        editPrinter.setOnClickListener(view -> {
+            Intent intent = new Intent(mContext, PrintLabelSelectActivity.class);
+            intent.putExtra(PrintLabelSelectActivity.EXTRA_CURRENT_LABEL, editPrinter.getText().toString());
+            startActivityForResult(intent, SysDefine.REQESTCODE_SELECT_PRINT_LABEL);
+        });
 
         editPrinterTitle.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
                 
@@ -296,7 +286,20 @@ public class OfflineLoginActivity extends BaseCompatActivity {
         SysConfig.getZTList().toArray(ztArray);
     }
 
-
+    /**
+     * 打印标签选择页返回：离线登录页在选择后仅更新控件，登录时统一写入设置
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != SysDefine.REQESTCODE_SELECT_PRINT_LABEL || resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        String effect = data.getStringExtra(PrintLabelSelectActivity.EXTRA_SELECTED_LABEL);
+        if (!StringUtils.isNullOrEmpty(effect)) {
+            editPrinter.setText(effect);
+        }
+    }
 
     private void resetZCQCY() {
         String inventorySetting = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_INVENTORY_SETTING, "");

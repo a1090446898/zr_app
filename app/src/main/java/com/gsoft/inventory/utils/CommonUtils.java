@@ -26,34 +26,30 @@ public class CommonUtils {
     private final static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
     private final static Handler HANDLER = new Handler(Looper.getMainLooper());
 
-
     public static ExecutorService getExecutor() {
         return EXECUTOR;
     }
+
     public static Handler getHandler() {
         return HANDLER;
     }
 
     /**
-     * 生成两位字符串，第一位随机从a-z，A-Z中随机取一个，第二位随机从0-9中随机取一个
+     * 随机生成两位设备号：第一位为大写字母(A-Z)，第二位为数字(0-9，排除4)，共26×9=234种组合
+     * 仅在首次进入APP时生成（见InventoryApplication.onCreate），后续保持不变，可在登录设置页修改
+     *
      * @return 生成的两位随机字符串
      */
-    public static String getRandomTwoString(){
+    public static String getRandomTwoString() {
         Random random = new Random();
-        // 生成 0 - 51 的随机数，0 - 25 对应 a - z，26 - 51 对应 A - Z
-        int firstCharIndex = random.nextInt(52);
-        char firstChar;
-        if (firstCharIndex < 26) {
-            // 生成 a - z
-            firstChar = (char) ('a' + firstCharIndex);
-        } else {
-            // 生成 A - Z
-            firstChar = (char) ('A' + firstCharIndex - 26);
+        // 第一位：大写字母 A-Z
+        char letter = (char) ('A' + random.nextInt(26));
+        // 第二位：数字 0-9（排除4，取9个数后跳过4）
+        int digitValue = random.nextInt(9);
+        if (digitValue >= 4) {
+            digitValue++;
         }
-        // 生成 0 - 9 的随机数
-        int secondCharIndex = random.nextInt(10);
-        char secondChar = (char) ('0' + secondCharIndex);
-        return "" + firstChar + secondChar;
+        return "" + letter + (char) ('0' + digitValue);
     }
 
     /**

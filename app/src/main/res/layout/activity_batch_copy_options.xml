@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 批量复制表单页：选择资产 + 复制设置 + 批量修改复制信息 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#F2F3F5"
+              android:orientation="vertical">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+            <!-- 分组1：选择资产 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="已选资产"
+                            android:textColor="#333333"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                    <TextView
+                            android:id="@+id/tvSelectedSummary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 条"
+                            android:textColor="#3E8EF7"
+                            android:textSize="13sp" />
+                </LinearLayout>
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/btnSelectAssets"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_rounded_button"
+                        android:text="选择资产"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="14sp" />
+
+                <TextView
+                        android:id="@+id/tvNoSelection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="尚未选择资产"
+                        android:textColor="#999999"
+                        android:textSize="13sp" />
+
+                <ListView
+                        android:id="@+id/listSelectedAssets"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginTop="6dp"
+                        android:divider="#F0F0F0"
+                        android:dividerHeight="1px"
+                        android:scrollbars="none"
+                        android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 分组2：复制设置 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="复制设置"
+                        android:textColor="#333333"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="复制数量"
+                            android:textColor="#333333"
+                            android:textSize="14sp" />
+
+                    <TextView
+                            android:id="@+id/btnTimesMinus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="#F2F3F5"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="#333333"
+                            android:textSize="18sp" />
+
+                    <EditText
+                            android:id="@+id/editCopyTimes"
+                            android:layout_width="60dp"
+                            android:layout_height="36dp"
+                            android:layout_marginStart="6dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="#F2F3F5"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:text="1"
+                            android:textColor="#333333"
+                            android:textSize="14sp" />
+
+                    <TextView
+                            android:id="@+id/btnTimesPlus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="#F2F3F5"
+                            android:gravity="center"
+                            android:text="+"
+                            android:textColor="#333333"
+                            android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="复制图片"
+                            android:textColor="#333333"
+                            android:textSize="14sp" />
+
+                    <Switch
+                            android:id="@+id/switchCopyImg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <TextView
+                        android:id="@+id/tvTotalTip"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="已选 0 条 × 复制 1 次 = 共 0 条"
+                        android:textColor="#999999"
+                        android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- 分组3：批量修改复制信息 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="批量修改复制信息"
+                        android:textColor="#333333"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="留空则沿用原资产信息"
+                        android:textColor="#999999"
+                        android:textSize="11sp" />
+
+                <!-- 使用部门：可手动输入，也可点内嵌按钮选择 -->
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                    <EditText
+                            android:id="@+id/editAssetsDept"
+                            style="@style/from_value_picker"
+                            android:hint="使用部门（可输入）"/>
+
+                    <TextView
+                            android:id="@+id/btnPickAssetsDept"
+                            style="@style/from_action"
+                            android:text="选择"/>
+                </FrameLayout>
+
+                <!-- 管理部门：只能选择，选中后同时记录部门编号 BMBH -->
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                    <EditText
+                            android:id="@+id/editGroundManageDept"
+                            style="@style/from_value_picker"
+                            android:clickable="true"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="管理部门（点击选择）"/>
+
+                    <TextView
+                            android:id="@+id/btnPickManageDept"
+                            style="@style/from_action"
+                            android:text="选择"/>
+                </FrameLayout>
+
+                <!-- 管理人：可手动输入，也可点内嵌按钮选择 -->
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                    <EditText
+                            android:id="@+id/editCustodian"
+                            style="@style/from_value_picker"
+                            android:hint="管理人（可输入）"/>
+
+                    <TextView
+                            android:id="@+id/btnPickCustodian"
+                            style="@style/from_action"
+                            android:text="选择"/>
+                </FrameLayout>
+
+                <!-- 使用人：可手动输入，也可点内嵌按钮选择 -->
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                    <EditText
+                            android:id="@+id/editAssetsUser"
+                            style="@style/from_value_picker"
+                            android:hint="使用人（可输入）"/>
+
+                    <TextView
+                            android:id="@+id/btnPickAssetsUser"
+                            style="@style/from_action"
+                            android:text="选择"/>
+                </FrameLayout>
+
+                <!-- 存放地点：纯输入，放在本组最下方 -->
+                <EditText
+                        android:id="@+id/editAssetsLayAdd"
+                        style="@style/from_value"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="8dp"
+                        android:hint="存放地点"/>
+            </LinearLayout>
+
+            <!-- 开始复制：随内容滚动，不做固定在底部的悬浮按钮 -->
+            <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                    android:id="@+id/btnStartCopy"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:text="开始复制"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp"
+                    app:qmui_backgroundColor="@color/primary_color"
+                    app:qmui_radius="24dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

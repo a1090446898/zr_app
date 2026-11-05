@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindArray;
@@ -22,16 +22,17 @@ import com.gsoft.inventory.service.login.SyncZCQCYTask;
 import com.gsoft.inventory.update.OkHttpUtilsUpdateService;
 import com.gsoft.inventory.update.GuideInstallListener;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
 import com.gsoft.inventory.view.home.MainActivity;
 import com.gsoft.inventory.view.login_setting.ActivityLoginSetting;
 import com.qmuiteam.qmui.layout.QMUIButton;
-import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.xuexiang.xupdate.XUpdate;
 import com.xuexiang.xupdate.entity.UpdateError;
 import com.xuexiang.xupdate.listener.OnUpdateFailureListener;
 import com.xuexiang.xupdate.utils.UpdateUtils;
 
+import java.io.File;
 import java.util.List;
 
 import static com.gsoft.inventory.const_data.Log_file_name.gson;
@@ -47,7 +48,6 @@ public class LoginActivity extends BaseCompatActivity {
     QMUITopBar topBar;*/
     @BindView(R.id.tv_bottom_copy)
     TextView tv_bottom_copy;
-
 
     @BindView(R.id.btn_settings)
     View btn_settings;
@@ -68,7 +68,6 @@ public class LoginActivity extends BaseCompatActivity {
 
     @BindView(R.id.editAccountNum)
     EditText editAccountNum;
-
 
     @BindView(R.id.buttonLogin)
     QMUIButton buttonLogin;
@@ -131,9 +130,12 @@ public class LoginActivity extends BaseCompatActivity {
         String yhbh = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHBH, "");
         String accountNum = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ACCOUNT_NUM, "");
         String yhmm = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_YHMM, "");
-        deviceId = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_DEVICENO, "");
-        // 获取当前手机的设备号
-        if(StringUtils.isNullOrEmpty(deviceId)){
+        // 设备号首次启动生成并持久化（KEY_DEVICENO），之后保持不变，可在登录设置页修改
+        deviceId = application.getDeviceNo();
+        if (StringUtils.isNullOrEmpty(deviceId)) {
+            deviceId = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_DEVICENO, "");
+        }
+        if (StringUtils.isNullOrEmpty(deviceId)) {
             deviceId = CommonUtils.getRandomTwoString();
         }
 
@@ -226,22 +228,32 @@ public class LoginActivity extends BaseCompatActivity {
 
         refreshPrinters();
 
-
-
         // 初始化更新
         initUpdateService();
 
-        String companyName = CommonUtils.getCompanyNameByFlavor();
-        tv_bottom_copy.setText(companyName + " 版权所有 v".concat(UpdateUtils.getVersionName(context)));
+        refreshDeviceNoBottomCopy();
     }
 
-
+    /**
+     * 刷新底部版权行：版本号 + 当前设备号
+     */
+    private void refreshDeviceNoBottomCopy() {
+        String companyName = CommonUtils.getCompanyNameByFlavor();
+        tv_bottom_copy.setText(companyName + " 版权所有 v".concat(UpdateUtils.getVersionName(context))
+                .concat("\n设备号：").concat(StringUtils.isNullOrEmpty(deviceId) ? "" : deviceId));
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
         ztArray = new String[SysConfig.getZTList().size()];
         SysConfig.getZTList().toArray(ztArray);
+        // 设置页可能修改了设备号，返回登录页时同步最新值，避免登录时用旧设备号覆盖修改
+        String latestDeviceNo = application.getDeviceNo();
+        if (!StringUtils.isNullOrEmpty(latestDeviceNo)) {
+            deviceId = latestDeviceNo;
+            refreshDeviceNoBottomCopy();
+        }
     }
 
     private void onLoginAccess() {
@@ -276,7 +288,6 @@ public class LoginActivity extends BaseCompatActivity {
         String qcyCode = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_ZCQCYCODE, "");
 
 
-
         application.setLoginAccount(accounts1);
         application.setDeviceNo(deviceId);
         application.setPrinterEffect(printEffect);
@@ -299,7 +310,7 @@ public class LoginActivity extends BaseCompatActivity {
 
 
         // 跳转首页
-//        Intent intentMain = new Intent(mContext, Activity111.class);
+        //  Intent intentMain = new Intent(mContext, Activity111.class);
         Intent intentMain = new Intent(mContext, MainActivity.class);
         startActivity(intentMain);
         finish();
@@ -329,7 +340,8 @@ public class LoginActivity extends BaseCompatActivity {
                     }
                 })
                 //设置apk下载缓存目录到公共目录，安装失败时用户可直接前往手动安装
-                .setApkCacheDir(SysConfig.apkUpdateDirectory)
+                // 下载到应用私有目录：无需存储权限，规避 Android 10+ 分区存储写公共目录报 EPERM
+                .setApkCacheDir(getApkPrivateCacheDir())
                 //设置是否支持静默安装，默认是true
                 .supportSilentInstall(false)
                 //设置安装监听，自动安装失败时引导用户手动覆盖安装
@@ -337,6 +349,20 @@ public class LoginActivity extends BaseCompatActivity {
                 //这个必须设置！实现网络请求功能。
                 .setIUpdateHttpService(new OkHttpUtilsUpdateService())
                 .init(getApplication());
+    }
+
+    /**
+     * 获取更新包下载目录：优先应用私有外部目录，不可用时退回内部存储
+     */
+    private String getApkPrivateCacheDir() {
+        File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (dir == null) {
+            dir = new File(getFilesDir(), "apk");
+        }
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir.getAbsolutePath();
     }
 
     public void refreshPrinters() {
@@ -348,9 +374,9 @@ public class LoginActivity extends BaseCompatActivity {
                 if(results == null || results.isEmpty()){
                     return;
                 }
-                for (String dataline : results) {
-                    if (!dataline.contains("ERROR")) {
-                        DataTransmitHelper.insertPrinters(dataline);
+                for (String dataLine : results) {
+                    if (!dataLine.contains("ERROR")) {
+                        DataTransmitHelper.insertPrinters(dataLine);
                     }
                 }
             }
@@ -360,7 +386,6 @@ public class LoginActivity extends BaseCompatActivity {
             }
         });
     }
-
 
 }
 

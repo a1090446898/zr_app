@@ -1,4 +1,4 @@
-package com.gsoft.inventory.utils;
+package com.gsoft.inventory.utils.domain;
 
 import com.orm.SugarRecord;
 
@@ -49,6 +49,12 @@ public class Accounts extends SugarRecord implements Serializable {
      * 用户手机号
      */
     private String PHONE;
+
+    /**
+     * 用户权限
+     */
+    private String ROLE;
+
 
     public String getZTBH() {
         return ZTBH;
@@ -128,5 +134,13 @@ public class Accounts extends SugarRecord implements Serializable {
 
     public void setPHONE(String PHONE) {
         this.PHONE = PHONE;
+    }
+
+    public String getROLE() {
+        return ROLE;
+    }
+
+    public void setROLE(String ROLE) {
+        this.ROLE = ROLE;
     }
 }

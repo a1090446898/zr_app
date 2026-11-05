@@ -1,10 +1,7 @@
 package com.gsoft.inventory.utils;
 
-import com.orm.query.Condition;
-import com.orm.query.Select;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 
-import java.lang.reflect.Array;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

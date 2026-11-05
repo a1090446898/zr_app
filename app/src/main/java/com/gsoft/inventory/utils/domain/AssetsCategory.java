@@ -1,4 +1,4 @@
-package com.gsoft.inventory.utils;
+package com.gsoft.inventory.utils.domain;
 
 import android.text.TextUtils;
 

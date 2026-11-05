@@ -56,9 +56,12 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/columnCounted"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -82,9 +85,12 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/columnUncounted"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -108,9 +114,12 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/columnAll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -133,6 +142,17 @@
                     android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- 非拥有产权资产统计（仅存放地点层显示）：管理部门与当前部门不一致的资产，细分已盘/未盘 -->
+        <TextView
+            android:id="@+id/tvNonOwnedAssets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:textColor="#E53935"
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -189,6 +209,19 @@
             android:textColor="#999999"
             android:textSize="14sp" />
     </FrameLayout>
+
+    <!-- 批量变更地点：将本次扫描的标签存放地点统一修改（页面级操作） -->
+    <com.qmuiteam.qmui.layout.QMUIButton
+        android:id="@+id/btnBatchChangeLocation"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_rounded_button"
+        android:text="批量变更地点"
+        android:textColor="@color/colorWhite"
+        android:textSize="16sp" />
 
     <com.qmuiteam.qmui.layout.QMUIButton
         android:id="@+id/buttonScan"

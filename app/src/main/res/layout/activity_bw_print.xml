@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="?attr/qmui_config_color_background"
+              android:orientation="vertical"
+              tools:context=".BwPrintActivity">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+            <!-- 标签预览卡片 -->
+            <LinearLayout
+                    android:id="@+id/cardPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <ImageView
+                        android:id="@+id/ivPreview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="90dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="标签预览" />
+
+                <TextView
+                        android:id="@+id/tvLabelInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#666666"
+                        android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- 蓝牙打印 / WiFi打印 切换 -->
+            <com.qmuiteam.qmui.widget.QMUITabSegment
+                    android:id="@+id/tabSegment"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/white" />
+
+            <!-- 蓝牙打印面板 -->
+            <LinearLayout
+                    android:id="@+id/panelBt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <TextView
+                        android:id="@+id/tvBtStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="未连接"
+                        android:textColor="#333333"
+                        android:textSize="13sp" />
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/btnBtScan"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/app_color_blue"
+                        android:text="搜索蓝牙打印机"
+                        android:textColor="@color/colorWhite" />
+
+                <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:layout_marginTop="8dp">
+
+                    <LinearLayout
+                            android:id="@+id/btDeviceContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                </ScrollView>
+            </LinearLayout>
+
+            <!-- WiFi打印面板 -->
+            <LinearLayout
+                    android:id="@+id/panelWifi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="gone">
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <EditText
+                            android:id="@+id/etWifiIp"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="打印机IP，如 192.168.1.100"
+                            android:inputType="text"
+                            android:textSize="14sp" />
+
+                    <EditText
+                            android:id="@+id/etWifiPort"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="8dp"
+                            android:hint="9100"
+                            android:inputType="number"
+                            android:textSize="14sp" />
+                </LinearLayout>
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/btnWifiConnect"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/app_color_blue"
+                        android:text="连接打印机"
+                        android:textColor="@color/colorWhite" />
+
+                <TextView
+                        android:id="@+id/tvWifiStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="未连接"
+                        android:textColor="#333333"
+                        android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 操作提示 -->
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="提示：打印时将在同一任务内写入EPC，请确保标签靠近打印机RFID天线。"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.qmuiteam.qmui.layout.QMUIButton
+            android:id="@+id/btnPrint"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_margin="12dp"
+            android:background="@color/app_color_blue"
+            android:text="打印标签"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+</LinearLayout>

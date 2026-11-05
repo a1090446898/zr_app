@@ -14,14 +14,17 @@
         android:layout_height="?attr/qmui_topbar_height" />
 
     <ScrollView
-            android:layout_below="@+id/ly_scan_container"
+            android:id="@+id/scrollAssetsForm"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:background="@color/window_background"
-            android:orientation="vertical">
+            android:clipToPadding="false"
+            android:scrollbars="none">
 
         <include layout="@layout/common_assets_form_bak"/>
 
-
     </ScrollView>
+
+    <include layout="@layout/common_assets_form_buttons"/>
 </LinearLayout>

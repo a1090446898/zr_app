@@ -6,42 +6,59 @@
     android:layout_height="match_parent"
     tools:context=".UploadPhotoImagesActivity">
 
-
-
     <com.qmuiteam.qmui.widget.QMUITopBar
         android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/qmui_topbar_height"
-        android:layout_alignParentTop="true" >
-    </com.qmuiteam.qmui.widget.QMUITopBar>
-
+        android:layout_alignParentTop="true" />
 
     <ListView
-            android:id="@+id/listFiles"
-            android:layout_width="match_parent"
-            android:layout_height="585dp"
-            android:layout_below="@+id/topbar"
-            android:cacheColorHint="@android:color/transparent"
-            android:dividerHeight="1px"
-            android:overScrollMode="never"
-           >
-    </ListView>
-  <!--  <TextView
-            android:id="@+id/textViewInfo"
-            android:layout_width="392dp"
-            android:layout_marginTop="70dp"
-            android:layout_height="wrap_content"
-            android:text="数量: 0"
-            android:textSize="16sp"
-            android:padding="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/listFiles"
-            app:layout_constraintTop_toBottomOf="@+id/topbar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="7dp"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="12dp"/>-->
+        android:id="@+id/listFiles"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/topbar"
+        android:background="#F5F5F5"
+        android:cacheColorHint="@android:color/transparent"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:overScrollMode="never"
+        android:paddingBottom="96dp" />
 
-            />
+    <!-- 底部操作栏：清空记录（黄色） + 一键上传（主题蓝） -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
+
+        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+            android:id="@+id/btnClearRecords"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="清空记录"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:qmui_backgroundColor="@color/photo_clear_button_bg"
+            app:qmui_borderWidth="0dp"
+            app:qmui_radius="24dp" />
+
+        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+            android:id="@+id/btnUploadAll"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="一键上传"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:qmui_backgroundColor="@color/primary_color"
+            app:qmui_borderWidth="0dp"
+            app:qmui_radius="24dp" />
+    </LinearLayout>
+
 </RelativeLayout>

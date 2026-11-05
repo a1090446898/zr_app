@@ -9,11 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.gsoft.inventory.R;
-import com.gsoft.inventory.utils.Assets;
 import com.gsoft.inventory.utils.FileBean;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class FileListAdapter extends BaseAdapter {

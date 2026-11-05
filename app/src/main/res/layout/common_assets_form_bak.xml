@@ -5,27 +5,35 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:id="@+id/assets_form_layout"
-              android:background="@color/white"
-              android:padding="8dp"
+              android:layout_margin="12dp"
+              android:background="@drawable/bg_card_white"
+              android:padding="14dp"
               android:orientation="vertical">
 
     <!-- AI拍照识图按钮 -->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:gravity="left"
+            android:gravity="start"
             android:orientation="horizontal">
 
         <com.qmuiteam.qmui.layout.QMUIButton
                 android:id="@+id/buttonAIPhoto"
-                android:layout_width="120dp"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:background="@color/app_color_blue"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/bg_button_primary"
                 android:text="AI拍照识图"
+                android:textSize="14sp"
                 android:textColor="@color/colorWhite"/>
 
     </LinearLayout>
+
+    <!-- 基本信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="基本信息"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -216,27 +224,13 @@
                 android:hint="数量"/>
     </LinearLayout>
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="6dp"
-            android:orientation="horizontal">
 
-        <TextView
-                style="@style/from_label"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="使&#8194;用&#8194;人："/>
+    <!-- 使用信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="使用信息"/>
 
-        <AutoCompleteTextView
-                android:id="@+id/editASSETSUSER"
-                style="@style/from_value"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:completionThreshold="1"
-                android:hint="使用人"/>
-    </LinearLayout>
+
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -249,15 +243,28 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="管&#8194;理&#8194;人："/>
+                android:text="管理部门："/>
 
-        <AutoCompleteTextView
-                android:id="@+id/editCUSTODIAN"
-                style="@style/from_value"
+        <!-- 输入框铺满权重列，"选择"按钮内嵌右端：外框右边界与其它行完全对齐 -->
+        <FrameLayout
                 android:layout_width="0dp"
-                android:layout_weight="3"
-                android:completionThreshold="1"
-                android:hint="管理人"/>
+                android:layout_height="wrap_content"
+                android:layout_weight="3">
+
+            <EditText
+                    android:id="@+id/editGROUNDMANAGEDEPT"
+                    style="@style/from_value_picker"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:hint="管理部门"/>
+
+            <TextView
+                    android:id="@+id/btnPickManageDept"
+                    style="@style/from_action"
+                    android:text="选择"/>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -273,13 +280,84 @@
                 android:layout_weight="2"
                 android:text="使用部门："/>
 
-        <AutoCompleteTextView
-                android:id="@+id/editASSETSDEPT"
-                style="@style/from_value"
+        <!-- 输入框铺满权重列，"选择"按钮内嵌右端：外框右边界与其它行完全对齐 -->
+        <FrameLayout
                 android:layout_width="0dp"
-                android:layout_weight="3"
-                android:completionThreshold="1"
-                android:hint="使用部门"/>
+                android:layout_height="wrap_content"
+                android:layout_weight="3">
+
+            <EditText
+                    android:id="@+id/editASSETSDEPT"
+                    style="@style/from_value_picker"
+                    android:hint="使用部门"/>
+
+            <TextView
+                    android:id="@+id/btnPickAssetsDept"
+                    style="@style/from_action"
+                    android:text="选择"/>
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="使&#8194;用&#8194;人："/>
+
+        <!-- 输入框铺满权重列，"选择"按钮内嵌右端：外框右边界与其它行完全对齐 -->
+        <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3">
+
+            <EditText
+                    android:id="@+id/editASSETSUSER"
+                    style="@style/from_value_picker"
+                    android:hint="使用人"/>
+
+            <TextView
+                    android:id="@+id/btnPickAssetsUser"
+                    style="@style/from_action"
+                    android:text="选择"/>
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="管&#8194;理&#8194;人："/>
+
+        <!-- 输入框铺满权重列，"选择"按钮内嵌右端：外框右边界与其它行完全对齐 -->
+        <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3">
+
+            <EditText
+                    android:id="@+id/editCUSTODIAN"
+                    style="@style/from_value_picker"
+                    android:hint="管理人"/>
+
+            <TextView
+                    android:id="@+id/btnPickCustodian"
+                    style="@style/from_action"
+                    android:text="选择"/>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -295,14 +373,23 @@
                 android:layout_weight="2"
                 android:text="所属处室："/>
 
-        <AutoCompleteTextView
-                android:id="@+id/editDEPARTMENT"
-                style="@style/from_value"
+        <!-- 输入框铺满权重列，"选择"按钮内嵌右端：外框右边界与其它行完全对齐 -->
+        <FrameLayout
                 android:layout_width="0dp"
-                android:layout_weight="3"
-                android:completionThreshold="1"
-                android:maxLength="100"
-                android:hint="所属处室"/>
+                android:layout_height="wrap_content"
+                android:layout_weight="3">
+
+            <EditText
+                    android:id="@+id/editDEPARTMENT"
+                    style="@style/from_value_picker"
+                    android:maxLength="100"
+                    android:hint="所属处室"/>
+
+            <TextView
+                    android:id="@+id/btnPickDepartment"
+                    style="@style/from_action"
+                    android:text="选择"/>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -347,26 +434,7 @@
                 android:hint="资产位置"/>
     </LinearLayout>
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="6dp"
-            android:orientation="horizontal">
 
-        <TextView
-                style="@style/from_label"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="管理部门："/>
-
-        <EditText
-                android:id="@+id/editGROUNDMANAGEDEPT"
-                style="@style/from_value"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:hint="管理部门"/>
-    </LinearLayout>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -430,6 +498,11 @@
                 android:layout_weight="3"
                 android:hint="盘实"/>
     </LinearLayout>
+
+    <!-- 财务信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="财务信息"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -772,6 +845,12 @@
                 android:hint="产权单位"/>
     </LinearLayout>
 
+
+    <!-- 车辆信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="车辆信息"/>
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -919,6 +998,11 @@
                 android:layout_weight="3"
                 android:hint="行驶里程"/>
     </LinearLayout>
+
+    <!-- 扩展信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="扩展信息"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -1286,6 +1370,27 @@
                 android:layout_width="0dp"
                 android:layout_weight="3"
                 android:hint="请选择特种设备"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="6dp"
+            android:orientation="horizontal">
+
+        <TextView
+                style="@style/from_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="是否国产设备："/>
+
+        <EditText
+                android:id="@+id/editMADEINCHINA"
+                style="@style/from_value"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:hint="请选择是否国产设备"/>
     </LinearLayout>
 
     <LinearLayout
@@ -2074,6 +2179,12 @@
                 />
     </LinearLayout>
 
+
+    <!-- 网络设备 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="网络设备"/>
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -2184,6 +2295,12 @@
                 />
     </LinearLayout>
 
+
+    <!-- 其他信息 -->
+    <TextView
+            style="@style/assets_form_section_title"
+            android:text="其他信息"/>
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -2273,49 +2390,5 @@
                 android:hint="请选择是否公物仓"/>
     </LinearLayout>
 
-    <!--按钮-->
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="15sp"
-            android:gravity="center_horizontal">
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-                android:id="@+id/buttonSave"
-                android:layout_width="80dp"
-                android:layout_height="30dp"
-                android:background="@color/app_color_blue"
-                android:text="保存"
-                android:textColor="@color/colorWhite"/>
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-                android:id="@+id/buttonPrintLabel"
-                android:layout_width="80dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="10dp"
-                android:background="@color/colorZong"
-                android:text="打印条码"
-                android:textColor="@color/colorWhite"
-                android:visibility="invisible"/>
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-                android:id="@+id/buttonPhoto"
-                android:layout_width="80dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="10dp"
-                android:text="照片"
-                android:visibility="gone"/>
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-                android:id="@+id/buttonCopy"
-                android:layout_width="80dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="10dp"
-                android:background="@color/app_color_theme_1"
-                android:text="复制"
-                android:textColor="@color/colorWhite"
-                android:visibility="invisible"/>
-    </LinearLayout>
 
 </LinearLayout>

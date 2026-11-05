@@ -4,14 +4,16 @@
     android:layout_height="match_parent"
     android:padding="10dp">
 
-    <TextView
+    <!-- 批量打印勾选框：id保持不变（tvASSETSNAME依赖定位），默认隐藏，表头与列表项共用 -->
+    <CheckBox
             android:id="@+id/allCheck"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:layout_alignParentLeft="true"
-            android:visibility="gone"
-            android:text="选择"/>
+            android:layout_centerVertical="true"
+            android:focusable="false"
+            android:gravity="center"
+            android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvASSETSNAME"

@@ -19,11 +19,17 @@ public interface IRfidReader {
     /** 连接前是否需要存储权限（得实SDK需读校验文件） */
     boolean requiresStoragePermission();
 
+    /** 连接前是否需要定位权限（优博讯BLE枪柄首次搜索需要，targetSdk=30走legacy权限模型） */
+    boolean requiresLocationPermission();
+
     /** 是否支持EPC+TID盘点区域（不支持时设置页隐藏该项） */
     boolean supportsTid();
 
     /** 功率可设范围 [min,max]，UI输入校验用 */
     int[] getPowerRange();
+
+    /** 默认功率（用户从未手动设置过时使用）：优博讯按文档取设备支持的最大功率，其他厂家33 */
+    int getDefaultPower();
 
     /** 是否连接就绪（可开始扫描） */
     boolean isReady();

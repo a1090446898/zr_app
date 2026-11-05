@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/white"
+              android:orientation="vertical">
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/qmui_config_color_separator" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonSave"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="保存"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonCancel"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_button_secondary"
+                android:text="取消"
+                android:textColor="@color/primary_text"
+                android:textSize="14sp" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonPrintLabel"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_button_warn"
+                android:text="打印条码"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:visibility="invisible" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonPhoto"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:text="照片"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/buttonCopy"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_button_secondary"
+                android:text="复制"
+                android:textColor="@color/primary_text"
+                android:textSize="14sp"
+                android:visibility="invisible" />
+    </LinearLayout>
+</LinearLayout>

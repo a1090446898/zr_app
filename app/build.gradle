@@ -8,8 +8,8 @@ android {
         minSdkVersion 23
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 30
-        versionCode 326
-        versionName "3.2.6"
+        versionCode 334
+        versionName "3.3.4"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
         ndk {
@@ -62,13 +62,13 @@ android {
             shrinkResources false
             signingConfig signingConfigs.release
         }
+
         release {
             signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
         }
     }
 
@@ -110,18 +110,25 @@ configurations.all {
 
 dependencies {
 
-    implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['platform_sdk_v4.0.0802.jar', 'uhf.jar'])
+    // implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['platform_sdk_v4.0.0802.jar', 'uhf.jar'])
+
+    // 得实RFID打印机
+    implementation files('libs/dstp2x-V1.4.0.0.aar')
+
+    // 优博讯红外线
+    implementation files('libs/DeviceManagerNew_v231010.jar')
+    // 宝威打印
+    // implementation 'com.google.zxing:core:3.3.0'
+    implementation files('libs/BaoWei_PrintSdk_5.3.jar')
 
     implementation files('libs/LPAPI-2021-02-02-R.jar')
     compileOnly files('libs/platform_sdk_v4.0.0802.jar')
     // 东集(SEUIC)UHF为系统包(com.seuic.uhf)，仅编译期引用，运行期由设备系统提供
     compileOnly files('libs/uhf.jar')
     implementation files('libs/DeviceAPI_ver20241125_release.aar')
-    // 得实DSPDA手持设备RFID识别SDK（RFIDModule内含URFIDLibrary/libDevice，libUHF需单独引入）
-    implementation files('libs/RFIDModuleS005.5.3.1.aar')
-    implementation files('libs/libUHF_v3.6.6_20260202.aar')
-    implementation files('libs/libDevice_v1.8.3_2025-03-25.aar')
-    implementation files('libs/URFIDLibrary-v2.5.1110.aar')
+    // 得实RFID栈（RFIDModuleS005/libUHF/libDevice）已全部移除，libs下请勿再放回
+    // 优博讯(urovo)RFID SDK：一体机适配
+    implementation files('libs/URFIDLibrary-v2.5.1230.aar')
     implementation files('libs/CDFPSKAndroid.jar')
     implementation files('libs/IGLBarDecoder.jar')
     // AAR引用了Kotlin运行时，防止类缺失

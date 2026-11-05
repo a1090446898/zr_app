@@ -6,7 +6,10 @@ import android.os.Handler;
 import android.os.Message;
 import com.gsoft.inventory.AssetsCodeScanActivity;
 import com.gsoft.inventory.AssetsRecodeActivity;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -41,7 +44,7 @@ public class ScanCodeResultHandle  extends Handler {
                         if (!StringUtils.isNullOrEmpty(assets.getREMARKS()) && !assets.getREMARKS().contains("盘实")) {
                             assets.setREMARKS("盘实");
                         }
-                        assets.setISUPLOAD("02");
+                        assets.setISUPLOAD(Const.NOT_UPLOAD);
                         assets.setPDZT("02");
                         assets.save();
                         AssetsUtils.uploadAssets(assets, assetsActivity);

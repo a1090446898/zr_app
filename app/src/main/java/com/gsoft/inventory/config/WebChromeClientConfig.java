@@ -3,6 +3,7 @@ package com.gsoft.inventory.config;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -39,6 +40,12 @@ public class WebChromeClientConfig extends WebChromeClient {
         }
         this.filePathCallback = filePathCallback;
         return openFileChooser(fileChooserParams);
+    }
+
+    @Override
+    public void onConsoleMessage(String message, int lineNumber, String sourceID) {
+        // 将网页 console 日志输出到 Logcat，便于联调排查
+        Log.d("WebViewConsole", message + " (Line: " + lineNumber + ", Source: " + sourceID + ")");
     }
 
     // 打开文件选择器

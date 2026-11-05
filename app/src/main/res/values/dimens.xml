@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 全局弹窗圆角：覆盖 QMUI 库默认值(2dp)，app资源优先于库资源，
+         一处生效全部 QMUI 弹窗（消息/菜单/输入框/自定义布局等），可自行调整 8~12dp -->
+    <dimen name="qmui_dialog_radius">8dp</dimen>
+
     <dimen name="home_tab_height">49dp</dimen>
     <dimen name="common_content_spacing">@dimen/qmui_content_spacing_horizontal</dimen>
 

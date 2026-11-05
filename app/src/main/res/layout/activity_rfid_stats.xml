@@ -32,6 +32,17 @@
             android:textColor="@color/colorText"
             android:textSize="14sp" />
 
+        <!-- 个人资产数量：按管理人匹配当前登录人，统计完成后刷新 -->
+        <TextView
+            android:id="@+id/tvPersonalAssetTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="个人资产数量 -"
+            android:textColor="@color/app_color_description"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,9 +50,12 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/columnCounted"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -65,9 +79,12 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/columnUncounted"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -91,9 +108,12 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/columnAll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -117,6 +137,9 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <!-- 功能操作卡片：两行3列功能入口（资产移交/资产处置/盘亏处理/补打条码/上传数据/数字签名） -->
+    <include layout="@layout/layout_rfid_stats_tools" />
 
     <TextView
         android:id="@+id/tvSectionTitle"
@@ -155,7 +178,32 @@
             android:textColor="#999999"
             android:textSize="14sp"
             android:visibility="gone" />
-    </FrameLayout>
 
+        <!-- 统计加载遮罩：数据量大时统计耗时较长，遮罩+转圈反馈并拦截点击防误触 -->
+        <LinearLayout
+            android:id="@+id/layoutLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#F2F3F5"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/primary_color" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="正在统计…"
+                android:textColor="#333333"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </FrameLayout>
 
 </LinearLayout>

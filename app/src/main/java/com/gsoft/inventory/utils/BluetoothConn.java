@@ -178,7 +178,8 @@ public class BluetoothConn implements Serializable {
             stopSPPScanRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    bluetoothAdapter.cancelDiscovery();
+                    // 统一走 stopSearch，内部已做判空与权限异常保护
+                    stopSearch();
                 }
             };
         }
@@ -202,24 +203,23 @@ public class BluetoothConn implements Serializable {
 
         if (isSPP){
             getHandler().postDelayed(stopSPPScanRunnable, 30000);// 搜索30s
-            // 处理已配对设备
-       /*     pairedDevices = bluetoothAdapter.getBondedDevices();
-            for (BluetoothDevice device : pairedDevices) {
-       // String strShow = "[已配对] " + device.getAddress() + "  " + device.getName();
-              //  pairedDevices.add(device)paired;
-               String strShow =R.string.paired+device.getName();
-
-
-                addDevice(new BluetoothDeviceDetail(strShow, device.getAddress(),-100));
-//                MyLog.i("添加已配对设备", " ");
+            try {
+                bluetoothAdapter.startDiscovery();
+            } catch (SecurityException e) {
+                // Android 12+ 未授予 BLUETOOTH_SCAN 时系统拒绝发起搜索
+                Log.e(TAG, "startDiscovery失败：缺少蓝牙扫描权限", e);
             }
-*/
-            bluetoothAdapter.startDiscovery();
         }
     }
 
     public synchronized void stopSearch(){
-        bluetoothAdapter.cancelDiscovery();
+        if (bluetoothAdapter == null) return;
+        try {
+            bluetoothAdapter.cancelDiscovery();
+        } catch (SecurityException e) {
+            // Android 12+ 未授予 BLUETOOTH_SCAN 时系统拒绝取消搜索，这里兜底避免主线程崩溃
+            Log.e(TAG, "cancelDiscovery失败：缺少蓝牙扫描权限", e);
+        }
     }
 
 
@@ -254,13 +254,17 @@ public class BluetoothConn implements Serializable {
     }
 
     synchronized public boolean connect(BluetoothDevice device){
-//        if (connect_state == BluetoothProfile.STATE_CONNECTED) return false; //打开只支持单连接
-//        connect_state = BluetoothProfile.STATE_CONNECTING;
         this.device = device;
         stopSearch();
         if (isSPP){
-            return SPPConnect();
-        }else {
+            try {
+                return SPPConnect();
+            } catch (SecurityException e) {
+                // Android 12+ 未授予 BLUETOOTH_CONNECT 时创建/连接 socket 会被拒绝
+                Log.e(TAG, "连接失败：缺少蓝牙连接权限", e);
+                return false;
+            }
+        } else {
             return false;
         }
     }

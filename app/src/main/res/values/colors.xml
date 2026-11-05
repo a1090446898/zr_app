@@ -80,4 +80,10 @@
     <color name="inventory_count_green">#2E9E5B</color>
     <color name="inventory_count_red">#E53935</color>
     <color name="inventory_count_black">#333333</color>
+
+    <!-- 照片上传页：清空记录按钮（黄色提醒） -->
+    <color name="photo_clear_button_bg">#FF9900</color>
+
+    <!-- 照片上传页：照片文件缺失提示（红字） -->
+    <color name="photo_missing_red">#E53935</color>
 </resources>

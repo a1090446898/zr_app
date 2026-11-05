@@ -20,4 +20,15 @@
             android:text="上传中..."
             android:textColor="#333333"
             android:layout_marginTop="16dp"/>
+    <!-- 任务结束后的确认按钮：默认隐藏，避免影响其它只用进度的场景 -->
+    <Button
+            android:id="@+id/dialogConfirmButton"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary_color"
+            android:text="确定"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:visibility="gone"/>
 </LinearLayout>

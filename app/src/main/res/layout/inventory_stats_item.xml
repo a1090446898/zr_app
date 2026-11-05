@@ -1,64 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="490dp"
+<!-- 盘点统计卡片项（竖向卡片，适配手机竖屏）：
+     资产名称/条码编号 + 盘点情况/盘点状态 + 使用部门/管理部门/存放地点各占一行（地点最多两行） + 补打状态与补打按钮同一行
+     descendantFocusability=blocksDescendants：卡片内按钮可点击且不抢占item点击焦点 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="10dp">
+    android:descendantFocusability="blocksDescendants"
+    android:paddingStart="12dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="6dp">
 
-    <TextView
-        android:id="@+id/tvASSETSNAME"
-        android:layout_width="110dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textColor="@color/colorText"
-        android:textSize="15sp" />
+        android:background="@drawable/bg_card_white"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:background="@color/colorDark" />
+        <TextView
+            android:id="@+id/tvASSETSNAME"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#333333"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvBARCODEID"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:ellipsize="middle"
-        android:gravity="center"
-        android:singleLine="true"
-        android:textColor="@color/colorText"
-        android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tvBARCODEID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:textColor="#666666"
+            android:textSize="13sp" />
 
-    <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:background="@color/colorDark" />
 
-    <TextView
-        android:id="@+id/tvPDZT"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="center"
-        android:textColor="@color/colorText"
-        android:textSize="15sp" />
 
-    <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:background="@color/colorDark" />
 
-    <TextView
-        android:id="@+id/tvZT"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="center"
-        android:textColor="@color/colorText"
-        android:textSize="15sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvASSETSDEPT"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#666666"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvGROUNDMANAGEDEPT"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#666666"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvASSETSLAYADD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:textColor="#666666"
+            android:textSize="13sp" />
+
+        <TextView
+                android:id="@+id/tvISPRINTBARCODE"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#666666"
+                android:textSize="13sp" />
+
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+            <TextView
+                    android:id="@+id/tvPDZT"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="#666666"
+                    android:textSize="13sp" />
+
+            <TextView
+                    android:id="@+id/tvZT"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="#666666"
+                    android:textSize="13sp" />
+        </LinearLayout>
+
+        <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/btnMarkReprint"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_rounded_button"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="标记补打"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+    </LinearLayout>
+</FrameLayout>

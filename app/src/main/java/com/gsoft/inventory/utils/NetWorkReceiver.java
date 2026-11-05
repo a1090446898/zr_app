@@ -14,10 +14,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.entities.DisposeAsset;
 import com.gsoft.inventory.entities.SyncResult;
-import org.json.JSONArray;
-import org.json.JSONException;
+import com.gsoft.inventory.utils.domain.Assets;
 
 public class NetWorkReceiver extends BroadcastReceiver {
     Context context;
@@ -95,7 +95,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
                                 if (ast.getREMARKS().equals("待删除")) {
                                     ast.delete();
                                 } else {
-                                    ast.setISUPLOAD("01");
+                                    ast.setISUPLOAD(Const.UPLOADED);
                                     ast.save();
                                 }
                             }
@@ -146,7 +146,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
             return;
         }
         lastSyncAssetsTime = System.currentTimeMillis();
-        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
+        List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", Const.NOT_UPLOAD);
         if (!assetsList.isEmpty()) {
             ///一分半的同步时间，超时退出
             JsonArray jsonArray = new JsonArray();
@@ -164,7 +164,7 @@ public class NetWorkReceiver extends BroadcastReceiver {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"});
+                long waitingSyncCount = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{Const.NOT_UPLOAD});
                 if (waitingSyncCount == 0) {
                     isSyncAssets = false;
                 }

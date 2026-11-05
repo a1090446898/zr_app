@@ -117,6 +117,7 @@
 
     <ScrollView
             android:layout_below="@+id/ly_scan_container"
+            android:layout_above="@id/layoutFormButtons"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/window_background"
@@ -125,6 +126,10 @@
         <include layout="@layout/common_assets_form_bak"/>
     </ScrollView>
 
-
-
+    <include
+            android:id="@+id/layoutFormButtons"
+            layout="@layout/common_assets_form_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"/>
 </RelativeLayout>

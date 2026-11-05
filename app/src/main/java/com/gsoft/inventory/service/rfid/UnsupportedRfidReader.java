@@ -23,13 +23,25 @@ public class UnsupportedRfidReader implements IRfidReader {
     }
 
     @Override
+    public boolean requiresLocationPermission() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTid() {
         return false;
     }
 
     @Override
     public int[] getPowerRange() {
-        return new int[]{0, 30};
+        // 无硬件可设：与默认功率33对齐，避免设置对话框默认值超出校验范围
+        return new int[]{0, 33};
+    }
+
+    @Override
+    public int getDefaultPower() {
+        // 非优博讯设备：默认功率33dBm
+        return 33;
     }
 
     @Override

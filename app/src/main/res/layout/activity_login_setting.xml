@@ -20,7 +20,34 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-            <!-- 原有内容保持不变 -->
+            <!-- 设备号：首次启动自动生成并保存，两位，首位必须为大写字母 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:orientation="horizontal">
+
+                <TextView
+                        style="@style/from_label"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="设备编号："/>
+
+                <EditText
+                        android:id="@+id/editDeviceNo"
+                        style="@style/from_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="3"
+                        android:layout_marginRight="20dp"
+                        android:drawablePadding="10dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:maxLength="2"
+                        android:inputType="textCapCharacters"
+                        android:hint="两位，如：A1"/>
+            </LinearLayout>
+
+            <!-- 服务器IP：首次启动自动生成并保存，两位，首位必须为大写字母 -->
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

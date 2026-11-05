@@ -1,48 +1,40 @@
 package com.gsoft.inventory;
 
-import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.device.ScanManager;
-import android.device.scanner.configuration.PropertyID;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.google.zxing.client.android.Intents;
 import com.gsoft.inventory.abs.AssetsBaseActivity;
 import com.gsoft.inventory.service.asset_code_scan.ScanCodeResultHandle;
+import com.gsoft.inventory.service.scanner.IScannerReader;
+import com.gsoft.inventory.service.scanner.ScanResult;
+import com.gsoft.inventory.service.scanner.ScannerCallbacks;
+import com.gsoft.inventory.service.scanner.ScannerError;
+import com.gsoft.inventory.service.scanner.ScannerFactory;
 import com.gsoft.inventory.utils.*;
-import com.gsoft.inventory.view.scan.BarcodeScannerActivity;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.huawei.hms.hmsscankit.ScanUtil;
 import com.huawei.hms.ml.scan.HmsScan;
 import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
 import com.qmuiteam.qmui.widget.QMUITopBar;
-import com.rscja.barcode.BarcodeDecoder;
-import com.rscja.barcode.BarcodeFactory;
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.RuntimePermissions;
 
-import static com.gsoft.inventory.const_data.ReqPageCodeConst.REQUEST_CODE_BARCODE_SCAN;
 import static com.gsoft.inventory.const_data.ReqPageCodeConst.REQUEST_HUAWEI_CODE_SCAN;
-import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
 
 /**
+ * 资产条码扫描页（新增/查看资产信息）
+ * <p>
+ * 扫码枪识别统一经ScannerFactory按设备型号创建适配器
+ * （优博讯：内置扫描服务广播；东集新机：系统扫描广播；东集旧机：RSC-JA解码器），
+ * 页面不再判断设备型号、不再直接持有厂家SDK；摄像头扫码仍走华为ScanKit。
+ * 两条识别路径最终都进入handleScanResult，由ScanCodeResultHandle查询资产并填充表单。
+ *
  * @author 10904
  */
 public class AssetsCodeScanActivity extends AssetsBaseActivity {
@@ -61,14 +53,11 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
     Button buttonSaveSelf;
     @BindView(R.id.checkSustain)
     CheckBox checkSustain;
-    private ScanUtils scanUtils;
 
-    // ==================== 新设备广播扫码 ====================
-    private static final String SCAN_ACTION = "com.android.server.scannerservice.broadcast";
-    private BroadcastReceiver scanReceiver;
-    private boolean isScanReceiverRegistered = false;
+    /** 扫码结果处理（查询资产/填充表单/连续盘实），扫码枪与摄像头两条路径共用 */
     private Handler scanCodeResultHandler;
-    private boolean isNewDevice;
+    /** 扫码枪识别器：厂家适配器由工厂按设备型号创建，页面不感知具体SDK */
+    private IScannerReader scanner;
 
     public HmsScanAnalyzerOptions options;
 
@@ -77,28 +66,34 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_assets_code_scan);
         ButterKnife.bind(this);
-        isNewDevice = ScanDeviceUtils.isNewDevice();
-        if (isNewDevice) {
-            scanCodeResultHandler = new ScanCodeResultHandle(this);
-            initBroadcastScan();
-        }
+        // 扫码结果处理器统一创建：扫码枪与摄像头两条识别路径共用，避免旧设备路径为空
+        scanCodeResultHandler = new ScanCodeResultHandle(this);
+        // 工厂按设备型号创建扫码识别器（优博讯/东集新机/东集旧机），异常时由兜底适配器提示
+        scanner = ScannerFactory.create(mContext);
+        scanner.init(this, scannerCallbacks);
         initializeView();
     }
 
-    private void initBroadcastScan() {
-        scanReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (SCAN_ACTION.equals(intent.getAction())) {
-                    String code = intent.getStringExtra("scannerdata");
-                    if (!StringUtils.isNullOrEmpty(code)) {
-                        code = code.replace("\n", "").replace("\r", "");
-                        onScanResult(code);
-                    }
-                }
-            }
-        };
-    }
+    /**
+     * 统一扫码回调（适配器保证主线程投递）：
+     * 扫码枪结果与摄像头结果一样，统一清洗后交给ScanCodeResultHandle处理
+     */
+    private final ScannerCallbacks scannerCallbacks = new ScannerCallbacks() {
+        @Override
+        public void onScanResult(ScanResult result) {
+            handleScanResult(result.rawValue);
+        }
+
+        @Override
+        public void onScanStateChanged(boolean scanning, String message) {
+            // 本页无软触发按钮，扫描状态变化无需更新UI
+        }
+
+        @Override
+        public void onScannerError(ScannerError error) {
+            showShortText(error.getMessage());
+        }
+    };
 
     @Override
     public void initializeView() {
@@ -109,9 +104,6 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
             startActivity(new Intent(mContext, SignatureActivity.class));
         });
         this.initializeFromData();
-        if (!isNewDevice) {
-            scanUtils = new ScanUtils(this);
-        }
     }
 
     public void initializeFromData() {
@@ -188,20 +180,14 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
             showShortText("请先扫码资产");
             return;
         }
-        String docId = assetsCreating.getDOCID();
         String accountId = assetsCreating.getACCTSUITEID();
 
         // 通过账套id查询账套名称
         Accounts accounts = AccountHelper.getACCTSUITEID(accountId);
         String accountName = accounts == null ? "" : accounts.getZTMC();
 
-        if (!isPrinterConnected()) {
-            Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-            startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-            return;
-        }
-        printAssets(accountName, assetsCreating);
-
+        // 打印统一走基类requestPrintAssets：品牌分发/连接检查/连接后续打全在基类（新增打印机无需改动本页）
+        requestPrintAssets(accountName, assetsCreating, () -> markBarcodePrinted(assetsCreating));
     }
 
     /**
@@ -257,13 +243,13 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
         Intent intentAssetsView = new Intent(mContext, AssetsViewActivity.class);
         intentAssetsView.putExtra(SysDefine.IntentExtra_AssetsID, id);
         startActivity(intentAssetsView);
-        scanUtils.onDestroy();
+        releaseScanner();
         finish();
     }
 
 
     /**
-     * 新版本扫描二维码
+     * 新版本扫描二维码（华为摄像头，独立于扫码枪适配器）
      */
     private void onScanNew(){
         boolean hasPermission = CommonPermissionUtils.requestCameraPermission(this);
@@ -280,38 +266,29 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
             if (errorCode == ScanUtil.SUCCESS) {
                 HmsScan resultObj = data.getParcelableExtra(ScanUtil.RESULT);
                 if (resultObj != null) {
-                    String result = resultObj.getOriginalValue();
-                    if (scanUtils != null) {
-                        scanUtils.onScanResult(result);
-                    } else {
-                        onScanResult(result);
-                    }
+                    // 摄像头结果与扫码枪结果走同一处理入口
+                    handleScanResult(resultObj.getOriginalValue());
                 }
             }
         }
     }
 
     /**
-     * 处理扫码结果（新设备无ScanUtils时使用）
+     * 统一处理扫码结果：清洗条码 → 交给ScanCodeResultHandle查询资产并填充表单
+     * <p>
+     * 清洗口径与原扫码页一致（HTTP/BARCODE/BID、条码编号长文本、换行空格），
+     * 无法解析时回调扫码失败提示
      */
-    private void onScanResult(String barCode) {
+    private void handleScanResult(String rawValue) {
         Message msgScanResult = new Message();
-        try {
-            if (barCode.toUpperCase().startsWith("HTTP")) {
-                if (barCode.toUpperCase().contains("BARCODE")) {
-                    barCode = barCode.substring(barCode.toUpperCase().indexOf("BARCODE") + 8);
-                } else if (barCode.toUpperCase().contains("BID")) {
-                    barCode = barCode.substring(barCode.toUpperCase().indexOf("BID") + 4);
-                }
-            } else if (barCode.length() > 25 && barCode.contains("条码编号：")) {
-                barCode = barCode.substring(5, barCode.indexOf("\n"));
-            }
+        String barCode = BarcodeResultUtils.parse(rawValue);
+        if (StringUtils.isNullOrEmpty(barCode)) {
+            msgScanResult.arg1 = 0;
+            msgScanResult.obj = "无法识别的条码";
+        } else {
             showShortText(barCode);
             msgScanResult.arg1 = 1;
             msgScanResult.obj = barCode;
-        } catch (Exception ex) {
-            msgScanResult.arg1 = 0;
-            msgScanResult.obj = ex.getMessage();
         }
         scanCodeResultHandler.sendMessage(msgScanResult);
     }
@@ -319,53 +296,41 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (isNewDevice && scanReceiver != null && !isScanReceiverRegistered) {
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(SCAN_ACTION);
-            intentFilter.setPriority(Integer.MAX_VALUE);
-            registerReceiver(scanReceiver, intentFilter);
-            isScanReceiverRegistered = true;
+        if (scanner != null) {
+            scanner.onPageResume();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (isNewDevice && isScanReceiverRegistered) {
-            try {
-                unregisterReceiver(scanReceiver);
-            } catch (IllegalArgumentException e) {
-                Log.e("AssetsCodeScanActivity", "注销广播接收器时出错", e);
-            }
-            isScanReceiverRegistered = false;
+        if (scanner != null) {
+            scanner.onPagePause();
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isNewDevice && isScanReceiverRegistered) {
-            try {
-                unregisterReceiver(scanReceiver);
-            } catch (IllegalArgumentException e) {
-                Log.e("AssetsCodeScanActivity", "注销广播接收器时出错", e);
-            }
-            isScanReceiverRegistered = false;
-        }
-        if (scanUtils != null) {
-            scanUtils.onDestroy();
-        }
+        releaseScanner();
     }
 
+    /** 释放扫码识别器（页面销毁/页面跳转前调用，幂等） */
     public void destroy(){
-        if (scanUtils != null) {
-            scanUtils.onDestroy();
+        releaseScanner();
+    }
+
+    /** 释放识别器：停止扫描并注销广播/关闭解码器，置空避免重复释放 */
+    private void releaseScanner() {
+        if (scanner != null) {
+            scanner.release();
+            scanner = null;
         }
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!isNewDevice && scanUtils != null && scanUtils.onKeyDown(keyCode, event)) {
+        if (scanner != null && scanner.onKeyDown(keyCode, event)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -373,7 +338,7 @@ public class AssetsCodeScanActivity extends AssetsBaseActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (!isNewDevice && scanUtils != null && scanUtils.onKeyUp(keyCode, event)) {
+        if (scanner != null && scanner.onKeyUp(keyCode, event)) {
             return true;
         }
         return super.onKeyUp(keyCode, event);

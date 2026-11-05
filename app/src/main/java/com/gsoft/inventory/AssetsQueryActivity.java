@@ -1,6 +1,7 @@
 package com.gsoft.inventory;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,13 +15,20 @@ import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.gsoft.inventory.adapter.AssetsListAdapter;
+import com.gsoft.inventory.const_data.Const;
+import com.gsoft.inventory.data.SelectItem;
 import com.gsoft.inventory.pojo.JumPagePojo;
 import com.gsoft.inventory.pojo.QueryResutlPojo;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.print_batch.BatchPrintConfig;
+import com.gsoft.inventory.utils.print_batch.BatchPrintReport;
+import com.gsoft.inventory.utils.print_batch.BatchPrintSession;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
-import com.rscja.team.qcom.deviceapi.Q;
+import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
@@ -29,16 +37,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 资产列表查询页
+ * <p>
+ * 批量打印：顶部"批量打印"进入勾选模式 → 勾选/全选 → 底部悬浮"打印"发起；
+ * 队列、连接检查、品牌分发由PrintCompatActivity统一处理，本页只负责勾选UI与失败决策弹框。
+ *
  * @author 10904
  */
-public class AssetsQueryActivity extends BaseCompatActivity {
+public class AssetsQueryActivity extends PrintCompatActivity {
 
     RelativeLayout mHead;
     ArrayList<Assets> assetsList;
     AssetsListAdapter assetsAdapter;
     ListView listAssets;
 
-    String[] dwArray = null;
+    /* 管理部门选择请求码 */
+    private static final int REQ_PICK_MANAGE_DEPT = 3101;
+
     String[] pdztString = {"盘实", "盘盈", "盘亏", "未盘"};
     String[] pdztCodeString = {"02", "03", "04", "01"};
 
@@ -86,6 +101,8 @@ public class AssetsQueryActivity extends BaseCompatActivity {
 
     private String groundManageDeptCode;
     private String pdztCode;
+    /** 从选择页返回时跳过 onResume 自动重查：查询条件尚未提交，避免提前刷新列表 */
+    private boolean skipResumeSearch;
     @BindView(R.id.editASSETSLAYADD)
     EditText editASSETSLAYADD;
     @BindView(R.id.editASSETSUSER)
@@ -120,6 +137,17 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
 
+    @BindView(R.id.btnBatchPrint)
+    QMUIRoundButton btnBatchPrint;
+
+    /** 顶部右侧"批量打印/取消打印"按钮 */
+    private TextView tvBatchPrintMode;
+    /** 顶部"搜索"按钮（批量模式下隐藏，避免误操作清空勾选） */
+    private TextView tvSearchButton;
+    /** 是否处于批量打印模式 */
+    private boolean batchPrintMode;
+    /** 当前查询条件下的资产总数（退出批量模式后恢复底部统计文案） */
+    private long totalAssets;
 
     private String searchPDZT = "";
 
@@ -200,18 +228,35 @@ public class AssetsQueryActivity extends BaseCompatActivity {
 
     @Override
     public void initializeView() {
-        Accounts loginAccount = application.getLoginAccount();
-        topBar.setTitle("查看资产信息");
+        topBar.setTitle("资产");
         topBar.addLeftBackImageButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        topBar.addRightTextButton("搜索", R.id.topbar_right_query_button).setOnClickListener(new View.OnClickListener() {
+        tvSearchButton = topBar.addRightTextButton("搜索", R.id.topbar_right_query_button);
+        tvSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 lyDrawLayout.openDrawer(lyQuery);
+            }
+        });
+        tvBatchPrintMode = topBar.addRightTextButton("批量打印", R.id.topbar_right_about_button);
+        tvBatchPrintMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (batchPrintMode) {
+                    confirmExitBatchPrintMode();
+                } else {
+                    enterBatchPrintMode();
+                }
+            }
+        });
+        btnBatchPrint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                printSelectedAssets();
             }
         });
         search_close.setOnClickListener(new View.OnClickListener() {
@@ -224,6 +269,10 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         search_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // 批量模式下先退出：查询会清空列表与勾选，继续勾选无意义
+                if (batchPrintMode) {
+                    exitBatchPrintMode();
+                }
                 isFirstLoad = false;
                 lyDrawLayout.post(new Runnable() {
                     @Override
@@ -266,20 +315,10 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         editGROUNDMANAGEDEPT.setCompoundDrawables(null, null, icon_right, null);
         editPDZT.setCompoundDrawables(null, null, icon_right, null);
 
-        // 获取部门名称
-        List<String> danweiList = AccountHelper.getDanweiList(loginAccount.getZTBH());
-        dwArray = new String[danweiList.size()];
-        danweiList.toArray(dwArray);
-        editGROUNDMANAGEDEPT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-                .addItems(dwArray, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        editGROUNDMANAGEDEPT.setText(dwArray[which]);
-                        groundManageDeptCode = AccountHelper.getDanweiCode(dwArray[which]);
-                        dialog.dismiss();
-                    }
-                })
-                .create(mCurrentDialogStyle).show());
+        // 管理部门：字典数据，只能选择；入库统一按部门编号 BMBH 精确匹配
+        editGROUNDMANAGEDEPT.setOnClickListener(view ->
+                CommonSelectActivity.pickManageDept(this, REQ_PICK_MANAGE_DEPT,
+                        editGROUNDMANAGEDEPT.getText().toString()));
 
         editPDZT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
                 .addItems(pdztString, new DialogInterface.OnClickListener() {
@@ -356,6 +395,17 @@ public class AssetsQueryActivity extends BaseCompatActivity {
         listAssets = (ListView) findViewById(R.id.listAssets);
         assetsList = new ArrayList<Assets>();
         assetsAdapter = new AssetsListAdapter(assetsList, mContext, mHead, jumPagePojo);
+        assetsAdapter.setOnSelectionChangedListener(new AssetsListAdapter.OnSelectionChangedListener() {
+            @Override
+            public void onSelectionChanged(int selectedCount) {
+                updateSelectionSummary();
+            }
+
+            @Override
+            public void onSelectLimitReached(int maxCount) {
+                showShortText("单次最多打印" + maxCount + "条，请分批勾选");
+            }
+        });
         listAssets.setOnTouchListener(new ListViewAndHeadViewTouchLinstener());
         listAssets.setAdapter(assetsAdapter);
         refreshLayout.setEnableRefresh(false);
@@ -372,9 +422,193 @@ public class AssetsQueryActivity extends BaseCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // 批量打印模式下不重查：重查会清空列表与已勾选状态
+        if (batchPrintMode) {
+            return;
+        }
+        // 从选择页返回：查询条件尚未提交，跳过这一次自动重查
+        if (skipResumeSearch) {
+            skipResumeSearch = false;
+            return;
+        }
         this.pageNum = 0;
         this.assetsList.clear();
         new SearchAssetsTask().execute();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQ_PICK_MANAGE_DEPT) {
+            return;
+        }
+        // 选择页返回会触发 onResume 自动重查，此时条件尚未提交，跳过这一次
+        skipResumeSearch = true;
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        SelectItem item = CommonSelectActivity.readResult(data);
+        if (item == null) {
+            return;
+        }
+        editGROUNDMANAGEDEPT.setText(item.getName());
+        // 管理部门统一按部门编号 BMBH 查询
+        groundManageDeptCode = item.getCode();
+    }
+
+    /** 列表查询页不主动连接打印机：仅在点击打印时由基类检查连接并跳转 */
+    @Override
+    protected boolean autoConnectPrinterOnCreate() {
+        return false;
+    }
+
+    // ==================== 批量打印 ====================
+
+    /** 进入批量打印模式：显示勾选框、表头全选、悬浮打印按钮 */
+    private void enterBatchPrintMode() {
+        batchPrintMode = true;
+        tvBatchPrintMode.setText("取消打印");
+        tvSearchButton.setVisibility(View.GONE);
+        btnBatchPrint.setVisibility(View.VISIBLE);
+
+        assetsAdapter.setSelectMode(true);
+        CheckBox cbAll = mHead.findViewById(R.id.allCheck);
+        if (cbAll != null) {
+            cbAll.setVisibility(View.VISIBLE);
+            cbAll.setOnCheckedChangeListener(headSelectListener);
+        }
+        updateSelectionSummary();
+    }
+
+    /** 退出批量打印模式：隐藏勾选框与打印按钮，恢复资产总数文案 */
+    private void exitBatchPrintMode() {
+        batchPrintMode = false;
+        tvBatchPrintMode.setText("批量打印");
+        tvSearchButton.setVisibility(View.VISIBLE);
+        btnBatchPrint.setVisibility(View.GONE);
+
+        CheckBox cbAll = mHead.findViewById(R.id.allCheck);
+        if (cbAll != null) {
+            cbAll.setOnCheckedChangeListener(null);
+            cbAll.setChecked(false);
+            cbAll.setVisibility(View.GONE);
+        }
+        assetsAdapter.setSelectMode(false);
+        tv_assets_msg.setText("共有资产：" + totalAssets + "条");
+    }
+
+    /** 退出前确认：打印进行中需二次确认，避免误终止造成只打了一部分 */
+    private void confirmExitBatchPrintMode() {
+        if (!isBatchPrintRunning()) {
+            exitBatchPrintMode();
+            return;
+        }
+        new QMUIDialog.MessageDialogBuilder(mContext)
+                .setTitle("批量打印进行中")
+                .setMessage("当前仍有打印任务未完成，确定终止并退出批量打印吗？")
+                .addAction("继续打印", (dialog, index) -> dialog.dismiss())
+                .addAction("终止并退出", (dialog, index) -> {
+                    dialog.dismiss();
+                    cancelBatchPrint();
+                    hideProgressDialog();
+                    exitBatchPrintMode();
+                })
+                .show();
+    }
+
+    /** 悬浮按钮：打印已勾选资产（数量上限、连接检查、品牌分发由基类统一处理） */
+    private void printSelectedAssets() {
+        if (isBatchPrintRunning()) {
+            showShortText("批量打印进行中，请稍候");
+            return;
+        }
+        List<Assets> selectedAssets = assetsAdapter.getSelectedAssets();
+        if (selectedAssets.isEmpty()) {
+            showShortText("未勾选打印数据");
+            return;
+        }
+        if (selectedAssets.size() > BatchPrintConfig.MAX_BATCH_SIZE) {
+            showShortText("单次最多打印" + BatchPrintConfig.MAX_BATCH_SIZE + "条，请分批勾选");
+            return;
+        }
+        Accounts loginAccount = application.getLoginAccount();
+        requestBatchPrintAssets(loginAccount == null ? "" : loginAccount.getZTMC(),
+                selectedAssets, batchPrintListener);
+    }
+
+    /** 表头全选：勾选则选中当前已加载列表（上限内），取消则清空 */
+    private final CompoundButton.OnCheckedChangeListener headSelectListener =
+            new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        assetsAdapter.selectAll();
+                    } else {
+                        assetsAdapter.clearSelection();
+                    }
+                }
+            };
+
+    /**
+     * 同步底部统计与表头全选态：
+     * 表头setChecked前先解监听，避免与selectAll/clearSelection形成回调环
+     */
+    private void updateSelectionSummary() {
+        int selectedCount = assetsAdapter.getSelectedCount();
+        if (batchPrintMode) {
+            tv_assets_msg.setText(selectedCount == 0 ? "请勾选要打印的资产" : "已勾选 " + selectedCount + " 条");
+        }
+        CheckBox cbAll = mHead.findViewById(R.id.allCheck);
+        if (cbAll == null) {
+            return;
+        }
+        cbAll.setOnCheckedChangeListener(null);
+        cbAll.setChecked(assetsAdapter.isAllSelected());
+        cbAll.setOnCheckedChangeListener(headSelectListener);
+    }
+
+    /** 批量打印回调：进度框、失败决策弹框、结束汇总 */
+    private final BatchPrintSession.Listener batchPrintListener = new BatchPrintSession.Listener() {
+        @Override
+        public void onProgress(int finishedCount, int total, Assets current) {
+            showProgressDialog("", "正在打印 " + (finishedCount + 1) + "/" + total);
+        }
+
+        @Override
+        public void onItemFailed(Assets assets, int position, int total, String message) {
+            hideProgressDialog();
+            showItemFailedDialog(assets, position, total, message);
+        }
+
+        @Override
+        public void onFinished(BatchPrintReport report) {
+            hideProgressDialog();
+            showShortText(report.summary());
+            updateSelectionSummary();
+        }
+    };
+
+    /** 单条失败弹框：交由用户选择立即终止或跳过继续 */
+    private void showItemFailedDialog(Assets assets, int position, int total, String message) {
+        StringBuilder content = new StringBuilder();
+        if (assets != null && !StringUtils.isNullOrEmpty(assets.getBARCODEID())) {
+            content.append("条码：").append(assets.getBARCODEID()).append("\n");
+        }
+        content.append(StringUtils.isNullOrEmpty(message) ? "打印失败" : message);
+
+        new QMUIDialog.MessageDialogBuilder(mContext)
+                .setTitle("第 " + position + "/" + total + " 条打印失败")
+                .setMessage(content.toString())
+                .addAction("立即终止", (dialog, index) -> {
+                    dialog.dismiss();
+                    cancelBatchPrint();
+                    updateSelectionSummary();
+                })
+                .addAction("继续打印", (dialog, index) -> {
+                    dialog.dismiss();
+                    resumeBatchPrint();
+                })
+                .show();
     }
 
     @Override
@@ -466,7 +700,7 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             }
             if (switcher.isChecked()) {
                 queryWhere.append(" and ISUPLOAD=? ");
-                whereParams.add("02");
+                whereParams.add(Const.NOT_UPLOAD);
             }
 
         }
@@ -525,8 +759,13 @@ public class AssetsQueryActivity extends BaseCompatActivity {
             // 重置加载状态：清除"没有更多数据"标记，允许再次加载
             refreshLayout.setNoMoreData(hasMoreData);
             refreshLayout.finishLoadMore(200);
-            // 更新UI显示总数（使用全局列表的总数）
-            tv_assets_msg.setText("共有资产：" + total + "条");
+            totalAssets = total;
+            // 批量模式下底部显示已选条数，避免被总数覆盖
+            if (batchPrintMode) {
+                updateSelectionSummary();
+            } else {
+                tv_assets_msg.setText("共有资产：" + total + "条");
+            }
             assetsAdapter.notifyDataSetChanged();
         }
 

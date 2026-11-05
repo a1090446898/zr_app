@@ -18,12 +18,16 @@ import butterknife.BindDrawable;
 import butterknife.BindView;
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.view.OptionsPickerView;
+import com.gsoft.inventory.CommonSelectActivity;
 import com.gsoft.inventory.R;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.data.CategoryData;
+import com.gsoft.inventory.data.SelectItem;
 import com.gsoft.inventory.service.new_assets.LoadCategoryTask;
 import com.gsoft.inventory.utils.*;
-import com.huawei.hms.hmsscankit.ScanUtil;
-import com.huawei.hms.ml.scan.HmsScan;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -47,6 +51,14 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
     public int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
     public Assets assetsCreating = null;
+
+    /* 表单"选择"请求码：新增页与编辑页共用一套 */
+    private static final int REQ_PICK_ASSETS_USER = 3001;
+    private static final int REQ_PICK_CUSTODIAN = 3002;
+    private static final int REQ_PICK_ASSETS_DEPT = 3003;
+    private static final int REQ_PICK_DEPARTMENT = 3004;
+    private static final int REQ_PICK_MANAGE_DEPT = 3005;
+
     public String[] ztArray = null;
     public String[] dwArray = null;
     public String[] bmArray = null;
@@ -115,6 +127,11 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @BindArray(R.array.specialDeviceFields)
     public String[] specialDeviceFields;
 
+    /*是否国产设备*/
+    @BindArray(R.array.madeInChinaFields)
+    public String[] madeInChinaFields;
+
+
     /*会计账簿*/
     @BindArray(R.array.accountBookFields)
     public String[] accountBookFields;
@@ -150,7 +167,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     public EditText editSZLC;
     /*使用(保管)人*/
     @BindView(R.id.editCUSTODIAN)
-    public AutoCompleteTextView editCUSTODIAN;
+    public EditText editCUSTODIAN;
     /*车架号*/
     @BindView(R.id.editCJHM)
     public EditText editCJHM;
@@ -204,14 +221,14 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     public EditText editGROUNDSETPOS;
     /*使用人*/
     @BindView(R.id.editASSETSUSER)
-    public AutoCompleteTextView editASSETSUSER;
+    public EditText editASSETSUSER;
     /*使用部门,名称*/
     @BindView(R.id.editASSETSDEPT)
-    public AutoCompleteTextView editASSETSDEPT;
+    public EditText editASSETSDEPT;
 
     /*所属处室*/
     @BindView(R.id.editDEPARTMENT)
-    public AutoCompleteTextView editDEPARTMENT;
+    public EditText editDEPARTMENT;
     /*是否公物仓*/
     @BindView(R.id.editISGWC)
     public EditText editISGWC;
@@ -233,6 +250,18 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     /*管理部门*/
     @BindView(R.id.editGROUNDMANAGEDEPT)
     public EditText editGROUNDMANAGEDEPT;
+
+    /* 表单行内"选择"按钮：使用人、管理人、使用部门、所属处室、管理部门 */
+    @BindView(R.id.btnPickAssetsUser)
+    public TextView btnPickAssetsUser;
+    @BindView(R.id.btnPickCustodian)
+    public TextView btnPickCustodian;
+    @BindView(R.id.btnPickAssetsDept)
+    public TextView btnPickAssetsDept;
+    @BindView(R.id.btnPickDepartment)
+    public TextView btnPickDepartment;
+    @BindView(R.id.btnPickManageDept)
+    public TextView btnPickManageDept;
     /*文物等级*/
     @BindView(R.id.editASSETSCULGRADE)
     public EditText editASSETSCULGRADE;
@@ -310,6 +339,10 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     /*使用登记证编号*/
     @BindView(R.id.editCERTIFICATENUMBER)
     public EditText editCERTIFICATENUMBER;
+
+    /*是否国产设备*/
+    @BindView(R.id.editMADEINCHINA)
+    public EditText editMADEINCHINA;
 
     @BindView(R.id.editCANSHU)
     public EditText editCANSHU;
@@ -441,6 +474,10 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     @Nullable
     public QMUIButton buttonCopy;
 
+    @BindView(R.id.buttonCancel)
+    @Nullable
+    public QMUIButton buttonCancel;
+
     public List<AssetsCategory> rootCategoryArray = null;
     public List<List<AssetsCategory>> secondCategoryArray = null;
     public List<List<List<AssetsCategory>>> thirdCategoryArray = null;
@@ -480,7 +517,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editASSETSCULGRADE.setCompoundDrawables(null, null, icon_right, null);
         editGETMODE.setCompoundDrawables(null, null, icon_right, null);
         editPROPERTY.setCompoundDrawables(null, null, icon_right, null);
-        editGROUNDMANAGEDEPT.setCompoundDrawables(null, null, icon_right, null);
+        // 管理部门改由行内"选择"按钮触发，不再显示右侧箭头
         editASSETSUSEDATE.setCompoundDrawables(null, null, icon_right, null);
         editASSETSENDUSEDATE.setCompoundDrawables(null, null, icon_right, null);
         editASSETSDISPENSEDATE.setCompoundDrawables(null, null, icon_right, null);
@@ -500,7 +537,8 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
 
         editISGWC.setCompoundDrawables(null, null, icon_right, null);
         editSPECIALDEVICE.setCompoundDrawables(null, null, icon_right, null);
-//        editOS.setCompoundDrawables(null, null, icon_right, null);
+        editMADEINCHINA.setCompoundDrawables(null, null, icon_right, null);
+        //        editOS.setCompoundDrawables(null, null, icon_right, null);
         editINSTALLDATE.setCompoundDrawables(null, null, icon_right, null);
     }
 
@@ -563,9 +601,79 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editISGWC.setFocusableInTouchMode(false);
         editSPECIALDEVICE.setFocusable(false);
         editSPECIALDEVICE.setFocusableInTouchMode(false);
+        editMADEINCHINA.setFocusable(false);
+        editMADEINCHINA.setFocusableInTouchMode(false);
         editINSTALLDATE.setFocusable(false);
     }
 
+
+    /**
+     * 表单行内"选择"：使用人/管理人走人员列表，使用部门/所属处室走部门列表，
+     * 均回填名称且保留手工输入能力；管理部门为字典数据，只能选择、不能输入
+     */
+    private void setupFormFieldPickers() {
+        btnPickAssetsUser.setOnClickListener(v -> CommonSelectActivity.pickUser(this, REQ_PICK_ASSETS_USER,
+                editASSETSUSER.getText().toString()));
+        btnPickCustodian.setOnClickListener(v -> CommonSelectActivity.pickUser(this, REQ_PICK_CUSTODIAN,
+                editCUSTODIAN.getText().toString()));
+        btnPickAssetsDept.setOnClickListener(v -> CommonSelectActivity.pickAssetsDept(this, REQ_PICK_ASSETS_DEPT,
+                editASSETSDEPT.getText().toString()));
+        btnPickDepartment.setOnClickListener(v -> CommonSelectActivity.pickAssetsDept(this, REQ_PICK_DEPARTMENT,
+                editDEPARTMENT.getText().toString()));
+        btnPickManageDept.setOnClickListener(v -> pickManageDept());
+        // 管理部门输入框不可编辑，但点击整行同样进入选择页
+        editGROUNDMANAGEDEPT.setOnClickListener(v -> pickManageDept());
+    }
+
+    private void pickManageDept() {
+        CommonSelectActivity.pickManageDept(this, REQ_PICK_MANAGE_DEPT,
+                editGROUNDMANAGEDEPT.getText().toString());
+    }
+
+    /**
+     * 选择结果回填：输入框存展示名称（部门名称/姓名），
+     * 管理部门需额外把部门编号 BMBH 写入资产对象（扫码页未选资产时仅回填输入框）
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        SelectItem item = CommonSelectActivity.readResult(data);
+        if (item == null) {
+            return;
+        }
+        switch (requestCode) {
+            case REQ_PICK_ASSETS_USER:
+                editASSETSUSER.setText(item.getName());
+                break;
+            case REQ_PICK_CUSTODIAN:
+                editCUSTODIAN.setText(item.getName());
+                break;
+            case REQ_PICK_ASSETS_DEPT:
+                editASSETSDEPT.setText(item.getName());
+                if (assetsCreating != null) {
+                    assetsCreating.setASSETSDEPT(item.getName());
+                }
+                break;
+            case REQ_PICK_DEPARTMENT:
+                editDEPARTMENT.setText(item.getName());
+                if (assetsCreating != null) {
+                    assetsCreating.setDEPARTMENT(item.getName());
+                }
+                break;
+            case REQ_PICK_MANAGE_DEPT:
+                editGROUNDMANAGEDEPT.setText(item.getName());
+                // 管理部门全项目统一存部门编号 BMBH
+                if (assetsCreating != null) {
+                    assetsCreating.setGROUNDMANAGEDEPT(item.getCode());
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
      * 公共方法：异步加载分类数据
@@ -693,7 +801,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setASSETSWRITER(application.getZcqcyCode());
         String assetsWriterDate = editASSETSWRITERDATE.getText().toString();
         if(StringUtils.isNullOrEmpty(assetsWriterDate)){
-            assetsWriterDate = DataConvert.FormatDate2Day();
+            assetsWriterDate = DataConvert.FormatDate2HMS();
         }
         assetsCreating.setASSETSWRITERDATE(assetsWriterDate);
         assetsCreating.setBRAND(editBRAND.getText().toString());
@@ -716,6 +824,15 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setDEVICECODE(editDEVICECODE.getText().toString());
         assetsCreating.setSPECIALFACTORYNO(editSPECIALFACTORYNO.getText().toString());
         assetsCreating.setCERTIFICATENUMBER(editCERTIFICATENUMBER.getText().toString());
+        /*是否国产设备：01是 02否，默认空*/
+        String madeInChinaStr = editMADEINCHINA.getText().toString();
+        assetsCreating.setMADEINCHINA("");
+        for (int i = 0; i < madeInChinaFields.length; i++) {
+            if (madeInChinaFields[i].equals(madeInChinaStr)) {
+                assetsCreating.setMADEINCHINA(String.format("%02d", i + 1));
+                break;
+            }
+        }
         assetsCreating.setPARAMETERS(editCANSHU.getText().toString());
         assetsCreating.setTRACEABILITY(editSYZQ.getText().toString());
         assetsCreating.setCALIBRATIONDATE(editJDJZRQ.getText().toString());
@@ -750,7 +867,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         assetsCreating.setBOOKKEEPINGTIME(editBOOKKEEPINGTIME.getText().toString());
         assetsCreating.setVOUCHERNO(editVOUCHERNO.getText().toString());
         assetsCreating.setISSUEDATE(editIsSueDate.getText().toString());
-        assetsCreating.setISUPLOAD("02");
+        assetsCreating.setISUPLOAD(Const.NOT_UPLOAD);
         assetsCreating.setREMARKS(editREMARKS.getText().toString());
 
         assetsCreating.setDWCODE(editDWCODE.getText().toString());
@@ -805,6 +922,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         }
         // 所属处室
         assetsCreating.setDEPARTMENT(editDEPARTMENT.getText().toString());
+        // 打印字段
     }
 
     /**
@@ -864,6 +982,24 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 管理部门回显：历史数据存在部门编号 BMBH、单位编号 DWBH、中文名称三种取值，
+     * 按业务口径优先按部门编号 BMBH 反查部门名称，再兼容单位编号 DWBH 反查单位名称，
+     * 都查不到时原样展示
+     */
+    private String resolveGroundManageDeptName(String raw) {
+        if (StringUtils.isNullOrEmpty(raw)) {
+            return "";
+        }
+        String name = AccountHelper.getDepartName(raw);
+        if (!StringUtils.isNullOrEmpty(name)) {
+            return name;
+        }
+        String ztbH = application.getLoginAccount() == null ? "" : application.getLoginAccount().getZTBH();
+        name = AccountHelper.getDanweiName(ztbH, raw);
+        return StringUtils.isNullOrEmpty(name) ? raw : name;
     }
 
     public void fillAssetsData() {
@@ -945,7 +1081,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         /*净值*/
         editLEFTPRICE.setText(assetsCreating.getLEFTPRICE());
         /*管理部门*/
-        editGROUNDMANAGEDEPT.setText(AccountHelper.getDanweiName(application.getLoginAccount().getZTBH(), assetsCreating.getGROUNDMANAGEDEPT()));
+        editGROUNDMANAGEDEPT.setText(resolveGroundManageDeptName(assetsCreating.getGROUNDMANAGEDEPT()));
         /*文物等级*/
         editASSETSCULGRADE.setText(DictionaryHelper.getDictionaryName(assetsCreating.getASSETSCULGRADE(), wwdjArray));
         /*车辆产地*/
@@ -990,6 +1126,7 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
         editDEVICECODE.setText(assetsCreating.getDEVICECODE());
         editSPECIALFACTORYNO.setText(assetsCreating.getSPECIALFACTORYNO());
         editCERTIFICATENUMBER.setText(assetsCreating.getCERTIFICATENUMBER());
+        editMADEINCHINA.setText(DictionaryHelper.getDictionaryName(assetsCreating.getMADEINCHINA(), madeInChinaFields));
         editCANSHU.setText(assetsCreating.getPARAMETERS());
         editSYZQ.setText(assetsCreating.getTRACEABILITY());
         //editSYFS.setText(assetsCreating.getTRACEABILITYPE());
@@ -1046,86 +1183,25 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
     }
 
     public void viewClickSetting(){
+        // 取消按钮：返回上一页
+        if (buttonCancel != null) {
+            buttonCancel.setOnClickListener(view -> finish());
+        }
+
         Calendar calendar = Calendar.getInstance();
         final int mYear = calendar.get(Calendar.YEAR);
         final int mMonth = calendar.get(Calendar.MONTH);
         final int mDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-        ArrayAdapter<String> userAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, AccountHelper.getUserList(loginAccount.getZTBH()));
-        editASSETSUSER.setAdapter(userAdapter);
-        editCUSTODIAN.setAdapter(userAdapter);
-        editCUSTODIAN.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                editCUSTODIAN.setText(AccountHelper.getUserList(application.getLoginAccount().getZTBH()).get(i));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        editASSETSUSER.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                editASSETSUSER.setText(AccountHelper.getUserList(application.getLoginAccount().getZTBH()).get(i));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-        ArrayAdapter<String> departAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, bmArray);
-        editASSETSDEPT.setAdapter(departAdapter);
-        editASSETSDEPT.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                editASSETSDEPT.setText(departAdapter.getItem(i));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        // 所属处室联想搜索（与使用部门逻辑一致）
-        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, bmArray);
-        editDEPARTMENT.setAdapter(departmentAdapter);
-        editDEPARTMENT.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                editDEPARTMENT.setText(departmentAdapter.getItem(i));
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        editGROUNDMANAGEDEPT.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
-                .addItems(dwArray, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        editGROUNDMANAGEDEPT.setText(dwArray[which]);
-                        String danweiCode = AccountHelper.getDanweiCode(dwArray[which]);
-                        assetsCreating.setGROUNDMANAGEDEPT(danweiCode);
-                        dialog.dismiss();
-                    }
-                })
-                .create(mCurrentDialogStyle).show());
+        // 使用人、管理人、使用部门、所属处室、管理部门的"选择"按钮与点击入口
+        setupFormFieldPickers();
 
         editSYFS.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
 
-                .addItems(syfsArray, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        editSYFS.setText(syfsArray[which]);
-                        assetsCreating.setTRACEABILITYPE(String.format(Locale.CHINESE, "%02d", which + 1));
-                        dialog.dismiss();
-                    }
+                .addItems(syfsArray, (dialog, which) -> {
+                    editSYFS.setText(syfsArray[which]);
+                    assetsCreating.setTRACEABILITYPE(String.format(Locale.CHINESE, "%02d", which + 1));
+                    dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());
 
@@ -1154,64 +1230,43 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
             }
         });
 
-        editASSETSUSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editASSETSUSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editASSETSUSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editASSETSUSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
-        editASSETSENDUSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editASSETSENDUSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editASSETSENDUSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editASSETSENDUSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
-        editASSETSDISPENSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editASSETSDISPENSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editASSETSDISPENSEDATE.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editASSETSDISPENSEDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
 
-        editJDJZRQ.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editJDJZRQ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editJDJZRQ.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editJDJZRQ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
-        editYXQZ.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editYXQZ.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
 
-        editYXQZ.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editYXQZ.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editYXQZ.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
 
-        editFACTORYDATE.setOnClickListener(view -> new DatePickerDialog(mContext, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int dayOfMonth) {
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.set(year, month, dayOfMonth);
-                editFACTORYDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
-            }
+        editFACTORYDATE.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
+            Calendar tCalendar = Calendar.getInstance();
+            tCalendar.set(year, month, dayOfMonth);
+            editFACTORYDATE.setText(DataConvert.FormatDate2Day(tCalendar.getTime()));
         }, mYear, mMonth, mDay).show());
 
         editIsSueDate.setOnClickListener(view -> new DatePickerDialog(mContext, (datePicker, year, month, dayOfMonth) -> {
@@ -1384,6 +1439,18 @@ public abstract class AssetsBaseActivity extends PrintCompatActivity {
                     }
                     editSPECIALDEVICE.setText(specialDeviceFields[which]);
                     assetsCreating.setSPECIALDEVICE(String.format("%02d", which + 1));
+                    dialog.dismiss();
+                })
+                .create(mCurrentDialogStyle).show());
+        // 是否国产设备选择：01是 02否
+        editMADEINCHINA.setOnClickListener(view -> new QMUIDialog.CheckableDialogBuilder(mContext)
+                .addItems(madeInChinaFields, (dialog, which) -> {
+                    if (assetsCreating == null) {
+                        showShortText("请先选择资产");
+                        return;
+                    }
+                    editMADEINCHINA.setText(madeInChinaFields[which]);
+                    assetsCreating.setMADEINCHINA(String.format("%02d", which + 1));
                     dialog.dismiss();
                 })
                 .create(mCurrentDialogStyle).show());

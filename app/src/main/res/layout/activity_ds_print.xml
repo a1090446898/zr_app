@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="?attr/qmui_config_color_background"
+              android:orientation="vertical"
+              tools:context=".DsPrintActivity">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height" />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+            <LinearLayout
+                    android:id="@+id/cardPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <ImageView
+                        android:id="@+id/ivPreview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="90dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="标签预览" />
+
+                <TextView
+                        android:id="@+id/tvLabelInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#666666"
+                        android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/panelBt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                <TextView
+                        android:id="@+id/tvBtStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="未连接"
+                        android:textColor="#333333"
+                        android:textSize="13sp" />
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                        android:id="@+id/btnBtScan"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/app_color_blue"
+                        android:text="搜索蓝牙打印机"
+                        android:textColor="@color/colorWhite" />
+
+                <CheckBox
+                        android:id="@+id/cbShowAll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:buttonTint="@color/app_color_blue"
+                        android:text="显示全部设备（默认只显示已配对和打印机）"
+                        android:textColor="#666666"
+                        android:textSize="12sp" />
+
+                <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="260dp"
+                        android:layout_marginTop="6dp"
+                        android:scrollbars="vertical">
+
+                    <LinearLayout
+                            android:id="@+id/btDeviceContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                </ScrollView>
+
+                <TextView
+                        android:id="@+id/tvDeviceHint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="#999999"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="提示：打印时将在同一任务内写入EPC并出纸，请确保标签已放入打印机且条码编号为14位。"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.qmuiteam.qmui.layout.QMUIButton
+            android:id="@+id/btnPrint"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_margin="12dp"
+            android:background="@color/app_color_blue"
+            android:text="打印标签"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+</LinearLayout>

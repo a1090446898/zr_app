@@ -1,11 +1,8 @@
 package com.gsoft.inventory;
 
 import android.Manifest;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.*;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -20,13 +17,16 @@ import com.google.zxing.client.android.Intents;
 import com.gsoft.inventory.adapter.DisposeAssetsListAdapter;
 import com.gsoft.inventory.entities.AssetDispose;
 import com.gsoft.inventory.entities.DisposeAsset;
+import com.gsoft.inventory.service.scanner.IScannerReader;
+import com.gsoft.inventory.service.scanner.ScanResult;
+import com.gsoft.inventory.service.scanner.ScannerCallbacks;
+import com.gsoft.inventory.service.scanner.ScannerError;
+import com.gsoft.inventory.service.scanner.ScannerFactory;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.qmuiteam.qmui.widget.QMUITopBar;
-import com.rscja.barcode.BarcodeDecoder;
-import com.rscja.barcode.BarcodeFactory;
-import com.rscja.deviceapi.entity.BarcodeEntity;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
@@ -34,9 +34,7 @@ import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.PermissionUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,11 +43,6 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
     private static final int REQUEST_CAMERASCAN = 0;
 
     private static final String[] PERMISSION_CAMERASCAN = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.READ_PHONE_STATE"};
-
-    // ==================== 新设备广播扫码 ====================
-    private static final String SCAN_ACTION = "com.android.server.scannerservice.broadcast";
-    private BroadcastReceiver scanReceiver;
-    private boolean isScanReceiverRegistered = false;
 
     DisposeAssetsListAdapter listAdapter;
     ArrayList<DisposeAsset> assetList = new ArrayList<>();
@@ -68,12 +61,10 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
 
     private ActivityResultLauncher<ScanOptions> barcodeLauncher;
 
-    BarcodeDecoder barcodeDecoder = BarcodeFactory.getInstance().getBarcodeDecoder();
     private final ScanCodeHandler scanCodeHandler = new ScanCodeHandler(this);
-    String seldata = "utf-8";
 
-    // 设备类型标记
-    private boolean isNewDevice;
+    /** 扫码枪识别器：厂家适配器由工厂按设备型号创建，页面不感知具体SDK */
+    private IScannerReader scanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +72,32 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
         setContentView(R.layout.activity_dispose_assets);
         context = this;
 
-        isNewDevice = ScanDeviceUtils.isNewDevice();
-
-        if (isNewDevice) {
-            initBroadcastScan();
-        }
+        // 工厂按设备型号创建扫码枪识别器（优博讯/东集新机/东集旧机），异常时由兜底适配器提示
+        scanner = ScannerFactory.create(this);
+        scanner.init(this, scannerCallbacks);
 
         isOffline = getIntent().getBooleanExtra("isOffline", false);
         initializeView();
     }
+
+    /** 统一扫码枪回调（适配器保证主线程投递）：结果与摄像头扫码走同一处理入口 */
+    private final ScannerCallbacks scannerCallbacks = new ScannerCallbacks() {
+        @Override
+        public void onScanResult(ScanResult result) {
+            // 方法名不能与回调同名：匿名类内同名方法会遮蔽页面的重载方法
+            handleScanResult(result.rawValue);
+        }
+
+        @Override
+        public void onScanStateChanged(boolean scanning, String message) {
+            // 本页扫码枪由设备键触发，无需更新状态UI
+        }
+
+        @Override
+        public void onScannerError(ScannerError error) {
+            showShortText(error.getMessage());
+        }
+    };
 
     @Override
     public void initializeView() {
@@ -160,7 +168,7 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
                         return;
                     }
                     String scanString = StringUtils.decodeQRCode(result.getContents());
-                    onScanResult(scanString);
+                    handleScanResult(scanString);
                 });
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -466,182 +474,61 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (isNewDevice) {
-            if (scanReceiver != null && !isScanReceiverRegistered) {
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(SCAN_ACTION);
-                intentFilter.setPriority(Integer.MAX_VALUE);
-                registerReceiver(scanReceiver, intentFilter);
-                isScanReceiverRegistered = true;
-            }
-        } else {
-            new InitTask().execute();
+        if (scanner != null) {
+            scanner.onPageResume();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (isNewDevice && isScanReceiverRegistered) {
-            try {
-                unregisterReceiver(scanReceiver);
-            } catch (IllegalArgumentException e) {
-                Log.e("DisposeAssetsActivity", "注销广播接收器时出错", e);
-            }
-            isScanReceiverRegistered = false;
+        if (scanner != null) {
+            scanner.onPagePause();
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isNewDevice && isScanReceiverRegistered) {
-            try {
-                unregisterReceiver(scanReceiver);
-            } catch (IllegalArgumentException e) {
-                Log.e("DisposeAssetsActivity", "注销广播接收器时出错", e);
-            }
-            isScanReceiverRegistered = false;
+        if (scanner != null) {
+            scanner.release();
+            scanner = null;
         }
-        closeScanDevice();
-    }
-
-    private void closeScanDevice() {
-        /*if (barcode2DWithSoft != null) {
-            barcode2DWithSoft.stopScan();
-            barcode2DWithSoft.close();
-        }*/
-        stop();
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!isNewDevice && keyCode == 139) {
-            if (event.getRepeatCount() == 0) {
-                ScanBarcode();
-                return true;
-            }
+        if (scanner != null && scanner.onKeyDown(keyCode, event)) {
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (!isNewDevice && keyCode == 139) {
-            if (event.getRepeatCount() == 0) {
-                stop();
-                return true;
-            }
+        if (scanner != null && scanner.onKeyUp(keyCode, event)) {
+            return true;
         }
         return super.onKeyUp(keyCode, event);
     }
 
-    private void ScanBarcode() {start();}
-
-    private void onScanResult(String barCode) {
+    /**
+     * 统一处理扫码结果：清洗条码 → 交给ScanCodeHandler查询资产并加入处置列表
+     * <p>
+     * 扫码枪与摄像头（zxing）两条识别路径共用，清洗口径与原扫码页一致
+     */
+    private void handleScanResult(String rawValue) {
         Message msgScanResult = new Message();
-        try {
-            if (barCode.toUpperCase().startsWith("HTTP")) {
-                if (barCode.toUpperCase().contains("BARCODE")) {
-                    barCode = barCode.substring(barCode.toUpperCase().indexOf("BARCODE") + 8);
-                } else if (barCode.toUpperCase().contains("BID")) {
-                    barCode = barCode.substring(barCode.toUpperCase().indexOf("BID") + 4);
-                }
-            } else if (barCode.length() > 25 && barCode.contains("条码编号：")) {
-                barCode = barCode.substring(5, barCode.indexOf("\n"));
-            }
+        String barCode = BarcodeResultUtils.parse(rawValue);
+        if (StringUtils.isNullOrEmpty(barCode)) {
+            msgScanResult.arg1 = 0;
+            msgScanResult.obj = "无法识别的条码";
+        } else {
             showShortText(barCode);
             msgScanResult.arg1 = 1;
             msgScanResult.obj = barCode;
-        } catch (Exception ex) {
-            msgScanResult.arg1 = 0;
-            msgScanResult.obj = ex.getMessage();
         }
         scanCodeHandler.sendMessage(msgScanResult);
-    }
-
-    private void start() {
-        barcodeDecoder.startScan();
-    }
-
-    private void stop() {
-        barcodeDecoder.stopScan();
-    }
-
-    private void open() {
-        barcodeDecoder.open(this);
-
-        barcodeDecoder.setDecodeCallback(new BarcodeDecoder.DecodeCallback() {
-            @Override
-            public void onDecodeComplete(BarcodeEntity barcodeEntity) {
-                if (barcodeEntity.getResultCode() == BarcodeDecoder.DECODE_SUCCESS) {
-                    String barCode = barcodeEntity.getBarcodeData();
-                    byte[] bytes = barcodeEntity.getBarcodeBytesData();
-                    Message msgScanResult = new Message();
-                    try {
-//                        barCode = new String(bytes, seldata);
-                        if (barCode.toUpperCase().startsWith("HTTP") && barCode.toUpperCase().contains("BARCODE")) {   // 网络型二维码
-                            barCode = barCode.substring(barCode.toUpperCase().indexOf("BARCODE") + 8);
-                        } else if (barCode.length() > 25) {
-                            if (barCode.contains("条码编号：")) {
-                                barCode = barCode.substring(5, barCode.indexOf("\n"));
-                            }
-                        }
-                        showShortText(barCode);
-                        msgScanResult.arg1 = 1;
-                        msgScanResult.obj = barCode;
-                    } catch (Exception ex) {
-                        msgScanResult.arg1 = 0;
-                        msgScanResult.obj = ex.getMessage();
-                    }
-                    scanCodeHandler.sendMessage(msgScanResult);
-                }
-            }
-        });
-    }
-
-    private void close() {
-        barcodeDecoder.close();
-    }
-
-
-    /**
-     * 设备上电异步类
-     *
-     * @author liuruifeng
-     */
-    class InitTask extends AsyncTask<String, Integer, Boolean> {
-        ProgressDialog mypDialog;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            boolean reuslt = false;
-            /*if (barcode2DWithSoft != null) {
-                reuslt = barcode2DWithSoft.open(mContext);
-                Log.e("barcode2DWithSoft", "open=" + reuslt);
-            }*/
-            open();
-            return reuslt;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            mypDialog.cancel();
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            mypDialog = new ProgressDialog(mContext);
-            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mypDialog.setMessage("正在初始化设备");
-            mypDialog.setCanceledOnTouchOutside(false);
-            mypDialog.show();
-        }
-
     }
 
     public class ScanCodeHandler extends Handler {
@@ -695,20 +582,5 @@ public class DisposeAssetsActivity extends BaseCompatActivity {
                 activity.showShortText("扫码失败！");
             }
         }
-    }
-
-    private void initBroadcastScan() {
-        scanReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (SCAN_ACTION.equals(intent.getAction())) {
-                    String code = intent.getStringExtra("scannerdata");
-                    if (!StringUtils.isNullOrEmpty(code)) {
-                        code = code.replace("\n", "").replace("\r", "");
-                        onScanResult(code);
-                    }
-                }
-            }
-        };
     }
 }

@@ -1,7 +1,7 @@
 package com.gsoft.inventory.data;
 
 
-import com.gsoft.inventory.utils.AssetsCategory;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 
 import java.util.List;
 

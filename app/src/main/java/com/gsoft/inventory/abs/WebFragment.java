@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
@@ -107,15 +106,14 @@ public abstract class WebFragment extends BaseFragment {
         // 注册JS接口（供网页调用安卓功能）
         webView.addJavascriptInterface(this.getAndroidByJs(), "AssetsAndroid");
 
-        // 监听网页日志
-        listenWebView();
-
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (androidByJs != null) {
+            androidByJs.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
         if (requestCode == CommonPermissionUtils.STORAGE_PERMISSION_REQUEST_CODE) {
             if (!CommonPermissionUtils.checkPermissionResult(grantResults)) {
                 showShortText("需要存储权限才能上传文件");
@@ -130,12 +128,13 @@ public abstract class WebFragment extends BaseFragment {
         webView.destroy();
     }
 
-
-
     // 处理Activity结果
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (androidByJs != null) {
+            androidByJs.onActivityResult(requestCode, resultCode, data);
+        }
         // 扫码结果处理
         handleScanCodeCallBack(requestCode, resultCode, data);
         // 拍照结果处理
@@ -144,19 +143,6 @@ public abstract class WebFragment extends BaseFragment {
         handleTakeFileCallBack(requestCode, resultCode, data);
 
     }
-
-
-    private void listenWebView() {
-        // 监听网页日志输出并打印到日志
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onConsoleMessage(String message, int lineNumber, String sourceID) {
-                // 打印日志到日志
-                Log.d("WebViewConsole", message + " (Line: " + lineNumber + ", Source: " + sourceID + ")");
-            }
-        });
-    }
-
 
     private void handleTakePhotoCallBack(int requestCode, int resultCode, Intent data) {
         //  添加拍照结果状态判断

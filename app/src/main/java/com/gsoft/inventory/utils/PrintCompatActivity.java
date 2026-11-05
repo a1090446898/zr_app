@@ -1,12 +1,11 @@
 package com.gsoft.inventory.utils;
 
-import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import butterknife.BindArray;
@@ -14,8 +13,22 @@ import com.dothantech.lpapi.LPAPI;
 import com.dothantech.printer.IDzPrinter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.gsoft.inventory.BluetoothDeviceActivity;
+import com.gsoft.inventory.BwPrintActivity;
+import com.gsoft.inventory.DsPrintActivity;
 import com.gsoft.inventory.R;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.entities.PrintLogInfo;
+import com.gsoft.inventory.utils.bw_print.BwPrintManager;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.ds_print.DsPrintManager;
+import com.gsoft.inventory.utils.print_batch.BatchPrintTarget;
+import com.gsoft.inventory.utils.print_batch.BatchPrintSession;
+import com.gsoft.inventory.utils.print_batch.BatchPrintConfig;
+import com.gsoft.inventory.utils.print_batch.BwBatchPrintTarget;
+import com.gsoft.inventory.utils.print_batch.DsBatchPrintTarget;
+import com.gsoft.inventory.utils.print_router.PrintEffectRouter;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -26,9 +39,24 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
 
     private String printerPosition;
 
+    /** 补打条码等待打印的资产：打印机未连接时先跳蓝牙设备页连接，连接成功返回后自动续打 */
+    private Assets pendingPrintAssets;
+    /** 打印发起后的回调（供业务侧做打印后处理，如更新打印状态） */
+    private Runnable pendingPrintCallback;
+
+    /** 待打印资产的账套名称（打印抬头用，随requestPrintAssets传入；未传时回退登录账套） */
+    private String pendingPrintAccountName;
+
 
     IDzPrinter.PrinterAddress jcPrinterAddress;
     protected BluetoothConn share = BluetoothConn.getInstance();
+
+    /** 待批量打印任务（未连接跳转连接页，返回后从这里续跑） */
+    private List<Assets> pendingBatchAssets;
+    private String pendingBatchAccountName;
+    private BatchPrintSession.Listener pendingBatchListener;
+    /** 当前批量会话：页面退出/取消时释放 */
+    private BatchPrintSession currentBatchSession;
 
     @BindArray(R.array.printfieldsTitle)
     protected String[] printfieldsTitle;
@@ -37,15 +65,18 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
     protected String[] printfieldsCode;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String printerName = SharedPreferencesUtils.getString(PrintCompatActivity.this, SharedPreferencesUtils.KEY_PRINTER_NAME, "");
         printerPosition = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_POSITION, "打印位置");
-        if (application.getPrinterStateLiveData().getValue() == null
+        // 宝威打印类型与老打印机无关：不做老打印机自动连接（避免每次进入打印页都尝试连老蓝牙）
+        if (autoConnectPrinterOnCreate() && !isDtPrintBrand() && (application.getPrinterStateLiveData().getValue() == null
                 || application.getPrinterStateLiveData().getValue() == 0
                 || application.getPrinterStateLiveData().getValue() == 5
-                || !StringUtils.isNullOrEmpty(printerName)) {
+                || !StringUtils.isNullOrEmpty(printerName))) {
             String macAddress = SharedPreferencesUtils.getString(PrintCompatActivity.this, SharedPreferencesUtils.KEY_PRINTER_MAC, "");
             int printerType = SharedPreferencesUtils.getInt(PrintCompatActivity.this, SharedPreferencesUtils.KEY_PRINTER_TYPE, IDzPrinter.AddressType.BLE.value());
             IDzPrinter.AddressType addressType = IDzPrinter.AddressType.valueOf(printerType);
@@ -53,34 +84,239 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
                 application.getDTPrinter().openPrinterByAddress(new IDzPrinter.PrinterAddress(printerName, macAddress, addressType));
             }
         }
-        application.getPrinterStateLiveData().observe(this, state -> {
-            if (state == null) {
-                showShortText("打印机未连接");
-            } else if (state == 2 || state == 1) {
-                showShortText("打印机已连接");
-            } else if (state == 0 || state == 5) {
-                showShortText("打印机已断开");
-            }
-        });
+        if (autoConnectPrinterOnCreate()) {
+            application.getPrinterStateLiveData().observe(this, state -> {
+                // 宝威打印类型下不提示老打印机连接状态
+                if (isDtPrintBrand()) {
+                    return;
+                }
+                if (state == null) {
+                    showShortText("打印机未连接");
+                } else if (state == 2 || state == 1) {
+                    showShortText("打印机已连接");
+                } else if (state == 0 || state == 5) {
+                    showShortText("打印机已断开");
+                }
+            });
+        }
 
 
+    }
+
+    /**
+     * 页面创建时是否自动连接打印机并观察连接状态：
+     * 打印页保持默认true；资产列表等"仅发起打印"的页面覆盖返回false，避免无谓连接与状态提示
+     */
+    protected boolean autoConnectPrinterOnCreate() {
+        return true;
+    }
+
+    /** 当前所选打印效果是否由老打印机（得实/精臣）打印：非老打印机品牌（宝威等）由各自专用打印页处理 */
+    protected boolean isDtPrintBrand() {
+        return PrintEffectRouter.BRAND_DT.equals(PrintEffectRouter.getBrand(application.getPrinterEffect()));
     }
 
 
     protected boolean isPrinterConnected() {
-        if (application.getPrinterStateLiveData().getValue() == null) return false;
+        if (application.getPrinterStateLiveData().getValue() == null) {
+            return false;
+        }
         return application.getPrinterStateLiveData().getValue() == 1 || application.getPrinterStateLiveData().getValue() == 2;
     }
 
-    protected void printAssets(String accountName, Assets assets) {
-        String printFields = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, "");
-
-        /*String printerName = application.getDTPrinter().getPrinterInfo().deviceName.replace("B50-", "");
-        long fCount = JCPrinter.count(JCPrinter.class, "encryno=?", new String[]{SecurityUtils.md5(printerName).toUpperCase()});
-        if (fCount == 0) {
-            showShortText("打印失败，请检查设备是否正常！");
+    /**
+     * 打印发起后标记资产已打印（公共方法，各打印页面及宝威打印页在打印发起/成功后调用）
+     * <p>
+     * 1. ISPRINTBARCODE置02（已打印，Const.PRINTED）；
+     * 2. ISUPLOAD置02（标记待上传，联网后随资产同步回服务器，上传字段数组assets_fields已含ISPRINTBARCODE，需服务端配合）；
+     * 3. 值已是02时跳过，避免重复打印把已同步资产重新标记为待上传；
+     * <p>
+     * LPAPI为异步打印队列无出纸回调，发起打印即视为完成（与各页面现有处理一致）
+     *
+     * @param assets 已发起打印的资产
+     */
+    public static void markBarcodePrinted(Assets assets) {
+        if (assets == null) {
             return;
-        }*/
+        }
+        // 已是已打印状态不重复更新，避免误置为待上传
+        if (Const.PRINTED.equals(assets.getISPRINTBARCODE())) {
+            return;
+        }
+        assets.setISPRINTBARCODE(Const.PRINTED);
+        assets.setISUPLOAD(Const.NOT_UPLOAD);
+        assets.save();
+    }
+
+    /** 当前所选打印效果是否由宝威打印机打印（打印类型→品牌映射见PrintEffectRouter） */
+    protected boolean isBwPrintEffect() {
+        return PrintEffectRouter.isBwEffect(application.getPrinterEffect());
+    }
+
+    /** 当前所选打印效果是否由得实RFID打印机打印 */
+    protected boolean isDsPrintEffect() {
+        return PrintEffectRouter.isDsEffect(application.getPrinterEffect());
+    }
+
+    /**
+     * 打开得实打印页（选择蓝牙连接并打印新标签）：
+     * 资产经Intent序列化传递，打印抬头按"打印抬头"设置计算好一并传入；
+     * 打印成功后由打印页标记ISPRINTBARCODE=02并通过RESULT_OK返回
+     *
+     * @param accountName 账套名称（打印抬头用）
+     * @param assets      待打印资产
+     * @param requestCode 请求码（沿用各页面原有常量，便于onActivityResult统一守卫）
+     */
+    protected void openDsPrintActivity(String accountName, Assets assets, int requestCode) {
+        Intent intent = new Intent(mContext, DsPrintActivity.class);
+        intent.putExtra(DsPrintActivity.EXTRA_PRINT_ASSETS, assets);
+        intent.putExtra(DsPrintActivity.EXTRA_PRINT_TITLE, buildAssetsTitle(mContext, accountName, assets));
+        startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 打开宝威打印页（选择蓝牙/WiFi连接并打印新标签）：
+     * 资产经Intent序列化传递，打印抬头按"打印抬头"设置计算好一并传入；
+     * 打印成功后由打印页标记ISPRINTBARCODE=02并通过RESULT_OK返回
+     *
+     * @param accountName 账套名称（打印抬头用）
+     * @param assets      待打印资产
+     * @param requestCode 请求码（沿用各页面原有常量，便于onActivityResult统一守卫）
+     */
+    protected void openBwPrintActivity(String accountName, Assets assets, int requestCode) {
+        Intent intent = new Intent(mContext, BwPrintActivity.class);
+        intent.putExtra(BwPrintActivity.EXTRA_PRINT_ASSETS, assets);
+        intent.putExtra(BwPrintActivity.EXTRA_PRINT_TITLE, buildAssetsTitle(mContext, accountName, assets));
+        startActivityForResult(intent, requestCode);
+    }
+
+
+    /**
+     * 请求打印资产标签（公共流程：打印机未连接时先跳转蓝牙设备页连接，连接成功返回后自动续打）
+     * <p>
+     * 与各页面原有"连接检查→跳转蓝牙→onActivityResult续打"流程等价，抽离公共减少重复；
+     * 打印发起后触发 afterPrint 回调，供业务侧做打印后处理（如更新打印状态）
+
+     * @param accountName 账套名称（打印抬头用）
+     * @param assets     待打印资产
+     * @param afterPrint 打印发起后的回调，可传null
+     */
+    protected void requestPrintAssets(String accountName,Assets assets, Runnable afterPrint) {
+        if (assets == null) {
+            return;
+        }
+        pendingPrintAssets = assets;
+        pendingPrintCallback = afterPrint;
+        pendingPrintAccountName = accountName;
+
+        // -------------------- 品牌分发（新增打印机在此增加分支） --------------------
+        String brand = PrintEffectRouter.getBrand(application.getPrinterEffect());
+        if (PrintEffectRouter.BRAND_BW.equals(brand)) {
+            // 宝威：进入宝威打印页（自选蓝牙/WiFi连接→打印→标记02），打印成功返回后由onActivityResult续跑回调
+            openBwPrintActivity(accountName, assets, SysDefine.REQESTCODE_WAITINGBLUETOOTH_REPRINT);
+            return;
+        }
+        if (PrintEffectRouter.BRAND_DS.equals(brand)) {
+            // 得实：进入得实打印页（蓝牙配对连接→打印→标记02），打印成功返回后由onActivityResult续跑回调
+            openDsPrintActivity(accountName, assets, SysDefine.REQESTCODE_WAITINGBLUETOOTH_REPRINT);
+            return;
+        }
+        // -------------------- 默认：得实/精臣老打印机流程 --------------------
+        if (!isPrinterConnected()) {
+            Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
+            startActivityForResult(intentBluetooth, SysDefine.REQESTCODE_WAITINGBLUETOOTH_REPRINT);
+            return;
+        }
+        doPendingPrintAssets();
+    }
+
+    /** 请求打印资产标签（账套名称取登录账套） */
+    protected void requestPrintAssets(Assets assets, Runnable afterPrint) {
+        Accounts loginAccount = application.getLoginAccount();
+        requestPrintAssets(loginAccount == null ? "" : loginAccount.getZTMC(), assets, afterPrint);
+    }
+
+    /** 请求打印资产标签（账套名称取登录账套，无打印后回调） */
+    protected void requestPrintAssets(Assets assets) {
+        requestPrintAssets(assets, null);
+    }
+    /**
+     * 执行待打印资产的打印并触发回调：
+     * LPAPI为异步打印队列，无出纸完成回调，发起打印即视为完成（与现有页面处理一致）
+     */
+    private void doPendingPrintAssets() {
+        if (pendingPrintAssets == null) {
+            return;
+        }
+        Assets assets = pendingPrintAssets;
+        Runnable callback = pendingPrintCallback;
+        String accountName = pendingPrintAccountName;
+        pendingPrintAssets = null;
+        pendingPrintCallback = null;
+        pendingPrintAccountName = null;
+        if (StringUtils.isNullOrEmpty(accountName)) {
+            Accounts loginAccount = application.getLoginAccount();
+            accountName = loginAccount == null ? "" : loginAccount.getZTMC();
+        }
+        printAssets(accountName, assets);
+        if (callback != null) {
+            callback.run();
+        }
+    }
+
+    /**
+     * 蓝牙设备页返回统一处理：仅处理补打条码等待连接的请求（107），连接成功自动续打；
+     * 其余requestCode不处理，原页面重写的onActivityResult流程不受影响
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // 批量打印连接返回：连接成功续跑队列，失败清空任务
+        if (requestCode == SysDefine.REQESTCODE_WAITINGBLUETOOTH_BATCH_PRINT) {
+            List<Assets> assets = pendingBatchAssets;
+            String accountName = pendingBatchAccountName;
+            BatchPrintSession.Listener listener = pendingBatchListener;
+            pendingBatchAssets = null;
+            pendingBatchAccountName = null;
+            pendingBatchListener = null;
+            if (resultCode == RESULT_OK && isBatchPrinterConnected()) {
+                startBatchPrint(accountName, assets, listener);
+            } else {
+                showShortText("打印机未连接，批量打印已取消");
+            }
+            return;
+        }
+
+        if (requestCode != SysDefine.REQESTCODE_WAITINGBLUETOOTH_REPRINT) {
+            return;
+        }
+        // 品牌打印页返回（宝威等）：打印与标记02已在打印页内完成，这里仅回收待打印任务并续跑业务回调
+        if (!isDtPrintBrand()) {
+            Runnable callback = pendingPrintCallback;
+            pendingPrintAssets = null;
+            pendingPrintCallback = null;
+            pendingPrintAccountName = null;
+            if (resultCode == RESULT_OK && callback != null) {
+                callback.run();
+            }
+            return;
+        }
+        if (resultCode == RESULT_OK) {
+            if (isPrinterConnected()) {
+                doPendingPrintAssets();
+                return;
+            }
+            showShortText("打印机连接失败！");
+        }
+        // 未连接成功直接返回：清空待打印任务，避免残留
+        pendingPrintAssets = null;
+        pendingPrintCallback = null;
+        pendingPrintAccountName = null;
+    }
+
+    protected boolean printAssets(String accountName, Assets assets) {
+        String printFields = SharedPreferencesUtils.getString(mContext, SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, "");
 
         try {
             // 获取手机型号
@@ -141,18 +377,13 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         }
         String printTitle = handleAssetsTitle(accountName, assets);
 
-  /*      if (TextUtils.isEmpty(printFields)) {
-            printAssets(printTitle, assets.getBARCODEID(), assets.getASSETSNAME(), StringUtils.isNullOrEmpty(assets.getASSETSUSER()) ? assets.getCUSTODIAN() : assets.getASSETSUSER());
-        } else {
-
-        }*/
-
         String[] fieldArray = printFields.split(",");
         try {
-            printAssets(printTitle, assets, fieldArray);
+            return printAssets(printTitle, assets, fieldArray);
         } catch (Exception e) {
             e.printStackTrace();
             showShortText("打印功能错误，检查打印字段是否正常");
+            return false;
         }
     }
 
@@ -171,42 +402,61 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         return result;
     }
 
-    private void printAssets(String accountName, Assets assets, String[] fieldArray) throws NoSuchFieldException, IllegalAccessException {
-        if ("智软2号".equals(application.getPrinterDevice())) {  // 精臣
-            String printerEffect = application.getPrinterEffect();
-            if ("大二维码".equals(printerEffect)) {
-                printQRCodeAssets_JC_define(accountName, assets, fieldArray);
-            } else if ("大一维码".equals(printerEffect)) {
-                printAssets_JC_define(accountName, assets, fieldArray);
-            } else if ("小一维码".equals(printerEffect)) {
-                printBarCode_JC(assets.getBARCODEID());
-            } else if ("小二维码".equals(printerEffect)) {
-                printQRCode_JC(accountName, assets, fieldArray);
-            } else if ("网页二维码-四字段".equals(printerEffect)) {
-                printQRCodeAssets_JC_WebQR(accountName, assets, fieldArray);
-            } else if ("网页二维码-二字段".equals(printerEffect)) {
-                printQRCodeAssets_JC_WebQR_Double(accountName, assets, fieldArray);
-            } else if ("网页二维码-模板三".equals(printerEffect)) {
-                printerWebpageQRCodeTemplate3(accountName, assets, fieldArray);
-            } else if ("财政二维码".equals(printerEffect)) {
-                printBarCode_CZ(accountName, assets, fieldArray);
-            } else if ("大二维码-五字段".equals(printerEffect)) {
-                printBarCodeFive(accountName, assets, fieldArray);
-            }else if("大二维码-密级标签".equals(printerEffect)){
-                printLargeQRCodeDenseLabel(accountName, assets, fieldArray);
-            }
-            else if("试剂二维码-四字段".equals(printerEffect)){
-                String[] labelArr = new String[]{"试剂名称", "配置浓度", "配  置  人", "配置日期", "有效日期"};
-                fieldArray = new String[]{"ASSETSNAME", "CONCENTRATION", "PREPARER", "ASSETSUSEDATE", "VALIDDATE"};
-                printQRCode_Assets_SJ(accountName, assets, labelArr, fieldArray);
-            }
-            else if("大标签-五字段".equals(printerEffect)){
-                big_five(accountName, assets, fieldArray);
-            }
-            else if("公安警告标签".equals(printerEffect)){
-                printPoliceWarningLabel(accountName);
-            }
+    /** 打印抬头计算：单条/批量共用（改抬头规则只需改这一处） */
+    public static String buildAssetsTitle(Context context, String accountName, Assets assets) {
+        String assetsDept = assets.getASSETSDEPT();
+        String printerTitle = SharedPreferencesUtils.getString(context, SharedPreferencesUtils.KEY_PRINT_TITLE, "单位名称");
+        if ("部门名称".equals(printerTitle)) {
+            return assetsDept;
         }
+        if ("单位+部门名称".equals(printerTitle)) {
+            return accountName + "(" + assetsDept + ")";
+        }
+        return accountName;
+    }
+
+    /**
+     * 按打印效果分发到具体标签版式
+     *
+     * @return true 表示已匹配到版式并发起打印；false 表示当前设备/打印效果未适配
+     */
+    private boolean printAssets(String accountName, Assets assets, String[] fieldArray) throws NoSuchFieldException, IllegalAccessException {
+        if (!"智软2号".equals(application.getPrinterDevice())) {
+            return false;
+        }
+        String printerEffect = application.getPrinterEffect();
+        if ("大二维码".equals(printerEffect)) {
+            printQRCodeAssets_JC_define(accountName, assets, fieldArray);
+        } else if ("大一维码".equals(printerEffect)) {
+            printAssets_JC_define(accountName, assets, fieldArray);
+        } else if ("小一维码".equals(printerEffect)) {
+            printBarCode_JC(assets.getBARCODEID());
+        } else if ("小二维码".equals(printerEffect)) {
+            printQRCode_JC(accountName, assets, fieldArray);
+        } else if ("网页二维码-四字段".equals(printerEffect)) {
+            printQRCodeAssets_JC_WebQR(accountName, assets, fieldArray);
+        } else if ("网页二维码-二字段".equals(printerEffect)) {
+            printQRCodeAssets_JC_WebQR_Double(accountName, assets, fieldArray);
+        } else if ("网页二维码-模板三".equals(printerEffect)) {
+            printerWebpageQRCodeTemplate3(accountName, assets, fieldArray);
+        } else if ("财政二维码".equals(printerEffect)) {
+            printBarCode_CZ(accountName, assets, fieldArray);
+        } else if ("大二维码-五字段".equals(printerEffect)) {
+            printBarCodeFive(accountName, assets, fieldArray);
+        } else if ("大二维码-密级标签".equals(printerEffect)) {
+            printLargeQRCodeDenseLabel(accountName, assets, fieldArray);
+        } else if ("试剂二维码-四字段".equals(printerEffect)) {
+            String[] labelArr = new String[]{"试剂名称", "配置浓度", "配  置  人", "配置日期", "有效日期"};
+            fieldArray = new String[]{"ASSETSNAME", "CONCENTRATION", "PREPARER", "ASSETSUSEDATE", "VALIDDATE"};
+            printQRCode_Assets_SJ(accountName, assets, labelArr, fieldArray);
+        } else if ("大标签-五字段".equals(printerEffect)) {
+            big_five(accountName, assets, fieldArray);
+        } else if ("公安警告标签".equals(printerEffect)) {
+            printPoliceWarningLabel(accountName);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     private void printerWebpageQRCodeTemplate3(String accountName, Assets assets, String[] fieldArray) {
@@ -1005,7 +1255,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
     private boolean printQRCode_JC(String accountName, Assets assets, String[] fieldArray) {
         StringBuilder sb1 = new StringBuilder();
         for (int i = 0; i < fieldArray.length && i < 4; i++) {
-            if (TextUtils.isEmpty(fieldArray[i])) continue;
+            if (TextUtils.isEmpty(fieldArray[i])) {
+                continue;
+            }
             int ci = Arrays.asList(printfieldsCode).indexOf(fieldArray[i]);
             if (ci != -1) {
                 try {
@@ -1101,7 +1353,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
 
         StringBuilder sb1 = new StringBuilder();
         for (int i = 0; i < fieldsArray.length && i < 2; i++) {
-            if (TextUtils.isEmpty(fieldsArray[i])) continue;
+            if (TextUtils.isEmpty(fieldsArray[i])) {
+                continue;
+            }
             int ci = Arrays.asList(printfieldsCode).indexOf(fieldsArray[i]);
             if (ci != -1) {
                 try {
@@ -1126,7 +1380,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         StringBuilder sb2 = new StringBuilder();
         if (fieldsArray.length > 2) {
             for (int i = 2; i < fieldsArray.length && i < 4; i++) {
-                if (TextUtils.isEmpty(fieldsArray[i])) continue;
+                if (TextUtils.isEmpty(fieldsArray[i])) {
+                    continue;
+                }
                 int ci = Arrays.asList(printfieldsCode).indexOf(fieldsArray[i]);
                 if (ci != -1) {
                     try {
@@ -1150,8 +1406,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
             }
         }
         String line2 = sb2.toString().trim();
-        if (!TextUtils.isEmpty(line2))
+        if (!TextUtils.isEmpty(line2)) {
             application.getDTPrinter().drawText(line2, 0, 21, 70, 5, 3);
+        }
 
         // 结束绘图任务提交打印
         return application.getDTPrinter().commitJob();
@@ -1328,7 +1585,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         // 所有打印字段
         List<String> printFields = Arrays.asList(printfieldsCode);
         for (int i = 0; i < fieldsArray.length; i++) {
-            if (TextUtils.isEmpty(fieldsArray[i])) continue;
+            if (TextUtils.isEmpty(fieldsArray[i])) {
+                continue;
+            }
             // 查询打印字段是否存在
             int ci = printFields.indexOf(fieldsArray[i]);
             if (ci == -1) {
@@ -1407,7 +1666,9 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         List<String> alreadyPrintFields = new ArrayList<>();
         // 所有打印字段
         for (int i = 0; i < fieldsArray.length; i++) {
-            if (TextUtils.isEmpty(fieldsArray[i])) continue;
+            if (TextUtils.isEmpty(fieldsArray[i])) {
+                continue;
+            }
             int size = alreadyPrintFields.size();
             if (size >= maxRows) {
                 break;
@@ -1501,9 +1762,13 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
         List<String> fieldValues = new ArrayList<>();
 
         for (int i = 0; i < fieldsArray.length && fieldTitles.size() < totalRows; i++) {
-            if (TextUtils.isEmpty(fieldsArray[i])) continue;
+            if (TextUtils.isEmpty(fieldsArray[i])) {
+                continue;
+            }
             int ci = printFields.indexOf(fieldsArray[i]);
-            if (ci == -1) continue;
+            if (ci == -1) {
+                continue;
+            }
             try {
                 Field field = assets.getClass().getDeclaredField(fieldsArray[i]);
                 field.setAccessible(true);
@@ -1549,12 +1814,178 @@ public abstract class PrintCompatActivity extends BaseCompatActivity {
     }
 
 
+    // ==================== 批量打印 ====================
 
+
+
+    /**
+     * 请求批量打印：数量校验 → 连接检查 → 品牌分发，页面只关心Listener回调
+     *
+     * @param accountName 账套名称（打印抬头用）
+     * @param assets      勾选的资产（不超过BatchPrintConfig.MAX_BATCH_SIZE）
+     * @param listener    进度/失败决策/结束回调（失败弹框由页面实现）
+     */
+    protected void requestBatchPrintAssets(String accountName, List<Assets> assets,
+                                           BatchPrintSession.Listener listener) {
+        if (assets == null || assets.isEmpty()) {
+            showShortText("请先勾选要打印的资产");
+            return;
+        }
+        if (assets.size() > BatchPrintConfig.MAX_BATCH_SIZE) {
+            showShortText("单次最多打印" + BatchPrintConfig.MAX_BATCH_SIZE + "条，请分批勾选");
+            return;
+        }
+        String brand = PrintEffectRouter.getBrand(application.getPrinterEffect());
+        if (PrintEffectRouter.BRAND_DT.equals(brand) || PrintEffectRouter.BRAND_DS.equals(brand)) {
+            String printFields = SharedPreferencesUtils.getString(mContext,
+                    SharedPreferencesUtils.KEY_PRINT_FIELDS_CODE, "");
+            if (StringUtils.isNullOrEmpty(printFields)) {
+                showShortText("请先在设置中选择打印字段");
+                return;
+            }
+        }
+        if (!isBatchPrinterConnected()) {
+            // 未连接：缓存任务，按品牌跳各自连接页，onActivityResult续跑
+            pendingBatchAssets = new ArrayList<>(assets);
+            pendingBatchAccountName = accountName;
+            pendingBatchListener = listener;
+            openBatchPrinterConnectPage();
+            return;
+        }
+        startBatchPrint(accountName, assets, listener);
+    }
+
+    /** 批量打印连接状态：宝威/得实走各自SDK，得实老打印机走打印机状态LiveData */
+    protected boolean isBatchPrinterConnected() {
+        if (isBwPrintEffect()) {
+            return BwPrintManager.isConnected();
+        }
+        if (isDsPrintEffect()) {
+            return DsPrintManager.isConnected();
+        }
+        return isPrinterConnected();
+    }
+
+    /**
+     * 批量打印是否进行中（含等待连接页返回、等待失败决策）：
+     * 页面用于防重复发起、以及"取消打印"前判断是否需要二次确认
+     */
+    protected boolean isBatchPrintRunning() {
+        return pendingBatchAssets != null
+                || (currentBatchSession != null && currentBatchSession.isRunning());
+    }
+
+    /** 用户选择"继续打印"：跳过当前失败项继续排队（仅在失败等待决策时生效） */
+    protected void resumeBatchPrint() {
+        if (currentBatchSession != null) {
+            currentBatchSession.resume();
+        }
+    }
+
+    /** 终止批量打印并清空待连接任务（用户主动终止/退出批量模式时调用） */
+    protected void cancelBatchPrint() {
+        pendingBatchAssets = null;
+        pendingBatchAccountName = null;
+        pendingBatchListener = null;
+        if (currentBatchSession != null) {
+            currentBatchSession.abort();
+            currentBatchSession = null;
+        }
+    }
+
+    private void openBatchPrinterConnectPage() {
+        if (isBwPrintEffect()) {
+            // 宝威：打印页"仅连接"模式，连接成功即返回（不显示预览、不打印单张）
+            Intent intent = new Intent(mContext, BwPrintActivity.class);
+            intent.putExtra(BwPrintActivity.EXTRA_CONNECT_ONLY, true);
+            startActivityForResult(intent, SysDefine.REQESTCODE_WAITINGBLUETOOTH_BATCH_PRINT);
+        } else if (isDsPrintEffect()) {
+            // 得实：打印页"仅连接"模式，连接成功即返回（不显示预览、不打印单张）
+            Intent intent = new Intent(mContext, DsPrintActivity.class);
+            intent.putExtra(DsPrintActivity.EXTRA_CONNECT_ONLY, true);
+            startActivityForResult(intent, SysDefine.REQESTCODE_WAITINGBLUETOOTH_BATCH_PRINT);
+        } else {
+            startActivityForResult(new Intent(mContext, BluetoothDeviceActivity.class),
+                    SysDefine.REQESTCODE_WAITINGBLUETOOTH_BATCH_PRINT);
+        }
+    }
+
+    /** 建立批量会话并启动（返回会话便于页面取消） */
+    protected BatchPrintSession startBatchPrint(String accountName, List<Assets> assets,
+                                                BatchPrintSession.Listener listener) {
+        BatchPrintTarget target = createBatchPrintTarget(accountName);
+        if (target == null) {
+            showShortText("当前打印类型不支持批量打印");
+            return null;
+        }
+        if (currentBatchSession != null) {
+            currentBatchSession.release();
+        }
+        currentBatchSession = new BatchPrintSession(assets, target, listener);
+        currentBatchSession.start();
+        return currentBatchSession;
+    }
+
+    /** 品牌 → 执行器：新增打印机只需在此加分支 */
+    protected BatchPrintTarget createBatchPrintTarget(final String accountName) {
+        String brand = PrintEffectRouter.getBrand(application.getPrinterEffect());
+        if (PrintEffectRouter.BRAND_BW.equals(brand)) {
+            return new BwBatchPrintTarget(
+                    mContext,
+                    application.getPrinterEffect(),
+                    SharedPreferencesUtils.getString(mContext,
+                            SharedPreferencesUtils.KEY_PRINT_POSITION, "打印位置"),
+                    BwPrintManager.CONN_TYPE_WIFI.equals(BwPrintManager.getLastConnType()),
+                    assets -> buildAssetsTitle(mContext, accountName, assets));
+        }
+        if (PrintEffectRouter.BRAND_DS.equals(brand)) {
+            return new DsBatchPrintTarget(
+                    mContext,
+                    application.getPrinterEffect(),
+                    SharedPreferencesUtils.getString(mContext,
+                            SharedPreferencesUtils.KEY_PRINT_POSITION, "打印位置"),
+                    assets -> buildAssetsTitle(mContext, accountName, assets));
+        }
+        if (PrintEffectRouter.BRAND_DT.equals(brand)) {
+            return new DtBatchPrintTarget(accountName);
+        }
+        return null;
+    }
+
+    /** 得实/精臣批量执行器：复用单条打印，成功后在后台标记已打印 */
+    private class DtBatchPrintTarget implements BatchPrintTarget {
+
+        private final String accountName;
+
+        DtBatchPrintTarget(String accountName) {
+            this.accountName = accountName;
+        }
+
+        @Override
+        public void printOne(Assets assets, Callback callback) {
+            boolean started = printAssets(accountName, assets);
+            if (started) {
+                AsyncManager.getInstance().execute(() -> markBarcodePrinted(assets));
+                callback.onResult(true, "");
+            } else {
+                callback.onResult(false, "打印发起失败，请检查打印类型设置");
+            }
+        }
+    }
 
 
 
     @Override
     protected void onDestroy() {
+        // 页面退出：清空待连接任务并终止队列，避免退出后继续出纸与回调泄漏
+        // 这里只release不abort，避免页面销毁后再回调onFinished弹提示
+        pendingBatchAssets = null;
+        pendingBatchAccountName = null;
+        pendingBatchListener = null;
+        if (currentBatchSession != null) {
+            currentBatchSession.release();
+            currentBatchSession = null;
+        }
         super.onDestroy();
     }
 }

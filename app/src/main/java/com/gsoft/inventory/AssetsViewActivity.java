@@ -2,376 +2,92 @@ package com.gsoft.inventory;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.dothantech.printer.IDzPrinter;
-import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.Assets;
-import com.gsoft.inventory.utils.AssetsCategory;
-import com.gsoft.inventory.utils.AssetsCategoryHelper;
-import com.gsoft.inventory.utils.AssetsUtils;
-import com.gsoft.inventory.utils.BaseCompatActivity;
-import com.gsoft.inventory.utils.DictionaryHelper;
-import com.gsoft.inventory.utils.FileSearchHelper;
-import com.gsoft.inventory.utils.NetworkUtils;
-import com.gsoft.inventory.utils.PrintCompatActivity;
-import com.gsoft.inventory.utils.StringUtils;
-import com.gsoft.inventory.utils.SysConfig;
-import com.gsoft.inventory.utils.SysDefine;
+import com.gsoft.inventory.const_data.Const;
+import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.BindArray;
-import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.gsoft.inventory.utils.SysDefine.REQESTCODE_WAITINGBLUETOOTH;
-
-import java.util.List;
-
+/**
+ * 资产详情页（数据驱动展示）
+ * <p>
+ * 1. 页面按分组卡片展示，字段配置集中在 {@link #buildSections()}；
+ * 2. 值为空的字段自动隐藏，整个分组的字段都为空时整张卡片不显示（车辆/特种设备/样品/网络等）；
+ * 3. 新增字段只需在对应分组加一行 field("标签", () -> assets.getXXX())，
+ *    需要固定展示（空值也显示）的字段使用 statusField(...)；
+ * 4. 打印条码、盘实/盘盈/盘亏后原地刷新状态，不重建整页。
+ */
 public class AssetsViewActivity extends PrintCompatActivity {
+
+    /** 状态字段Key：盘点状态 */
+    private static final String STATUS_KEY_ZT = "ZT";
+    /** 状态字段Key：同步状态 */
+    private static final String STATUS_KEY_ISUPLOAD = "ISUPLOAD";
+    /** 状态字段Key：打印状态 */
+    private static final String STATUS_KEY_PRINT = "ISPRINTBARCODE";
 
     Assets assets = null;
     QMUITopBar topBar;
-    /*资产类别*/
-    @BindArray(R.array.zclb)
-    String[] zclbArray;
-    /*取得方式*/
+
+    /** 分组容器：所有分组卡片动态添加到此容器 */
+    private LinearLayout layoutSections;
+    /** 当前登录账号：管理部门名称、账套名称转换用 */
+    private Accounts loginAccount;
+    /** 状态字段的值控件：打印/标记盘点后原地刷新 */
+    private final Map<String, TextView> statusValueViews = new HashMap<>();
+
     @BindArray(R.array.qdfs)
     String[] qdfsArray;
-    /*使用状况*/
     @BindArray(R.array.syzk)
     String[] syzkArray;
-    /*文物等级*/
     @BindArray(R.array.wwdj)
     String[] wwdjArray;
-    /*编制情况*/
     @BindArray(R.array.bzqk)
     String[] bzqkArray;
-    /*分类用途*/
     @BindArray(R.array.flyt)
     String[] flytArray;
-    /*采购组织形式*/
     @BindArray(R.array.cgzzxs)
     String[] cgzzxsArray;
-    /*折旧状态*/
     @BindArray(R.array.zjzt)
     String[] zjztArray;
-    /*溯源方式状态*/
     @BindArray(R.array.syfs)
     String[] syfsArray;
     @BindArray(R.array.classifications)
     String[] classifications;
     @BindArray(R.array.accountBookFields)
     String[] accountBookFields;
-
     @BindArray(R.array.sampleStateFields)
     String[] sampleStateFields;
-
     @BindArray(R.array.downInfoFields)
     String[] downInfoFields;
     @BindArray(R.array.deviceTypeFields)
     String[] deviceTypeFields;
-    @BindArray(R.array.osArray)
-    public String[] osArray;
-    /*特种设备*/
     @BindArray(R.array.specialDeviceFields)
     String[] specialDeviceFields;
-    //region  控件定义
-    /*条码编号*/
-    @BindView(R.id.tvDOCID)
-    TextView tvDOCID;
-
-    @BindView(R.id.tvBARCODEID)
-    TextView tvBARCODEID;
-    /*CardID*/
-    @BindView(R.id.tvCARDID)
-    TextView tvCARDID;
-    /*取得方式*/
-    @BindView(R.id.tvGETMODE)
-    TextView tvGETMODE;
-    /*备注*/
-    @BindView(R.id.tvREMARKS)
-    TextView tvREMARKS;
-    /*产权单位*/
-    @BindView(R.id.tvPROPERTY)
-    TextView tvPROPERTY;
-    /*发动机号*/
-    @BindView(R.id.tvFDJH)
-    TextView tvFDJH;
-    /*所在楼层，空值*/
-    @BindView(R.id.tvSZLC)
-    TextView tvSZLC;
-    /*使用(保管)人*/
-    @BindView(R.id.tvCUSTODIAN)
-    TextView tvCUSTODIAN;
-    /*车架号*/
-    @BindView(R.id.tvCJHM)
-    TextView tvCJHM;
-    /*账套编号*/
-    @BindView(R.id.tvACCTSUITEID)
-    TextView tvACCTSUITEID;
-    /*卡片序号*/
-    @BindView(R.id.tvSERIALNUM)
-    TextView tvSERIALNUM;
-    /*资产类别*/
-    @BindView(R.id.tvASSETSTYPE)
-    TextView tvASSETSTYPE;
-    /*资产分类代码*/
-    @BindView(R.id.tvASSETSSORTCODE)
-    TextView tvASSETSSORTCODE;
-    /*计量单位*/
-    @BindView(R.id.tvASSETSMEASURE)
-    TextView tvASSETSMEASURE;
-    /*资产编号*/
-    @BindView(R.id.tvSERIALCODE)
-    TextView tvSERIALCODE;
-    /*资产名称*/
-    @BindView(R.id.tvASSETSNAME)
-    TextView tvASSETSNAME;
-    /*规格*/
-    @BindView(R.id.tvASSETSMODEL)
-    TextView tvASSETSMODEL;
-    /*型号*/
-    @BindView(R.id.tvASSETSSTANDARD)
-    TextView tvASSETSSTANDARD;
-    /*取得日期*/
-    @BindView(R.id.tvASSETSUSEDATE)
-    TextView tvASSETSUSEDATE;
-    /*保修截止日期*/
-    @BindView(R.id.tvASSETSENDUSEDATE)
-    TextView tvASSETSENDUSEDATE;
-    /*预计使用月份*/
-    @BindView(R.id.tvYEARCOUNT)
-    TextView tvYEARCOUNT;
-    /*使用状况*/
-    @BindView(R.id.tvUSESTATE)
-    TextView tvUSESTATE;
-    /*折旧状态*/
-    @BindView(R.id.tvDPRECIATIONTYPE)
-    TextView tvDPRECIATIONTYPE;
-    /*存放地点*/
-    @BindView(R.id.tvASSETSLAYADD)
-    TextView tvASSETSLAYADD;
-    /*资产位置*/
-    @BindView(R.id.tvGROUNDSETPOS)
-    TextView tvGROUNDSETPOS;
-    /*使用人*/
-    @BindView(R.id.tvASSETSUSER)
-    TextView tvASSETSUSER;
-    /*使用部门*/
-    @BindView(R.id.tvASSETSDEPT)
-    TextView tvASSETSDEPT;
-    /*所属处室*/
-    @BindView(R.id.tvDEPARTMENT)
-    TextView tvDEPARTMENT;
-    /*是否公物仓*/
-    @BindView(R.id.tvISGWC)
-    TextView tvISGWC;
-    /*卡片金额-原值，设为空值*/
-    @BindView(R.id.tvKPJE)
-    TextView tvKPJE;
-    /*累计折旧*/
-    @BindView(R.id.tvDPRECIATIONADD)
-    TextView tvDPRECIATIONADD;
-    /*资产原值*/
-    @BindView(R.id.tvASSETSCURRPRICE)
-    TextView tvASSETSCURRPRICE;
-    /*当前累计折旧*/
-    @BindView(R.id.tvCURRDPRECIATIONADD)
-    TextView tvCURRDPRECIATIONADD;
-    /*净值*/
-    @BindView(R.id.tvLEFTPRICE)
-    TextView tvLEFTPRICE;
-    /*管理部门*/
-    @BindView(R.id.tvGROUNDMANAGEDEPT)
-    TextView tvGROUNDMANAGEDEPT;
-    /*文物等级*/
-    @BindView(R.id.tvASSETSCULGRADE)
-    TextView tvASSETSCULGRADE;
-    /*车辆产地*/
-    @BindView(R.id.tvASSETSPRODAREA)
-    TextView tvASSETSPRODAREA;
-    /*车牌号*/
-    @BindView(R.id.tvVEHICLENO)
-    TextView tvVEHICLENO;
-    /*发证时间*/
-    @BindView(R.id.tvASSETSDISPENSEDATE)
-    TextView tvASSETSDISPENSEDATE;
-    /*权属所有人*/
-    @BindView(R.id.tvASSETSMANAGER)
-    TextView tvASSETSMANAGER;
-    /*厂牌型号*/
-    @BindView(R.id.tvASSETSFACTORYNO)
-    TextView tvASSETSFACTORYNO;
-    /*排气量*/
-    @BindView(R.id.tvVEHEXH)
-    TextView tvVEHEXH;
-    /*行驶里程*/
-    @BindView(R.id.tvLONGMILES)
-    TextView tvLONGMILES;
-    /*分类用途*/
-    @BindView(R.id.tvVEHPURPOSE)
-    TextView tvVEHPURPOSE;
-    /*编制情况*/
-    @BindView(R.id.tvASSETSORGANIZATION)
-    TextView tvASSETSORGANIZATION;
-    /*数量*/
-    @BindView(R.id.tvASSETSNUM)
-    TextView tvASSETSNUM;
-    /*录入人*/
-    @BindView(R.id.tvASSETSWRITER)
-    TextView tvASSETSWRITER;
-    /*录入日期*/
-    @BindView(R.id.tvASSETSWRITERDATE)
-    TextView tvASSETSWRITERDATE;
-    /*采购组织形式*/
-    @BindView(R.id.tvPURCHASINGORGANIZATION)
-    TextView tvPURCHASINGORGANIZATION;
-    /*品牌*/
-    @BindView(R.id.tvBRAND)
-    TextView tvBRAND;
-    /*盘点状态：02已盘，其余(含空)未盘，页面底部显示*/
-    @BindView(R.id.tvZT)
-    TextView tvZT;
-    /*盘点情况：01待盘点 02盘实 03盘盈 04待核实，页面底部显示*/
-    @BindView(R.id.tvPDZT)
-    TextView tvPDZT;
-    @BindView(R.id.tvISCZ)
-    TextView tvISCZ;
-
-    @BindView(R.id.editXLH)
-    TextView editXLH;
-    @BindView(R.id.editSCCJ)
-    TextView editSCCJ;
-    @BindView(R.id.editCCBH)
-    TextView editCCBH;
-    @BindView(R.id.editGLBH)
-    TextView editGLBH;
-    @BindView(R.id.tvFACTORYDATE)
-    TextView tvFACTORYDATE;
-    @BindView(R.id.tvSPECIALDEVICE)
-    TextView tvSPECIALDEVICE;
-    @BindView(R.id.tvDEVICECODE)
-    TextView tvDEVICECODE;
-    @BindView(R.id.tvSPECIALFACTORYNO)
-    TextView tvSPECIALFACTORYNO;
-    @BindView(R.id.tvCERTIFICATENUMBER)
-    TextView tvCERTIFICATENUMBER;
-    @BindView(R.id.editCANSHU)
-    TextView editCANSHU;
-    @BindView(R.id.editSYZQ)
-    TextView editSYZQ;
-    @BindView(R.id.editSYFS)
-    TextView editSYFS;
-    @BindView(R.id.editJDJZRQ)
-    TextView editJDJZRQ;
-    @BindView(R.id.editYXQZ)
-    TextView editYXQZ;
-    @BindView(R.id.editSSXM)
-    TextView editSSXM;
-    @BindView(R.id.editPRINTNO)
-    TextView editPRINTNO;
-    @BindView(R.id.editPRO)
-    TextView editPRO;
-    @BindView(R.id.editACCOUNTBOOK)
-    TextView editACCOUNTBOOK;
-    @BindView(R.id.editDOWNINFO)
-    TextView editDOWNINFO;
-    @BindView(R.id.editSUMCOMPLETEMONTH)
-    TextView editSUMCOMPLETEMONTH;
-    @BindView(R.id.editCOMPLETEMONTH)
-    TextView editCOMPLETEMONTH;
-    @BindView(R.id.editMONDEPREVALUE)
-    TextView editMONDEPREVALUE;
-    @BindView(R.id.editDEVICETYPE)
-    TextView editDEVICETYPE;
-    @BindView(R.id.editClassification)
-    TextView editClassification;
-    @BindView(R.id.editIsSueDate)
-    TextView editIsSueDate;
-
-    @BindView(R.id.editVENDOR)
-    TextView editVENDOR;
-    //endregion
-
-    @BindView(R.id.editBOOKKEEPINGTIME)
-    TextView editBOOKKEEPINGTIME;
-
-    @BindView(R.id.editVOUCHERNO)
-    TextView editVOUCHERNO;
-
-    @BindView(R.id.editDWCODE)
-    TextView editDWCODE;
-
-    @BindView(R.id.editSAMPLDATE)
-    TextView editSAMPLDATE;
-
-
-    @BindView(R.id.editSAMPLCODE)
-    TextView editSAMPLCODE;
-
-    @BindView(R.id.editMONITORPRO)
-    TextView editMONITORPRO;
-
-    @BindView(R.id.editSAVEMETHOD)
-    TextView editSAVEMETHOD;
-
-    @BindView(R.id.editSAMPLESTATE)
-    TextView editSAMPLESTATE;
-
-    @BindView(R.id.editSAMPLEUSER)
-    TextView editSAMPLEUSER;
-
-
-    @BindView(R.id.editCONCENTRATION)
-    TextView editCONCENTRATION;
-    @BindView(R.id.editPREPARER)
-    TextView editPREPARER;
-    @BindView(R.id.editMEDIA)
-    TextView editMEDIA;
-    @BindView(R.id.editSTORAGENEED)
-    TextView editSTORAGENEED;
-
-    @BindView(R.id.editISUPLOAD)
-    TextView editISUPLOAD;
-
-
-    @BindView(R.id.editHARDID)
-    TextView editHARDID;
-
-    @BindView(R.id.editIP)
-    TextView editIP;
-
-    @BindView(R.id.editMAC)
-    TextView editMAC;
-
-    @BindView(R.id.editINTERNETID)
-    TextView editINTERNETID;
-
-    @BindView(R.id.editPORT)
-    TextView editPORT;
-
-    @BindView(R.id.editPURPOSE)
-    TextView editPURPOSE;
-
-    @BindView(R.id.editHARDSN)
-    TextView editHARDSN;
-
-    @BindView(R.id.editNETTYPE)
-    TextView editNETTYPE;
-
-    @BindView(R.id.editOS)
-    TextView editOS;
-
-    @BindView(R.id.editINSTALLDATE)
-    TextView editINSTALLDATE;
+    @BindArray(R.array.madeInChinaFields)
+    String[] madeInChinaFields;
+    @BindArray(R.array.printStateFields)
+    String[] printStateFields;
+    @BindArray(R.array.pdztFields)
+    String[] pdztFields;
+    @BindArray(R.array.ztFields)
+    String[] ztFields;
 
     private int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
 
@@ -390,20 +106,11 @@ public class AssetsViewActivity extends PrintCompatActivity {
     @Override
     public void initializeView() {
         topBar = (QMUITopBar) findViewById(R.id.topbar);
+        layoutSections = (LinearLayout) findViewById(R.id.layoutSections);
         topBar.setTitle("查看资产详情");
-        topBar.addLeftBackImageButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        topBar.addLeftBackImageButton().setOnClickListener(v -> finish());
         topBar.addRightImageButton(R.mipmap.icon_topbar_overflow, R.id.topbar_right_change_button)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        showBottomSheet();
-                    }
-                });
+                .setOnClickListener(v -> showBottomSheet());
 
         long assetsID = getIntent().getLongExtra(SysDefine.IntentExtra_AssetsID, 0);
         if (assetsID == 0) {
@@ -415,203 +122,269 @@ public class AssetsViewActivity extends PrintCompatActivity {
             showShortText("资产信息未找到，请退出重试！");
             return;
         }
-        this.initData();
-
+        loginAccount = application.getLoginAccount();
+        renderAssetDetail();
     }
-
 
     /**
-     * 初始化数据
+     * 渲染全部字段：按分组生成卡片，空字段自动隐藏
      */
-    private void initData() {
-        /*docId*/
-        tvDOCID.setText(assets.getDOCID() + "");
-        /*条码编号*/
-        tvBARCODEID.setText(assets.getBARCODEID() + "");
-        /*CardID*/
-        tvCARDID.setText(assets.getCARDID());
-        /*取得方式*/
-        tvGETMODE.setText(DictionaryHelper.getDictionaryName(assets.getGETMODE(), qdfsArray));
-        /*备注*/
-        tvREMARKS.setText(assets.getREMARKS() + "");
-        /*产权单位*/
-        tvPROPERTY.setText(assets.getPROPERTY() + "");
-        /*发动机号*/
-        tvFDJH.setText(assets.getFDJH() + "");
-        /*所在楼层，空值*/
-        tvSZLC.setText(assets.getSZLC() + "");
-        /*使用(保管)人*/
-        tvCUSTODIAN.setText(assets.getCUSTODIAN() + "");
-        /*车架号*/
-        tvCJHM.setText(assets.getCJHM() + "");
-        /*账套编号*/
-        Accounts accounts = AccountHelper.getACCTSUITEID(assets.getACCTSUITEID());
-        tvACCTSUITEID.setText(accounts == null ? "" : accounts.getZTMC());
-        /*卡片序号*/
-        tvSERIALNUM.setText(assets.getSERIALNUM() + "");
-        /*资产类别*/
-        tvASSETSTYPE.setText(AssetsCategoryHelper.getAssetsCategoryTitle(assets.getASSETSTYPE()));
-        /*资产分类代码*/
-        AssetsCategory assetsCategory = AssetsCategoryHelper.getAssetsCategory(assets.getASSETSSORTCODE());
-        tvASSETSSORTCODE.setText(assetsCategory == null ? "" : assetsCategory.getNAME());
-        /*计量单位*/
-        tvASSETSMEASURE.setText(assets.getASSETSMEASURE() + "");
-        /*资产编号*/
-        tvSERIALCODE.setText(assets.getSERIALCODE() + "");
-        /*资产名称*/
-        tvASSETSNAME.setText(assets.getASSETSNAME() + "");
-        /*规格*/
-        tvASSETSMODEL.setText(assets.getASSETSMODEL() + "");
-        /*型号*/
-        tvASSETSSTANDARD.setText(assets.getASSETSSTANDARD() + "");
-        /*取得日期*/
-        tvASSETSUSEDATE.setText(assets.getASSETSUSEDATE() + "");
-        /*保修截止日期*/
-        tvASSETSENDUSEDATE.setText(assets.getASSETSENDUSEDATE() + "");
-        /*预计使用月份*/
-        tvYEARCOUNT.setText(assets.getYEARCOUNT() + "");
-        /*使用状况*/
-        tvUSESTATE.setText(DictionaryHelper.getDictionaryName(assets.getUSESTATE(), syzkArray));
-        /*折旧状态*/
-        tvDPRECIATIONTYPE.setText(DictionaryHelper.getDictionaryName(assets.getDPRECIATIONTYPE(), zjztArray));
-        /*存放地点*/
-        tvASSETSLAYADD.setText(assets.getASSETSLAYADD() + "");
-        /*资产位置*/
-        tvGROUNDSETPOS.setText(assets.getGROUNDSETPOS() + "");
-        /*使用人*/
-        tvASSETSUSER.setText(assets.getASSETSUSER() + "");
-        /*使用部门*/
-        tvASSETSDEPT.setText(assets.getASSETSDEPT() + "");
-        /*所属处室*/
-        tvDEPARTMENT.setText(assets.getDEPARTMENT() + "");
-        /*是否公物仓*/
-        tvISGWC.setText("02".equals(assets.getISGWC()) ? "否" : "是");
-        /*卡片金额-原值，设为空值*/
-        tvKPJE.setText(assets.getKPJE() + "");
-        /*累计折旧*/
-        tvDPRECIATIONADD.setText(assets.getDPRECIATIONADD() + "");
-        /*资产原值*/
-        tvASSETSCURRPRICE.setText(assets.getASSETSCURRPRICE() + "");
-        /*当前累计折旧*/
-        tvCURRDPRECIATIONADD.setText(assets.getCURRDPRECIATIONADD() + "");
-        /*净值*/
-        tvLEFTPRICE.setText(assets.getLEFTPRICE() + "");
-        /*管理部门*/
-        tvGROUNDMANAGEDEPT.setText(AccountHelper.getDanweiName(application.getLoginAccount().getZTBH(), assets.getGROUNDMANAGEDEPT()));
-        /*文物等级*/
-        tvASSETSCULGRADE.setText(DictionaryHelper.getDictionaryName(assets.getASSETSCULGRADE(), wwdjArray));
-        /*车辆产地*/
-        tvASSETSPRODAREA.setText(assets.getASSETSPRODAREA() + "");
-        /*车牌号*/
-        tvVEHICLENO.setText(assets.getVEHICLENO() + "");
-        /*发证时间*/
-        tvASSETSDISPENSEDATE.setText(assets.getASSETSDISPENSEDATE() + "");
-        /*权属所有人*/
-        tvASSETSMANAGER.setText(assets.getASSETSMANAGER() + "");
-        /*厂牌型号*/
-        tvASSETSFACTORYNO.setText(assets.getASSETSFACTORYNO() + "");
-        /*排气量*/
-        tvVEHEXH.setText(assets.getVEHEXH() + "");
-        /*行驶里程*/
-        tvLONGMILES.setText(assets.getLONGMILES() + "");
-        /*分类用途*/
-        tvVEHPURPOSE.setText(DictionaryHelper.getDictionaryName(assets.getVEHPURPOSE(), flytArray));//DictionaryHelper.getDictionaryName(
-        /*编制情况*/
-        tvASSETSORGANIZATION.setText(DictionaryHelper.getDictionaryName(assets.getASSETSORGANIZATION(), bzqkArray));
-        /*数量*/
-        tvASSETSNUM.setText(assets.getASSETSNUM() + "");
-        /*录入人*/
-        tvASSETSWRITER.setText(AccountHelper.getUserName(assets.getASSETSWRITER()));
-        /*录入日期*/
-        tvASSETSWRITERDATE.setText(assets.getASSETSWRITERDATE() + "");
-        /*采购组织形式*/
-        tvPURCHASINGORGANIZATION.setText(DictionaryHelper.getDictionaryName(assets.getPURCHASINGORGANIZATION(), cgzzxsArray));
-        /*品牌*/
-        tvBRAND.setText(assets.getBRAND() + "");
-        /*盘点状态（ZT）：02已盘，其余(含空)未盘*/
-        tvZT.setText(ztName(assets.getZT()));
-        /*盘点情况（PDZT）：01待盘点 02盘实 03盘盈 04待核实*/
-        tvPDZT.setText(pdztName(assets.getPDZT()));
-        /*是否财政资产*/
-        tvISCZ.setText("02".equals(assets.getISCZ()) ? "是" : "否");
+    private void renderAssetDetail() {
+        layoutSections.removeAllViews();
+        statusValueViews.clear();
+        for (SectionSpec section : buildSections()) {
+            LinearLayout sectionView = (LinearLayout) getLayoutInflater()
+                    .inflate(R.layout.item_assets_detail_section, layoutSections, false);
+            TextView tvSectionTitle = (TextView) sectionView.findViewById(R.id.tvSectionTitle);
+            LinearLayout rowsLayout = (LinearLayout) sectionView.findViewById(R.id.layoutRows);
+            tvSectionTitle.setText(section.title);
 
-        /**11-25添加10个字段**/
-        editXLH.setText(assets.getASSETSSERIALNUMBER() + "");
-        editSCCJ.setText(assets.getASSETSSUPPLIER() + "");
-        editVENDOR.setText(assets.getVENDOR() + "");
-        editCCBH.setText(assets.getFACTORYNO() + "");
-        tvFACTORYDATE.setText(assets.getFACTORYDATE() + "");
-        editGLBH.setText(assets.getMANAGENO() + "");
-        tvSPECIALDEVICE.setText(DictionaryHelper.getDictionaryName(assets.getSPECIALDEVICE(), specialDeviceFields));
-        tvDEVICECODE.setText(assets.getDEVICECODE() + "");
-        tvSPECIALFACTORYNO.setText(assets.getSPECIALFACTORYNO() + "");
-        tvCERTIFICATENUMBER.setText(assets.getCERTIFICATENUMBER() + "");
-        editCANSHU.setText(assets.getPARAMETERS() + "");
-        editSYZQ.setText(assets.getTRACEABILITY() + "");
-        editSYFS.setText(DictionaryHelper.getDictionaryName(assets.getTRACEABILITYPE(), syfsArray));
-        editJDJZRQ.setText(assets.getCALIBRATIONDATE() + "");
-        editYXQZ.setText(assets.getVALIDDATE() + "");
-        editSSXM.setText(assets.getPROBELONG() + "");
-        editPRINTNO.setText(assets.getPRINTNO() + "");
-        editPRO.setText(assets.getPRO() + "");
-        editACCOUNTBOOK.setText(DictionaryHelper.getDictionaryName(assets.getACCOUNTBOOK(), accountBookFields));
-        editDOWNINFO.setText(DictionaryHelper.getDictionaryName(assets.getDOWNINFO(), downInfoFields));
-        editSUMCOMPLETEMONTH.setText(assets.getSUMCOMPLETEMONTH() + "");
-        editCOMPLETEMONTH.setText(assets.getCOMPLETEMONTH() + "");
-        editMONDEPREVALUE.setText(assets.getMONDEPREVALUE() + "");
-        editDEVICETYPE.setText(DictionaryHelper.getDictionaryName(assets.getDEVICETYPE(), deviceTypeFields));
-        /**  210219添加2个字段 **/
-        editIsSueDate.setText(assets.getISSUEDATE() + "");
-        editClassification.setText(DictionaryHelper.getDictionaryName(assets.getCLASSIFICATION(), classifications));
+            for (FieldSpec field : section.fields) {
+                String value = StringUtils.trim(field.provider.value());
+                // 空值默认不展示，保持页面简洁；状态类字段固定展示
+                if (StringUtils.isNullOrEmpty(value) && !field.alwaysShow) {
+                    continue;
+                }
+                View row = getLayoutInflater().inflate(R.layout.item_assets_detail_row, rowsLayout, false);
+                TextView tvLabel = (TextView) row.findViewById(R.id.tvLabel);
+                TextView tvValue = (TextView) row.findViewById(R.id.tvValue);
+                tvLabel.setText(field.label);
+                tvValue.setText(StringUtils.isNullOrEmpty(value) ? "-" : value);
+                if (field.key != null) {
+                    statusValueViews.put(field.key, tvValue);
+                }
+                rowsLayout.addView(row);
+            }
 
-        // 财务记账时间, 凭证号
-        editVOUCHERNO.setText(assets.getVOUCHERNO());
-
-        editDWCODE.setText(assets.getDWCODE());
-        editSAMPLDATE.setText(assets.getSAMPLDATE());
-        editSAMPLCODE.setText(assets.getSAMPLCODE());
-        editMONITORPRO.setText(assets.getMONITORPRO());
-        editSAVEMETHOD.setText(assets.getSAVEMETHOD());
-        editSAMPLESTATE.setText(DictionaryHelper.getDictionaryName(assets.getSAMPLESTATE(), sampleStateFields));
-        editSAMPLEUSER.setText(assets.getSAMPLEUSER());
-
-        editCONCENTRATION.setText(assets.getCONCENTRATION());
-        editPREPARER.setText(assets.getPREPARER());
-        editMEDIA.setText(assets.getMEDIA());
-        editSTORAGENEED.setText(assets.getSTORAGENEED());
-
-
-        editBOOKKEEPINGTIME.setText(assets.getBOOKKEEPINGTIME());
-
-        editHARDID.setText(assets.getHARDID());
-        editIP.setText(assets.getIP());
-        editMAC.setText(assets.getMAC());
-        editINTERNETID.setText(assets.getINTERNETID());
-        editPORT.setText(assets.getPORT());
-        editPURPOSE.setText(assets.getPURPOSE());
-        editHARDSN.setText(assets.getHARDSN());
-        editNETTYPE.setText(assets.getNETTYPE());
-        editOS.setText(assets.getOS());
-        editINSTALLDATE.setText(assets.getINSTALLDATE());
-
-        // 同步情况
-        String isUpload = assets.getISUPLOAD();
-        String isuploadStr = "已同步";
-        if("02".equals(isUpload)){
-            isuploadStr = "未同步";
+            // 分组内没有任何字段时不展示整张卡片
+            if (rowsLayout.getChildCount() == 0) {
+                continue;
+            }
+            // 最后一行不画分割线
+            rowsLayout.getChildAt(rowsLayout.getChildCount() - 1)
+                    .findViewById(R.id.viewDivider).setVisibility(View.GONE);
+            layoutSections.addView(sectionView);
         }
-        editISUPLOAD.setText(isuploadStr);
     }
 
+    /**
+     * 详情字段配置：新增字段只需在对应分组中加一行，不需要改布局和绑定
+     */
+    private List<SectionSpec> buildSections() {
+        List<SectionSpec> sections = new ArrayList<>();
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQESTCODE_WAITINGBLUETOOTH) {
-                printAssets(tvACCTSUITEID.getText().toString(), assets);
+        sections.add(section("基本信息",
+                field("资产名称", () -> assets.getASSETSNAME()),
+                field("资产编号", () -> assets.getSERIALCODE()),
+                field("条码编号", () -> assets.getBARCODEID()),
+                field("资产类别", () -> AssetsCategoryHelper.getAssetsCategoryTitle(assets.getASSETSTYPE())),
+                field("资产分类代码", () -> {
+                    AssetsCategory category = AssetsCategoryHelper.getAssetsCategory(assets.getASSETSSORTCODE());
+                    return category == null ? "" : category.getNAME();
+                }),
+                field("规格", () -> assets.getASSETSMODEL()),
+                field("型号", () -> assets.getASSETSSTANDARD()),
+                field("计量单位", () -> assets.getASSETSMEASURE()),
+                field("数量", () -> String.valueOf(assets.getASSETSNUM())),
+                field("卡片序号", () -> assets.getSERIALNUM()),
+                field("取得方式", () -> DictionaryHelper.getDictionaryName(assets.getGETMODE(), qdfsArray)),
+                field("取得日期", () -> assets.getASSETSUSEDATE()),
+                field("保修截止日期", () -> assets.getASSETSENDUSEDATE()),
+                field("预计使用月份", () -> assets.getYEARCOUNT()),
+                field("DOCID", () -> assets.getDOCID()),
+                field("CardID", () -> assets.getCARDID())
+        ));
+
+        sections.add(section("使用信息",
+                field("管理人", () -> assets.getCUSTODIAN()),
+                field("使用人", () -> assets.getASSETSUSER()),
+                field("使用部门", () -> assets.getASSETSDEPT()),
+                field("所属处室", () -> assets.getDEPARTMENT()),
+                field("管理部门", this::managedDeptName),
+                field("权属所有人", () -> assets.getASSETSMANAGER()),
+                field("管理编号", () -> assets.getMANAGENO()),
+                field("使用状况", () -> DictionaryHelper.getDictionaryName(assets.getUSESTATE(), syzkArray)),
+                field("存放地点", () -> assets.getASSETSLAYADD()),
+                field("资产位置", () -> assets.getGROUNDSETPOS()),
+                field("产权单位", () -> assets.getPROPERTY()),
+                field("是否公物仓", () -> "02".equals(assets.getISGWC()) ? "否" : "是"),
+                field("备注", () -> assets.getREMARKS())
+        ));
+
+        sections.add(section("财务信息",
+                field("资产原值", () -> assets.getASSETSCURRPRICE()),
+                field("当前累计折旧", () -> assets.getCURRDPRECIATIONADD()),
+                field("净值", () -> assets.getLEFTPRICE()),
+                field("累计折旧", () -> assets.getDPRECIATIONADD()),
+                field("卡片金额", () -> assets.getKPJE()),
+                field("折旧状态", () -> DictionaryHelper.getDictionaryName(assets.getDPRECIATIONTYPE(), zjztArray)),
+                field("使用年限", () -> assets.getSUMCOMPLETEMONTH()),
+                field("已计提折旧月数", () -> assets.getCOMPLETEMONTH()),
+                field("月折旧额", () -> assets.getMONDEPREVALUE()),
+                field("是否财政资产", () -> "02".equals(assets.getISCZ()) ? "是" : "否")
+        ));
+
+        sections.add(section("扩展信息",
+                field("品牌", () -> assets.getBRAND()),
+                field("采购组织形式", () -> DictionaryHelper.getDictionaryName(assets.getPURCHASINGORGANIZATION(), cgzzxsArray)),
+                field("文物等级", () -> DictionaryHelper.getDictionaryName(assets.getASSETSCULGRADE(), wwdjArray)),
+                field("设备分类", () -> DictionaryHelper.getDictionaryName(assets.getDEVICETYPE(), deviceTypeFields)),
+                field("序列号", () -> assets.getASSETSSERIALNUMBER()),
+                field("生产厂家", () -> assets.getASSETSSUPPLIER()),
+                field("供货商", () -> assets.getVENDOR()),
+                field("出厂编号", () -> assets.getFACTORYNO()),
+                field("出厂日期", () -> assets.getFACTORYDATE()),
+                field("项目名称", () -> assets.getPRO()),
+                field("会计账簿", () -> DictionaryHelper.getDictionaryName(assets.getACCOUNTBOOK(), accountBookFields)),
+                field("下发情况", () -> DictionaryHelper.getDictionaryName(assets.getDOWNINFO(), downInfoFields)),
+                field("凭证号", () -> assets.getVOUCHERNO()),
+                field("财务记账日期", () -> assets.getBOOKKEEPINGTIME()),
+                field("入账单号", () -> assets.getPRINTNO()),
+                field("点位编码", () -> assets.getDWCODE()),
+                field("密级", () -> DictionaryHelper.getDictionaryName(assets.getCLASSIFICATION(), classifications)),
+                field("配发日期", () -> assets.getISSUEDATE())
+        ));
+
+        sections.add(section("车辆信息",
+                field("车牌号", () -> assets.getVEHICLENO()),
+                field("车辆产地", () -> assets.getASSETSPRODAREA()),
+                field("厂牌型号", () -> assets.getASSETSFACTORYNO()),
+                field("发动机号", () -> assets.getFDJH()),
+                field("车架号", () -> assets.getCJHM()),
+                field("排气量", () -> assets.getVEHEXH()),
+                field("行驶里程", () -> assets.getLONGMILES()),
+                field("分类用途", () -> DictionaryHelper.getDictionaryName(assets.getVEHPURPOSE(), flytArray)),
+                field("发证时间", () -> assets.getASSETSDISPENSEDATE()),
+                field("编制情况", () -> DictionaryHelper.getDictionaryName(assets.getASSETSORGANIZATION(), bzqkArray))
+        ));
+
+        sections.add(section("特种设备",
+                field("是否特种设备", () -> DictionaryHelper.getDictionaryName(assets.getSPECIALDEVICE(), specialDeviceFields)),
+                field("设备注册代码", () -> assets.getDEVICECODE()),
+                field("特种设备出厂编号", () -> assets.getSPECIALFACTORYNO()),
+                field("使用登记证编号", () -> assets.getCERTIFICATENUMBER()),
+                field("是否国产设备", () -> DictionaryHelper.getDictionaryName(assets.getMADEINCHINA(), madeInChinaFields)),
+                field("参数", () -> assets.getPARAMETERS()),
+                field("溯源周期", () -> assets.getTRACEABILITY()),
+                field("溯源方式", () -> DictionaryHelper.getDictionaryName(assets.getTRACEABILITYPE(), syfsArray)),
+                field("检定校准日期", () -> assets.getCALIBRATIONDATE()),
+                field("有效期至", () -> assets.getVALIDDATE()),
+                field("所属项目", () -> assets.getPROBELONG())
+        ));
+
+        sections.add(section("样品信息",
+                field("采样日期", () -> assets.getSAMPLDATE()),
+                field("样品编码", () -> assets.getSAMPLCODE()),
+                field("监测项目", () -> assets.getMONITORPRO()),
+                field("保存方法", () -> assets.getSAVEMETHOD()),
+                field("样品状态", () -> DictionaryHelper.getDictionaryName(assets.getSAMPLESTATE(), sampleStateFields)),
+                field("采样人员", () -> assets.getSAMPLEUSER()),
+                field("配置浓度", () -> assets.getCONCENTRATION()),
+                field("配置人", () -> assets.getPREPARER()),
+                field("介质", () -> assets.getMEDIA()),
+                field("贮存条件", () -> assets.getSTORAGENEED())
+        ));
+
+        sections.add(section("网络设备",
+                field("硬盘号", () -> assets.getHARDID()),
+                field("IP地址", () -> assets.getIP()),
+                field("MAC地址", () -> assets.getMAC()),
+                field("入网账号", () -> assets.getINTERNETID()),
+                field("端口号", () -> assets.getPORT()),
+                field("设备用途", () -> assets.getPURPOSE()),
+                field("硬盘序列号", () -> assets.getHARDSN()),
+                field("网络类型", () -> assets.getNETTYPE()),
+                field("操作系统", () -> assets.getOS()),
+                field("安装时间", () -> assets.getINSTALLDATE())
+        ));
+
+        sections.add(section("系统信息",
+                field("账套编号", this::accountName),
+                field("录入人", () -> AccountHelper.getUserName(assets.getASSETSWRITER())),
+                field("录入日期", () -> assets.getASSETSWRITERDATE()),
+                statusField("是否同步", STATUS_KEY_ISUPLOAD, this::syncStateName),
+                statusField("盘点状态", STATUS_KEY_ZT, () -> ztName(assets.getZT())),
+                field("盘点情况", () -> pdztName(assets.getPDZT())),
+                statusField("打印状态", STATUS_KEY_PRINT, this::printStateName)
+        ));
+
+        return sections;
+    }
+
+    /**
+     * 打印后刷新同步与打印状态：重新读取数据库，避免打印页修改的数据在本页内存中未更新
+     */
+    private void refreshUploadAndPrintState() {
+        Assets latest = Assets.findById(Assets.class, assets.getId());
+        if (latest != null) {
+            assets = latest;
+        }
+        TextView uploadView = statusValueViews.get(STATUS_KEY_ISUPLOAD);
+        if (uploadView != null) {
+            uploadView.setText(syncStateName());
+        }
+        TextView printView = statusValueViews.get(STATUS_KEY_PRINT);
+        if (printView != null) {
+            printView.setText(printStateName());
+        }
+    }
+
+    /** 同步状态文案 */
+    private String syncStateName() {
+        return Const.NOT_UPLOAD.equals(assets.getISUPLOAD()) ? "未同步" : "已同步";
+    }
+
+    /** 打印状态文案：空值按未打印显示 */
+    private String printStateName() {
+        String printStateCode = StringUtils.trim(assets.getISPRINTBARCODE());
+        if (StringUtils.isNullOrEmpty(printStateCode)) {
+            printStateCode = Const.NOT_PRINT;
+        }
+        return DictionaryHelper.getDictionaryName(printStateCode, printStateFields);
+    }
+
+    /** 账套名称 */
+    private String accountName() {
+        Accounts account = AccountHelper.getACCTSUITEID(assets.getACCTSUITEID());
+        return account == null ? "" : account.getZTMC();
+    }
+
+    /**
+     * 管理部门名称：历史数据存在部门编号 BMBH、单位编号 DWBH、中文名称三种取值，
+     * 按业务口径优先按部门编号 BMBH 反查部门名称，再兼容单位编号 DWBH 反查单位名称，
+     * 都查不到时原样展示
+     */
+    private String managedDeptName() {
+        String raw = assets.getGROUNDMANAGEDEPT();
+        if (StringUtils.isNullOrEmpty(raw)) {
+            return "";
+        }
+        String name = AccountHelper.getDepartName(raw);
+        if (!StringUtils.isNullOrEmpty(name)) {
+            return name;
+        }
+        if (loginAccount != null) {
+            name = AccountHelper.getDanweiName(loginAccount.getZTBH(), raw);
+            if (!StringUtils.isNullOrEmpty(name)) {
+                return name;
             }
         }
+        return raw;
+    }
+
+    /**
+     * 盘点情况字典：01待盘点 02盘实 03盘盈 04待核实
+     */
+    private String pdztName(String pdzt) {
+        return DictionaryHelper.getDictionaryName(pdzt, pdztFields);
+    }
+
+    /**
+     * 盘点状态字典：02已盘，空值或非法值按字典第一项（未盘）显示
+     */
+    private String ztName(String zt) {
+        String name = DictionaryHelper.getDictionaryName(zt, ztFields);
+        return StringUtils.isNullOrEmpty(name) ? ztFields[0] : name;
     }
 
     private void showBottomSheet() {
@@ -624,114 +397,122 @@ public class AssetsViewActivity extends PrintCompatActivity {
                 .addItem("盘盈")
                 .addItem("盘亏")
                 .addItem("复制")
-                .setOnSheetItemClickListener(new QMUIBottomSheet.BottomListSheetBuilder.OnSheetItemClickListener() {
-                    @Override
-                    public void onClick(QMUIBottomSheet dialog, View itemView, int position, String tag) {
-                        switch (position) {
-                            case 0:
-                                // 打印条码处理
-                                if (!isPrinterConnected()) {
-                                    Intent intentBluetooth = new Intent(mContext, BluetoothDeviceActivity.class);
-                                    startActivityForResult(intentBluetooth, REQESTCODE_WAITINGBLUETOOTH);
-                                    return;
-                                }
-                                printAssets(tvACCTSUITEID.getText().toString(), assets);
-                                break;
-                            case 1:
-                                Intent intentEdit = new Intent(mContext, EditAssetsActivity.class);
-                                intentEdit.putExtra(SysDefine.IntentExtra_AssetsID, assets.getId());
-                                startActivity(intentEdit);
-                                AssetsViewActivity.this.finish();
-                                break;
-                            case 2:
-                                new QMUIDialog.MessageDialogBuilder(mContext)
-                                        .setTitle("系统提示")
-                                        .setMessage("确定要删除吗？")
-                                        .addAction("取消", new QMUIDialogAction.ActionListener() {
-                                            @Override
-                                            public void onClick(QMUIDialog dialog, int index) {
-                                                dialog.dismiss();
-                                            }
-                                        })
-                                        .addAction(0, "删除", QMUIDialogAction.ACTION_PROP_NEGATIVE, new QMUIDialogAction.ActionListener() {
-                                            @Override
-                                            public void onClick(QMUIDialog dialog, int index) {
-                                                /*showShortText("禁止删除");
-                                                dialog.dismiss();*/
-                                                assets.setREMARKS("待删除");
-                                                assets.setISUPLOAD("02");
-                                                assets.save();
-                                                AssetsUtils.uploadAssets(assets, mContext);
-                                                showShortText("删除请求已提交");
-                                                dialog.dismiss();
-                                                AssetsViewActivity.this.finish();
-                                            }
-                                        })
-                                        .create(mCurrentDialogStyle).show();
-                                break;
-                            case 3:
-                                Intent intentPhoto = new Intent(mContext, PhotoActivity.class);
-                                intentPhoto.putExtra(SysDefine.IntentExtra_AssetsID, assets.getId());
-                                startActivity(intentPhoto);
-                                AssetsViewActivity.this.finish();
-                                break;
-                            case 4:
-                                assets.setREMARKS("盘实");
-                                assets.setISUPLOAD("02");
-                                assets.setZT("02");
-                                assets.save();
-                                break;
-                            case 5:
-                                assets.setREMARKS("盘盈");
-                                assets.setISUPLOAD("02");
-                                assets.setZT("03");
-                                assets.save();
-                                break;
-                            case 6:
-                                assets.setREMARKS("盘亏");
-                                assets.setISUPLOAD("02");
-                                assets.setZT("04");
-                                assets.save();
-                                break;
-                            case 7:
-                                Intent intentCreate = new Intent(mContext, NewAssetsActivity.class);
-                                intentCreate.putExtra(SysDefine.IntentExtra_AssetsView, AssetsUtils.cloneAssets(assets));
-                                startActivity(intentCreate);
-                                AssetsViewActivity.this.finish();
-                                break;
-                            default:
-                                break;
-                        }
-                        dialog.dismiss();
+                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
+                    switch (position) {
+                        case 0:
+                            // 打印条码处理：品牌分发、连接检查、连接后续打统一由基类处理
+                            requestPrintAssets(accountName(), assets, () -> {
+                                // 打印后标记已打印，并刷新同步情况与打印状态显示
+                                markBarcodePrinted(assets);
+                                refreshUploadAndPrintState();
+                            });
+                            break;
+                        case 1:
+                            Intent intentEdit = new Intent(mContext, EditAssetsActivity.class);
+                            intentEdit.putExtra(SysDefine.IntentExtra_AssetsID, assets.getId());
+                            startActivity(intentEdit);
+                            finish();
+                            break;
+                        case 2:
+                            new QMUIDialog.MessageDialogBuilder(mContext)
+                                    .setTitle("系统提示")
+                                    .setMessage("确定要删除吗？")
+                                    .addAction("取消", (dialog12, index) -> dialog12.dismiss())
+                                    .addAction(0, "删除", QMUIDialogAction.ACTION_PROP_NEGATIVE, (dialog12, index) -> {
+                                        assets.setREMARKS("待删除");
+                                        assets.setISUPLOAD(Const.NOT_UPLOAD);
+                                        assets.save();
+                                        AssetsUtils.uploadAssets(assets, mContext);
+                                        showShortText("删除请求已提交");
+                                        dialog12.dismiss();
+                                        finish();
+                                    })
+                                    .create(mCurrentDialogStyle).show();
+                            break;
+                        case 3:
+                            Intent intentPhoto = new Intent(mContext, PhotoActivity.class);
+                            intentPhoto.putExtra(SysDefine.IntentExtra_AssetsID, assets.getId());
+                            startActivity(intentPhoto);
+                            finish();
+                            break;
+                        case 4:
+                            assets.setREMARKS("盘实");
+                            assets.setISUPLOAD(Const.NOT_UPLOAD);
+                            assets.setZT("02");
+                            assets.save();
+                            renderAssetDetail();
+                            break;
+                        case 5:
+                            assets.setREMARKS("盘盈");
+                            assets.setISUPLOAD(Const.NOT_UPLOAD);
+                            assets.setZT("03");
+                            assets.save();
+                            renderAssetDetail();
+                            break;
+                        case 6:
+                            assets.setREMARKS("盘亏");
+                            assets.setISUPLOAD(Const.NOT_UPLOAD);
+                            assets.setZT("04");
+                            assets.save();
+                            renderAssetDetail();
+                            break;
+                        case 7:
+                            Intent intentCreate = new Intent(mContext, NewAssetsActivity.class);
+                            intentCreate.putExtra(SysDefine.IntentExtra_AssetsView, AssetsUtils.cloneAssets(assets));
+                            startActivity(intentCreate);
+                            finish();
+                            break;
+                        default:
+                            break;
                     }
+                    dialog.dismiss();
                 })
                 .build().show();
     }
 
-    /**
-     * 盘点情况名称：01待盘点 02盘实 03盘盈 04待核实
-     */
-    private static String pdztName(String pdzt) {
-        if ("01".equals(pdzt)) {
-            return "待盘点";
+    private static SectionSpec section(String title, FieldSpec... fields) {
+        SectionSpec spec = new SectionSpec();
+        spec.title = title;
+        spec.fields = new ArrayList<>();
+        for (FieldSpec field : fields) {
+            spec.fields.add(field);
         }
-        if ("02".equals(pdzt)) {
-            return "盘实";
-        }
-        if ("03".equals(pdzt)) {
-            return "盘盈";
-        }
-        if ("04".equals(pdzt)) {
-            return "待核实";
-        }
-        return "";
+        return spec;
     }
 
-    /**
-     * 盘点状态名称：02已盘，其余(含空)未盘
-     */
-    private static String ztName(String zt) {
-        return "02".equals(zt) ? "已盘" : "未盘";
+    private static FieldSpec field(String label, ValueProvider provider) {
+        return new FieldSpec(label, provider, null, false);
     }
 
+    private static FieldSpec statusField(String label, String key, ValueProvider provider) {
+        return new FieldSpec(label, provider, key, true);
+    }
+
+    /** 字段取值接口：避免使用 java.util.function（minSdk 23 兼容） */
+    private interface ValueProvider {
+        String value();
+    }
+
+    /** 分组配置 */
+    private static class SectionSpec {
+        String title;
+        List<FieldSpec> fields;
+    }
+
+    /** 字段配置 */
+    private static class FieldSpec {
+        final String label;
+        final ValueProvider provider;
+        /** 状态字段Key，非状态字段为null */
+        final String key;
+        /** true：空值也展示（状态类字段） */
+        final boolean alwaysShow;
+
+        FieldSpec(String label, ValueProvider provider, String key, boolean alwaysShow) {
+            this.label = label;
+            this.provider = provider;
+            this.key = key;
+            this.alwaysShow = alwaysShow;
+        }
+    }
 }

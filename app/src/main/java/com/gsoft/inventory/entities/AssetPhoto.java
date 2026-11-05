@@ -5,6 +5,37 @@ import com.orm.SugarRecord;
 import java.io.Serializable;
 
 public class AssetPhoto extends SugarRecord implements Serializable {
+    /**
+     * 对应资产的编号
+     */
+    private String code;
+    /**
+     * 照片名称
+     */
+    private String name;
+    /**
+     * 照片上传状态
+     */
+    private String status;
+    /**
+     * 对应资产的docId
+     */
+    private String doc;
+    /**
+     * 对应资产的用户id
+     */
+    private String user;
+
+    /**
+     * 路径地址
+     */
+    private String path;
+
+    /**
+     * 照片所属账套编号：拍照时写入，迁移/归位时优先使用，避免切换账套后归属错误
+     */
+    private String acctsuiteId;
+
     public String getCode() {
         return code;
     }
@@ -29,9 +60,6 @@ public class AssetPhoto extends SugarRecord implements Serializable {
         this.status = status;
     }
 
-    private String code;
-    private String name;
-    private String status;
 
     public String getUser() {
         return user;
@@ -41,7 +69,6 @@ public class AssetPhoto extends SugarRecord implements Serializable {
         this.user = user;
     }
 
-    private String user;
 
     public String getDoc() {
         return doc;
@@ -51,8 +78,14 @@ public class AssetPhoto extends SugarRecord implements Serializable {
         this.doc = doc;
     }
 
-    private String doc;
 
+    public String getAcctsuiteId() {
+        return acctsuiteId;
+    }
+
+    public void setAcctsuiteId(String acctsuiteId) {
+        this.acctsuiteId = acctsuiteId;
+    }
     public String getPath() {
         return path;
     }
@@ -61,5 +94,4 @@ public class AssetPhoto extends SugarRecord implements Serializable {
         this.path = path;
     }
 
-    private String path;
 }

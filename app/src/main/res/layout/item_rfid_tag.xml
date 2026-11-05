@@ -2,126 +2,161 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
     android:background="@drawable/bg_card_white"
     android:orientation="vertical"
-    android:padding="14dp">
+    android:padding="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvTagName"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="资产名称"
-            android:textColor="#333333"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvTagRssi"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTagName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="资产名称"
+                    android:textColor="#333333"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTagRssi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#9E9E9E"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvTagBarcode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="条码编号："
+                android:textColor="#666666"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvTagManageDept"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="管理部门："
+                android:textColor="#666666"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvTagLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="存放地点："
+                android:textColor="#666666"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTagZt"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="盘点状态："
+                    android:textColor="#666666"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvTagPdzt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="盘点情况："
+                    android:textColor="#666666"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
+            android:layout_marginStart="8dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/btnTagModify"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:minWidth="72dp"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/bg_rounded_button"
+                android:text="修改"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp" />
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/btnTagChange"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginTop="6dp"
+                android:minWidth="72dp"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/bg_rounded_button_red"
+                android:text="一键变更"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <!-- 变更地点：空白地点（临时）模式下手动输入存放地点 -->
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/btnTagManualLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginTop="6dp"
+                android:minWidth="72dp"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@drawable/bg_rounded_button"
+                android:text="变更地点"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvTagBarcode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="条码编号："
-        android:textColor="#666666"
-        android:textSize="13sp" />
-
-    <TextView
-        android:id="@+id/tvTagManageDept"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="管理部门："
-        android:textColor="#666666"
-        android:textSize="13sp" />
-
-    <TextView
-        android:id="@+id/tvTagLocation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="存放地点："
-        android:textColor="#666666"
-        android:textSize="13sp" />
-
-    <TextView
-        android:id="@+id/tvTagZt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="盘点状态："
-        android:textColor="#666666"
-        android:textSize="13sp" />
-
-    <TextView
-        android:id="@+id/tvTagPdzt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="盘点情况："
-        android:textColor="#666666"
-        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/tvTagHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="4dp"
         android:text=""
         android:textColor="@color/inventory_count_red"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:visibility="gone" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="end"
-        android:orientation="horizontal">
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-            android:id="@+id/btnTagModify"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:minWidth="96dp"
-            android:minHeight="0dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:background="@drawable/bg_rounded_button"
-            android:text="修改"
-            android:textColor="@color/colorWhite"
-            android:textSize="14sp" />
-
-        <com.qmuiteam.qmui.layout.QMUIButton
-            android:id="@+id/btnTagChange"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:layout_marginStart="12dp"
-            android:minWidth="96dp"
-            android:minHeight="0dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:background="@drawable/bg_rounded_button_red"
-            android:text="一键变更"
-            android:textColor="@color/colorWhite"
-            android:textSize="14sp"
-            android:visibility="gone" />
-    </LinearLayout>
 </LinearLayout>

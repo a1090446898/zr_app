@@ -2,6 +2,7 @@ package com.gsoft.inventory.service.main;
 
 import com.google.gson.reflect.TypeToken;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 
 import java.util.List;
 import java.util.concurrent.Callable;

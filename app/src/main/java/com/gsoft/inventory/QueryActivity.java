@@ -2,7 +2,6 @@ package com.gsoft.inventory;
 
 import android.os.AsyncTask;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,7 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.gsoft.inventory.adapter.AssetsListAdapter;
-import com.gsoft.inventory.utils.Assets;
+import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.SysConfig;
 import com.qmuiteam.qmui.widget.QMUITopBar;
@@ -81,8 +80,8 @@ public class QueryActivity extends BaseCompatActivity {
 
         tv_assets_msg.setText("当前共有资产：" + Assets.count(Assets.class) + "条");
 
-
-        //icon_right.setBounds(0, 0, 60, 60);//必须设置图片的大小否则没有作用
+        //必须设置图片的大小否则没有作用
+        //icon_right.setBounds(0, 0, 60, 60);
 
         mHead = (RelativeLayout) findViewById(R.id.head);
         mHead.setFocusable(true);

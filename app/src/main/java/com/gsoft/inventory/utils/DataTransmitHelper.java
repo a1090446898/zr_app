@@ -4,11 +4,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.entities.AssetDispose;
 import com.gsoft.inventory.entities.DisposeAsset;
 import com.gsoft.inventory.entities.JCPrinter;
 import com.gsoft.inventory.entities.SignaturePerson;
 import com.gsoft.inventory.entities.ZCQCY;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -44,10 +48,10 @@ public class DataTransmitHelper {
     }
 
     public static void onExportAssetsOver() {
-        Iterator<Assets> assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "02");
+        Iterator<Assets> assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", Const.NOT_UPLOAD);
         while (assetsIterator.hasNext()) {
             Assets assets = assetsIterator.next();
-            assets.setISUPLOAD("01");
+            assets.setISUPLOAD(Const.UPLOADED);
             assets.save();
         }
     }
@@ -81,7 +85,7 @@ public class DataTransmitHelper {
     public static String exportAssets(String saveFilePath, boolean isAll) {
         Iterator<Assets> assetsIterator = null;
         if (isAll) assetsIterator = Assets.findAll(Assets.class);
-        else assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", "02");
+        else assetsIterator = Assets.findAsIterator(Assets.class, "ISUPLOAD=?", Const.NOT_UPLOAD);
         return exportAssets(assetsIterator, saveFilePath);
     }
 
@@ -367,6 +371,9 @@ public class DataTransmitHelper {
         assets.setDEVICECODE(safeGet(rowStrArray, 103));
         assets.setSPECIALFACTORYNO(safeGet(rowStrArray, 104));
         assets.setCERTIFICATENUMBER(safeGet(rowStrArray, 105));
+        assets.setISPRINTBARCODE(safeGet(rowStrArray, 106));
+        /*是否国产设备：01是 02否，默认空；旧文件无此列时safeGet返回空*/
+        assets.setMADEINCHINA(safeGet(rowStrArray, 107));
 
     }
 
@@ -517,6 +524,12 @@ public class DataTransmitHelper {
                 account.setPHONE(rowStrArray[9].trim());
             }catch (Exception e){
                 account.setPHONE("");
+            }
+            /*** 角色*/
+            try{
+                account.setROLE(rowStrArray[10].trim());
+            }catch (Exception e){
+                account.setROLE("");
             }
             newID = account.save();
         }

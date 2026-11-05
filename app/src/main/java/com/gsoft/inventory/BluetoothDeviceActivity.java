@@ -26,11 +26,18 @@ import com.gsoft.inventory.utils.SysDefine;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.pullRefreshLayout.QMUIPullRefreshLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BluetoothDeviceActivity extends PrintCompatActivity {
     private static final int REQUEST_CODE1 = 1001;
     private static final int RESULT_CODE1 = 1002;
+
+    /** Android 12（API 31）起蓝牙扫描/连接为“附近设备”运行时权限；项目 compileSdk=30，
+     *  编译期没有 BLUETOOTH_SCAN/CONNECT 常量与 VERSION_CODES.S，用权限全名字符串规避 */
+    private static final int API_ANDROID_12 = 31;
+    private static final String PERMISSION_BLUETOOTH_SCAN = "android.permission.BLUETOOTH_SCAN";
+    private static final String PERMISSION_BLUETOOTH_CONNECT = "android.permission.BLUETOOTH_CONNECT";
 
     private QMUIPullRefreshLayout mPullRefreshLayout;
     private ListView bt_list;
@@ -77,18 +84,17 @@ public class BluetoothDeviceActivity extends PrintCompatActivity {
                 mPullRefreshLayout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        share.search();
+                        // 下拉刷新同样要守卫权限，否则未授权时搜索直接崩溃
+                        if (hasScanPermissions()) {
+                            share.search();
+                        } else {
+                            requestPermission();
+                        }
                         mPullRefreshLayout.finishRefresh();
                     }
                 }, 200);
             }
         });
-        requestPermission();
-        turnOnBluetooth();
-        /*IntentFilter filter = new IntentFilter(android.bluetooth.BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
-        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(receiver, filter);*/
         bt_list.setOnItemClickListener((parent, view, position, id) -> {
             //share.stopSearch();
             printerAddress = pairedPrinters.get(position);
@@ -155,27 +161,62 @@ public class BluetoothDeviceActivity extends PrintCompatActivity {
 
     //请求权限
     private void requestPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            int check = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
-            if (check != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE1);
-            }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return;
         }
+        if (hasScanPermissions()) {
+            return;
+        }
+        requestPermissions(new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                PERMISSION_BLUETOOTH_SCAN,
+                PERMISSION_BLUETOOTH_CONNECT}, REQUEST_CODE1);
+    }
+
+    /** 蓝牙搜索所需权限：旧系统真正缺的是定位权限（Android 10+ 需精确位置），Android 12+ 还需“附近设备”权限 */
+    private boolean hasScanPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= API_ANDROID_12) {
+            return checkSelfPermission(PERMISSION_BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(PERMISSION_BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+        }
+        return true;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        } else {
-            setResult(RESULT_CODE1);
+        if (requestCode != REQUEST_CODE1) {
+            return;
         }
+        if (!hasScanPermissions()) {
+            showShortText("未授予蓝牙权限，无法搜索/连接打印机");
+            setResult(RESULT_CODE1);
+            return;
+        }
+        // 授权成功：开启蓝牙并立即开始搜索
+        turnOnBluetooth();
+        share.search();
     }
 
     private void turnOnBluetooth() {
-        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivity(intent);
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null) {
+            return;
+        }
+        try {
+            // Android 12+ isEnabled() 同样受 BLUETOOTH_CONNECT 保护，未授权会抛 SecurityException
+            if (!adapter.isEnabled()) {
+                Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivity(intent);
+            }
+        } catch (SecurityException e) {
+            Log.e("Bluetooth", "打开蓝牙失败：" + e.getMessage());
         }
     }
 
@@ -260,12 +301,12 @@ public class BluetoothDeviceActivity extends PrintCompatActivity {
         super.onResume();
         // 注册广播接收器，接收并处理搜索结果
         registerReceiver(receiver, share.getIntentFilter());
-        /**
-         * 设置搜索模式
-         * share.model_default() 获取一般搜索模式字符串, 只有SPP或BLE
-         */
-        //tv_search_model.setText(share.model_default());
-        //btn_search.performClick();
+        // Android 12+ 未授予 BLUETOOTH_SCAN 时 cancelDiscovery/startDiscovery 会抛 SecurityException 崩溃
+        if (!hasScanPermissions()) {
+            requestPermission();
+            return;
+        }
+        turnOnBluetooth();
         share.search();
     }
 

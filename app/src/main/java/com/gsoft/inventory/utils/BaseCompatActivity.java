@@ -15,7 +15,7 @@ import com.gsoft.inventory.InventoryApplication;
 /**
  * @author 10904
  */
-public abstract class BaseCompatActivity extends AppCompatActivity {
+public abstract class BaseCompatActivity extends AppCompatActivity implements SyncAssetsFlow.Callback {
     protected Context mContext;
 
     protected InventoryApplication application;
@@ -37,6 +37,7 @@ public abstract class BaseCompatActivity extends AppCompatActivity {
     public abstract void initializeView();
 
 
+    @Override
     public void showShortText(CharSequence textMessage) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             Toast.makeText(this, textMessage, Toast.LENGTH_SHORT).show();
@@ -50,7 +51,8 @@ public abstract class BaseCompatActivity extends AppCompatActivity {
         }
     }
 
-    protected void showProgressDialog(String title, String message) {
+    @Override
+    public void showProgressDialog(String title, String message) {
 
         if (progressDialog == null) {
             progressDialog = new ProgressDialog(mContext);
@@ -62,9 +64,17 @@ public abstract class BaseCompatActivity extends AppCompatActivity {
         progressDialog.show();
     }
 
-    protected void hideProgressDialog() {
+    @Override
+    public void hideProgressDialog() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+    }
+
+    /**
+     * 资产同步（上传）公共流程：统计本地未同步数量，确认后异步上传（与首页"同步上传"一致）
+     */
+    public void startSyncAssetsTask() {
+        SyncAssetsFlow.startSync(mContext, application.getZcqcyCode(), mainHandler, this);
     }
 }

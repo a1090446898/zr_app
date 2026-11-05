@@ -3,7 +3,7 @@ package com.gsoft.inventory.service.new_assets;
 import android.content.Context;
 import com.gsoft.inventory.const_data.Log_file_name;
 import com.gsoft.inventory.data.CategoryData;
-import com.gsoft.inventory.utils.AssetsCategory;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 import com.gsoft.inventory.utils.AssetsCategoryHelper;
 import com.gsoft.inventory.utils.LogToFile;
 

@@ -1,7 +1,9 @@
 package com.gsoft.inventory.service.login;
 
+import android.util.Log;
 import com.google.gson.reflect.TypeToken;
 import com.gsoft.inventory.utils.*;
+import com.gsoft.inventory.utils.domain.Accounts;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -43,6 +45,7 @@ public class SyncServerAccountsTask implements Callable<String> {
                 }
             }
         } catch (Exception e) {
+            Log.e("LoginError", "SyncServerAccountsTask: ", e);
             stringBuilder.append("登录失败，请联系技术人员\n");
         }
         return stringBuilder.toString();

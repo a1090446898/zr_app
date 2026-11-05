@@ -44,6 +44,12 @@ public class PhotoViewActivity extends BaseCompatActivity {
                 imageList.remove("");
             }
             viewPager.setAdapter(new SamplePagerAdapter(mContext, imageList));
+            // 定位到列表中点击的那张照片：下标越界时回退到第一张
+            int currentIndex = getIntent().getIntExtra(SysDefine.IntentExtra_PHOTOIMAGEINDEX, 0);
+            if (currentIndex < 0 || currentIndex >= imageList.size()) {
+                currentIndex = 0;
+            }
+            viewPager.setCurrentItem(currentIndex, false);
         } else {
             showShortText("暂无照片");
         }
@@ -70,16 +76,8 @@ public class PhotoViewActivity extends BaseCompatActivity {
             PhotoView photoView = new PhotoView(container.getContext());
             String fileUrl = imageArray.get(position);
             if (StringUtils.isNullOrEmpty(fileUrl)) return photoView;
-            //Uri uri = null;
 
             try {
-               /* if (fileUrl.toLowerCase(Locale.ROOT).startsWith("http")) {
-                    uri = Uri.parse(fileUrl);
-                } else {
-                    uri = Uri.fromFile(new File(imageArray.get(position)));
-                }*/
-
-                //photoView.setImageURI(uri);
 
                 Glide.with(context)
                         .load(fileUrl)

@@ -1,6 +1,6 @@
 package com.gsoft.inventory.utils;
 
-import android.accounts.Account;
+import com.gsoft.inventory.utils.domain.Accounts;
 
 import java.util.ArrayList;
 import java.util.List;

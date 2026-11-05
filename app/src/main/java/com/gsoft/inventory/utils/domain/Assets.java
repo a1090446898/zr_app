@@ -1,50 +1,18 @@
-package com.gsoft.inventory.utils;
+package com.gsoft.inventory.utils.domain;
 
-import android.content.Context;
-import android.text.TextUtils;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.gsoft.inventory.NewAssetsActivity;
+import com.gsoft.inventory.const_data.Const;
+import com.gsoft.inventory.utils.StringUtils;
+import com.gsoft.inventory.utils.SysConfig;
 import com.orm.SugarRecord;
 import com.orm.dsl.Column;
-import com.rscja.team.qcom.deviceapi.S;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.List;
 
 /*
 资产信息
  */
-public class AssetsCopy extends SugarRecord implements Serializable {
-
-    private static final Gson gson = new Gson();
-
-    // 必须包含无参构造器
-    public AssetsCopy() {}
-
-    private Integer IDNUM;
-
-
-    /**
-     * 新增选中状态字段
-     */
-    @Column(name = "IS_SELECTED")
-    private String IS_SELECTED;
-
-    @Column(name = "DOCID", unique = true)
-    private String DOCID;
-
-    @Column(name = "COPY_DOC_ID")
-    private String COPY_DOC_ID;
-
-    /**
-     * 是否复制图片
-     */
-    @Column(name = "COPY_IMG")
-    private String COPY_IMG;
-
+public class Assets extends SugarRecord implements Serializable {
     /*条码编号*/
     private String BARCODEID;
     /*CardID*/
@@ -59,7 +27,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String FDJH;
     /*所在楼层，空值*/
     private String SZLC;
-    /*使用(保管)人*/
+    /*使用(保管)人，管理人*/
     private String CUSTODIAN;
     /*车架号*/
     private String CJHM;
@@ -79,7 +47,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String ASSETSNAME;
     /*型号*/
     private String ASSETSSTANDARD;
-    /*取得日期*/
+    /*取得日期、 配制日期*/
     private String ASSETSUSEDATE;
     /*保修截止日期*/
     private String ASSETSENDUSEDATE;
@@ -137,49 +105,313 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     private String PURCHASINGORGANIZATION;
     /*品牌*/
     private String BRAND;
-    /*空字段1，页面不显示，仅导入/导出/上传传输*/
-    private String EMPTY1;
-    /*空字段2，页面不显示，仅导入/导出/上传传输*/
-    private String EMPTY2;
-    /*盘点表1*/
+
+    private String EMPTY1 = "";
+    private String EMPTY2 = "";
+
+    /*盘点情况，01: 待盘点，02：盘实，03：盘盈，04：待核实*/
     private String PDZT;
-    /*盘点表2*/
+    /*盘点状态，01：未盘，02：已盘，空值也是未盘，未盘查询通常为ZT != 02*/
     private String ZT;
 
     /*是否修改
     private String ISMODIFY = "0";*/
 
-    /*是否上传*/
-    private String ISUPLOAD = "02";
+    /*是否上传,02未传，01已传*/
+    private String ISUPLOAD = Const.NOT_UPLOAD;
 
-    public Integer getIDNUM() {
-        if(IDNUM == null){
-            return 0;
-        }
-        return IDNUM;
-    }
+    /*是否财政资产*/
+    private String ISCZ = "01";
 
-    public void setIDNUM(Integer IDNUM) {
-        this.IDNUM = IDNUM;
-    }
+    private String DOCID;
 
-    public static void deleteJson(Context mContent, String copyDocId) {
-        List<AssetsCopy> assetsCopyList = null;
-        String assetsCopyListJson = SharedPreferencesUtils.getString(mContent, "COPY_ASSETS_JSON", "");
-        if (!TextUtils.isEmpty(assetsCopyListJson)) {
-            assetsCopyList = gson.fromJson(assetsCopyListJson, new TypeToken<List<AssetsCopy>>() {}.getType());
-            Iterator<AssetsCopy> iterator = assetsCopyList.iterator();
-            while (iterator.hasNext()) {
-                AssetsCopy assetsCopy = iterator.next();
-                if (assetsCopy.getDOCID().equals(copyDocId)) {
-                    iterator.remove();
-                }
-            }
-            String assetsCopyListJsonNew = gson.toJson(assetsCopyList);
-            SharedPreferencesUtils.putString(mContent, "COPY_ASSETS_JSON", assetsCopyListJsonNew);
-        }
-    }
+    /**
+     * 规格
+     */
+    private String ASSETSMODEL;
 
+    //序列号//生产厂家//出厂编号//管理编号//参数//溯源周期//溯源方式01：检定/02：校准//检定校准日期YYYY-MM-DD/有效期至YYYY-MM-DD//所属项目
+    /**
+     * 序列号
+     */
+    private String ASSETSSERIALNUMBER;
+    /**
+     * 生产厂家
+     */
+    private String ASSETSSUPPLIER;
+    /**
+     * 出厂编号
+     */
+    private String FACTORYNO;
+    /**
+     * 管理编号
+     */
+    private String MANAGENO;
+    /**
+     * 参数
+     */
+    private String PARAMETERS;
+    /**
+     * 溯源周期
+     */
+    private String TRACEABILITY;
+    /**
+     * 溯源方式01：检定/02：校准
+     */
+    private String TRACEABILITYPE;
+    /**
+     * 检定校准日期YYYY-MM-DD
+     */
+    private String CALIBRATIONDATE;
+    /**
+     * 有效期至YYYY-MM-DD
+     * 有效日期
+     */
+    private String VALIDDATE;
+    /**
+     * 所属项目
+     */
+    private String PROBELONG;
+
+    /**
+     * 入账单号
+     */
+    private String PRINTNO;
+
+    /**
+     * 财务记账日期
+     */
+    private String BOOKKEEPINGTIME;
+
+    /**
+     * 凭证号
+     */
+    private String VOUCHERNO;
+
+
+    /**
+     * 项目名称
+     */
+    private String PRO;
+    /**
+     * 会计账簿，字典类型，01：行政账，02：装备账
+     */
+    private String ACCOUNTBOOK;
+
+    /**
+     * 下发情况，字典类型，01：行政下发，02：装备下发
+     */
+    private String DOWNINFO;
+
+    /**
+     * 使用年限
+     */
+    private String SUMCOMPLETEMONTH;
+
+    /**
+     * 已计提折旧月数
+     */
+    private String COMPLETEMONTH;
+
+    /**
+     * 月折旧额
+     */
+    private String MONDEPREVALUE;
+
+    /**
+     * 设备分类，字典类型，01：办公设备，02：实验设备
+     */
+    private String DEVICETYPE;
+
+    /**
+     * 字典数据：01/绝密，02/机密，03/秘密，无默认值
+     */
+    private String CLASSIFICATION;
+    /**
+     * 配发日期  YYYY-MM-DD
+     */
+
+    private String ISSUEDATE;
+
+    /**
+     * 0是不需要复制图片，1是需要复制图片
+     */
+    private Integer ISUPIMG;
+
+    private String COPY_DOC_ID;
+
+    /**
+     * 批量复制本地标识：仅本地使用，不参与上传。
+     * "1" 表示由批量复制生成，清空列表时置为空字符串。
+     * 注意：该字段不能加入 R.array.assets_fields，否则会导致上传报文错位
+     * <p>
+     * 必须显式指定列名：SugarORM 会把字段名里的下划线丢掉（IS_COPY_DATA 映射成 ISCOPYDATA），
+     * 与业务 SQL 使用的 IS_COPY_DATA 对不上，导致写进去的数据查不出来
+     */
+    @Column(name = "IS_COPY_DATA")
+    private String IS_COPY_DATA;
+
+
+    /**
+     * 供货商
+     */
+    private String VENDOR;
+
+
+    /**
+     * 点位编码
+     */
+    private String DWCODE;
+
+    /**
+     * 采样日期
+     */
+    private String SAMPLDATE;
+
+    /**
+     * 样品编码
+     */
+    private String SAMPLCODE;
+
+    /**
+     * 监测项目
+     */
+    private String MONITORPRO;
+
+    /**
+     * 保存方法
+     */
+    private String SAVEMETHOD;
+
+    /**
+     * 样品状态
+     * 01：待检/02：在检/03：检毕
+     */
+    private String SAMPLESTATE;
+
+    /**
+     * 采样人员
+     */
+    private String SAMPLEUSER;
+
+    /**
+     * 硬盘号
+     */
+    private String HARDID;
+
+    /**
+     * 硬盘序列号
+     */
+    private String HARDSN;
+
+    /**
+     * IP
+     */
+    private String IP;
+
+    /**
+     * MAC
+     */
+    private String MAC;
+
+    /**
+     * 入网账号
+     */
+    private String INTERNETID;
+
+    /**
+     * 端口号
+     */
+    private String PORT;
+
+    /**
+     * 用途
+     */
+    private String PURPOSE;
+
+    /**
+     * 操作系统安装时间
+     */
+    private String INSTALLDATE;
+
+    /**
+     * 操作系统
+     */
+    private String OS;
+
+
+    /**
+     * 配置浓度
+     */
+    private String CONCENTRATION;
+
+    /**
+     * 配制人
+     */
+    private String PREPARER;
+
+    /**
+     * 介质
+     */
+    private String MEDIA;
+
+    /**
+     * 贮存条件
+     */
+    private String STORAGENEED;
+
+    /**
+     * 网络类型
+     * 01：互联网/02：纪检监察内网/03：纪检监察外网/04：电子政务内网/05：电子政务外网/06：专网/99：其它
+     */
+    private String NETTYPE;
+
+    /**
+     * 是否公物仓
+     * 01：是/02：否，默认02
+     */
+    private String ISGWC = "02";
+
+    /**
+     * 所属处室
+     */
+    private String DEPARTMENT;
+
+    /**
+     * 资产位置
+     */
+    private String GROUNDSETPOS;
+    /**
+     * 出厂日期
+     */
+    private String FACTORYDATE;
+    /**
+     * 特种设备
+     */
+    private String SPECIALDEVICE;
+    /**
+     * 设备注册代码
+     */
+    private String DEVICECODE;
+    /**
+     * 特种设备出厂编号
+     */
+    private String SPECIALFACTORYNO;
+    /**
+     * 使用登记证编号
+     */
+    private String CERTIFICATENUMBER;
+
+    /**
+     * 是否打印条码，01需要打印条码，02已经打印过条码
+     */
+    private String ISPRINTBARCODE;
+
+    /**
+     * 是否国产设备
+     * 01：是/02：否，默认空
+     */
+    private String MADEINCHINA;
 
     public String getISCZ() {
         return ISCZ;
@@ -189,8 +421,6 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.ISCZ = ISCZ;
     }
 
-    /*是否财政资产*/
-    private String ISCZ = "01";
 
     public String getDOCID() {
         return DOCID;
@@ -199,7 +429,6 @@ public class AssetsCopy extends SugarRecord implements Serializable {
     public void setDOCID(String DOCID) {
         this.DOCID = DOCID;
     }
-
 
     public String getBARCODEID() {
         return BARCODEID;
@@ -289,9 +518,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.SERIALNUM = SERIALNUM;
     }
 
-    public String getASSETSTYPE() {
-        return ASSETSTYPE;
-    }
+    public String getASSETSTYPE() {return ASSETSTYPE;}
 
     public void setASSETSTYPE(String ASSETSTYPE) {
         this.ASSETSTYPE = ASSETSTYPE;
@@ -557,9 +784,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         return PURCHASINGORGANIZATION;
     }
 
-    public void setPURCHASINGORGANIZATION(String PURCHASINGORGANIZATION) {
-        this.PURCHASINGORGANIZATION = PURCHASINGORGANIZATION;
-    }
+    public void setPURCHASINGORGANIZATION(String PURCHASINGORGANIZATION) {this.PURCHASINGORGANIZATION = PURCHASINGORGANIZATION;}
 
     public String getBRAND() {
         return BRAND;
@@ -567,6 +792,22 @@ public class AssetsCopy extends SugarRecord implements Serializable {
 
     public void setBRAND(String BRAND) {
         this.BRAND = BRAND;
+    }
+
+    public String getEMPTY1() {
+        return EMPTY1;
+    }
+
+    public void setEMPTY1(String EMPTY1) {
+        this.EMPTY1 = EMPTY1;
+    }
+
+    public String getEMPTY2() {
+        return EMPTY2;
+    }
+
+    public void setEMPTY2(String EMPTY1) {
+        this.EMPTY1 = EMPTY2;
     }
 
     public String getZT() {
@@ -596,13 +837,6 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.PDZT = PDZT;
     }
 
-    /*public String getISMODIFY() {
-        return ISMODIFY;
-    }
-
-    public void setISMODIFY(String ISMODIFY) {
-        this.ISMODIFY = ISMODIFY;
-    }*/
 
 
     public String getASSETSMODEL() {
@@ -613,10 +847,7 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.ASSETSMODEL = ASSETSMODEL;
     }
 
-    /**
-     * 规格
-     */
-    private String ASSETSMODEL;
+
 
     public String getISUPLOAD() {
         return ISUPLOAD;
@@ -715,22 +946,6 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.PRINTNO = PRINTNO;
     }
 
-    public String getBOOKKEEPINGTIME() {
-        return BOOKKEEPINGTIME;
-    }
-
-    public void setBOOKKEEPINGTIME(String BOOKKEEPINGTIME) {
-        this.BOOKKEEPINGTIME = BOOKKEEPINGTIME;
-    }
-
-    public String getVOUCHERNO() {
-        return VOUCHERNO;
-    }
-
-    public void setVOUCHERNO(String VOUCHERNO) {
-        this.VOUCHERNO = VOUCHERNO;
-    }
-
     public String getPRO() {
         return PRO;
     }
@@ -739,17 +954,36 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.PRO = PRO;
     }
 
+    /**
+     * 01：行政账/02：装备账
+     *
+     * @return 会计账簿名称
+     */
     public String getACCOUNTBOOK() {
         return ACCOUNTBOOK;
     }
+
+
 
     public void setACCOUNTBOOK(String ACCOUNTBOOK) {
         this.ACCOUNTBOOK = ACCOUNTBOOK;
     }
 
+    /**
+     * 01：行政下发/02：装备下发
+     *
+     * @return 下发情况名称
+     */
     public String getDOWNINFO() {
         return DOWNINFO;
+
     }
+
+    /**
+     * 下发情况，字典类型，01：行政下发，02：装备下发
+     *
+     * @return 下发情况编码
+     */
 
     public void setDOWNINFO(String DOWNINFO) {
         this.DOWNINFO = DOWNINFO;
@@ -779,122 +1013,19 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.MONDEPREVALUE = MONDEPREVALUE;
     }
 
+    /**
+     * 01：办公设备/02：实验设备
+     *
+     * @return 设备分类名称
+     */
     public String getDEVICETYPE() {
         return DEVICETYPE;
     }
 
+
     public void setDEVICETYPE(String DEVICETYPE) {
         this.DEVICETYPE = DEVICETYPE;
     }
-
-    public String getEMPTY1() {
-        return EMPTY1;
-    }
-
-    public void setEMPTY1(String EMPTY1) {
-        this.EMPTY1 = EMPTY1;
-    }
-
-    public String getEMPTY2() {
-        return EMPTY2;
-    }
-
-    public void setEMPTY2(String EMPTY2) {
-        this.EMPTY2 = EMPTY2;
-    }
-
-    // 231125添加10个字段
-//序列号//生产厂家//出厂编号//管理编号//参数//溯源周期//溯源方式01：检定/02：校准//检定校准日期YYYY-MM-DD/有效期至YYYY-MM-DD//所属项目
-    /**
-     * 序列号
-     */
-    private String ASSETSSERIALNUMBER;
-    /**
-     * 生产厂家
-     */
-    private String ASSETSSUPPLIER;
-    /**
-     * 出厂编号
-     */
-    private String FACTORYNO;
-    /**
-     * 管理编号
-     */
-    private String MANAGENO;
-    /**
-     * 参数
-     */
-    private String PARAMETERS;
-    /**
-     * 溯源周期
-     */
-    private String TRACEABILITY;
-    /**
-     * 溯源方式01：检定/02：校准
-     */
-    private String TRACEABILITYPE;
-    /**
-     * 检定校准日期YYYY-MM-DD
-     */
-    private String CALIBRATIONDATE;
-    /**
-     * 有效期至YYYY-MM-DD
-     */
-    private String VALIDDATE;
-    /**
-     * 所属项目
-     */
-    private String PROBELONG;
-
-    /**
-     * 入账单号
-     */
-    private String PRINTNO;
-
-    /**
-     * 财务记账日期
-     */
-    private String BOOKKEEPINGTIME;
-
-    /**
-     * 凭证号
-     */
-    private String VOUCHERNO;
-
-    /**
-     * 项目名称
-     */
-    private String PRO;
-
-    /**
-     * 会计账簿，字典类型，01：行政账，02：装备账
-     */
-    private String ACCOUNTBOOK;
-
-    /**
-     * 下发情况，字典类型，01：行政下发，02：装备下发
-     */
-    private String DOWNINFO;
-
-    /**
-     * 使用年限
-     */
-    private String SUMCOMPLETEMONTH;
-
-    /**
-     * 已计提折旧月数
-     */
-    private String COMPLETEMONTH;
-
-    /**
-     * 月折旧额
-     */
-    private String MONDEPREVALUE;
-
-    /**
-     * 设备分类，字典类型，01：办公设备，02：实验设备
-     */
-    private String DEVICETYPE;
 
     public String getCLASSIFICATION() {
         return CLASSIFICATION;
@@ -912,15 +1043,241 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         this.ISSUEDATE = ISSUEDATE;
     }
 
-    /**
-     * 字典数据：01/绝密，02/机密，03/秘密，无默认值
-     */
-    private String CLASSIFICATION;
-    /**
-     * 配发日期  YYYY-MM-DD
-     */
 
-    private String ISSUEDATE;
+    public Integer getISUPIMG() {
+        return ISUPIMG;
+    }
+
+    public void setISUPIMG(Integer ISUPIMG) {
+        this.ISUPIMG = ISUPIMG;
+    }
+
+    public String getCOPY_DOC_ID() {
+        return COPY_DOC_ID;
+    }
+
+    public void setCOPY_DOC_ID(String COPY_DOC_ID) {
+        this.COPY_DOC_ID = COPY_DOC_ID;
+    }
+
+    public String getIS_COPY_DATA() {
+        return IS_COPY_DATA;
+    }
+
+    public void setIS_COPY_DATA(String IS_COPY_DATA) {
+        this.IS_COPY_DATA = IS_COPY_DATA;
+    }
+
+
+    public String getBOOKKEEPINGTIME() {
+        return BOOKKEEPINGTIME;
+    }
+
+    public void setBOOKKEEPINGTIME(String BOOKKEEPINGTIME) {
+        this.BOOKKEEPINGTIME = BOOKKEEPINGTIME;
+    }
+
+    public String getVOUCHERNO() {
+        return VOUCHERNO;
+    }
+
+    public void setVOUCHERNO(String VOUCHERNO) {
+        this.VOUCHERNO = VOUCHERNO;
+    }
+
+    public String getVENDOR() {
+        return VENDOR;
+    }
+
+    public void setVENDOR(String VENDOR) {
+        this.VENDOR = VENDOR;
+    }
+
+
+    public String getDWCODE() {
+        return DWCODE;
+    }
+
+    public void setDWCODE(String DWCODE) {
+        this.DWCODE = DWCODE;
+    }
+
+    public String getSAMPLDATE() {
+        return SAMPLDATE;
+    }
+
+    public void setSAMPLDATE(String SAMPLDATE) {
+        this.SAMPLDATE = SAMPLDATE;
+    }
+
+    public String getSAMPLCODE() {
+        return SAMPLCODE;
+    }
+
+    public void setSAMPLCODE(String SAMPLCODE) {
+        this.SAMPLCODE = SAMPLCODE;
+    }
+
+    public String getMONITORPRO() {
+        return MONITORPRO;
+    }
+
+    public void setMONITORPRO(String MONITORPRO) {
+        this.MONITORPRO = MONITORPRO;
+    }
+
+    public String getSAVEMETHOD() {
+        return SAVEMETHOD;
+    }
+
+    public void setSAVEMETHOD(String SAVEMETHOD) {
+        this.SAVEMETHOD = SAVEMETHOD;
+    }
+
+
+    public String getHARDID() {
+        return HARDID;
+    }
+
+    public void setHARDID(String HARDID) {
+        this.HARDID = HARDID;
+    }
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
+    public String getMAC() {
+        return MAC;
+    }
+
+    public void setMAC(String MAC) {
+        this.MAC = MAC;
+    }
+
+    public String getINTERNETID() {
+        return INTERNETID;
+    }
+
+    public void setINTERNETID(String INTERNETID) {
+        this.INTERNETID = INTERNETID;
+    }
+
+    public String getPORT() {
+        return PORT;
+    }
+
+    public void setPORT(String PORT) {
+        this.PORT = PORT;
+    }
+
+    /**
+     * 01：办公/02：教学/03：科研/04：培训/05：办案/06：医疗/07：服务窗口/99：其他
+     *
+     * @return 设备用途名称
+     */
+    public String getPURPOSE() {
+        if ("01".equals(PURPOSE)) {
+            return "办公";
+        } else if ("02".equals(PURPOSE)) {
+            return "教学";
+        } else if ("03".equals(PURPOSE)) {
+            return "科研";
+        } else if ("04".equals(PURPOSE)) {
+            return "培训";
+        } else if ("05".equals(PURPOSE)) {
+            return "办案";
+        } else if ("06".equals(PURPOSE)) {
+            return "医疗";
+        } else if ("07".equals(PURPOSE)) {
+            return "服务窗口";
+        } else if ("99".equals(PURPOSE)) {
+            return "其他";
+        } else {
+            return "";
+        }
+    }
+
+    public void setPURPOSE(String PURPOSE) {
+        this.PURPOSE = PURPOSE;
+    }
+
+    /**
+     * 01：互联网/02：纪检监察内网/03：纪检监察外网/04：电子政务内网/05：电子政务外网/06：专网/99：其它
+     *
+     * @return 网络类型名称
+     */
+    public String getNETTYPE() {
+        if ("01".equals(NETTYPE)) {
+            return "互联网";
+        } else if ("02".equals(NETTYPE)) {
+            return "JJJC内网";
+        } else if ("03".equals(NETTYPE)) {
+            return "JJJC外网";
+        } else if ("04".equals(NETTYPE)) {
+            return "电子政务内网";
+        } else if ("05".equals(NETTYPE)) {
+            return "电子政务外网";
+        } else if ("06".equals(NETTYPE)) {
+            return "专网";
+        } else if ("99".equals(NETTYPE)) {
+            return "其它";
+        } else {
+            return "";
+        }
+    }
+
+    public void setNETTYPE(String NETTYPE) {
+        this.NETTYPE = NETTYPE;
+    }
+
+    public String getHARDSN() {
+        return HARDSN;
+    }
+
+    public void setHARDSN(String HARDSN) {
+        this.HARDSN = HARDSN;
+    }
+
+    public String getINSTALLDATE() {
+        return INSTALLDATE;
+    }
+
+    public void setINSTALLDATE(String INSTALLDATE) {
+        this.INSTALLDATE = INSTALLDATE;
+    }
+
+    public String getOS() {
+        return OS;
+    }
+
+    public void setOS(String OS) {
+        this.OS = OS;
+    }
+
+    /**
+     * 01：待检/02：在检/03：检毕
+     * @return
+     */
+    public String getSAMPLESTATE() {
+        return SAMPLESTATE;
+    }
+
+    public void setSAMPLESTATE(String SAMPLESTATE) {
+        this.SAMPLESTATE = SAMPLESTATE;
+    }
+
+    public String getSAMPLEUSER() {
+        return SAMPLEUSER;
+    }
+
+    public void setSAMPLEUSER(String SAMPLEUSER) {
+        this.SAMPLEUSER = SAMPLEUSER;
+    }
 
     public String toLineString() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -928,23 +1285,28 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         if (SysConfig.assetsFieldsArray == null) {
             Field[] fields = this.getClass().getDeclaredFields();
             for (Field field : fields) {
+                // 添加排除条件
+                if ("ISUPIMG".equals(field.getName())) {continue;}
+                if ("COPY_DOC_ID".equals(field.getName())) {continue;}
+                if ("IS_COPY_DATA".equals(field.getName())) {continue;}
                 try {
-                    stringBuilder.append(field.get(this) + "|");
+                    stringBuilder.append(field.get(this)).append("|");
                 } catch (IllegalAccessException e) {
                     stringBuilder.append("|");
                 }
             }
         } else {
             for (int i = 0; i < SysConfig.assetsFieldsArray.length; i++) {
+                if ("ISUPIMG".equals(SysConfig.assetsFieldsArray[i])) {continue;}
+                if ("COPY_DOC_ID".equals(SysConfig.assetsFieldsArray[i])) {continue;}
+                if ("IS_COPY_DATA".equals(SysConfig.assetsFieldsArray[i])) {continue;}
                 try {
                     Field field = this.getClass().getDeclaredField(SysConfig.assetsFieldsArray[i]);
-                    if (field != null) {
-                        try {
-                            Object fValue = field.get(this);
-                            stringBuilder.append((fValue == null ? "" : fValue) + "|");
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        Object fValue = field.get(this);
+                        stringBuilder.append(fValue == null ? "" : fValue).append("|");
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -960,28 +1322,32 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         if (SysConfig.assetsFieldsArray == null) {
             Field[] fields = this.getClass().getDeclaredFields();
             for (Field field : fields) {
+                // 添加排除条件
+                if ("ISUPIMG".equals(field.getName())) {continue;}
+                if ("COPY_DOC_ID".equals(field.getName())) {continue;}
+                if ("IS_COPY_DATA".equals(field.getName())) {continue;}
                 try {
-                    stringBuilder.append(field.get(this) + "|");
+                    stringBuilder.append(field.get(this)).append("|");
                 } catch (IllegalAccessException e) {
                     stringBuilder.append("|");
                 }
             }
         } else {
             for (int i = 0; i < SysConfig.assetsFieldsArray.length; i++) {
+                if ("ISUPIMG".equals(SysConfig.assetsFieldsArray[i])) {continue;}
+                if ("COPY_DOC_ID".equals(SysConfig.assetsFieldsArray[i])) {continue;}
+                if ("IS_COPY_DATA".equals(SysConfig.assetsFieldsArray[i])) {continue;}
                 try {
                     Field field = this.getClass().getDeclaredField(SysConfig.assetsFieldsArray[i]);
-                    if (field != null) {
-                        try {
-                            Object fValue = field.get(this);
-                            if(!StringUtils.isNullOrEmpty(this.DOCID) && i == 48 ){
-                                stringBuilder.append("02" + "|");
-                            }
-                            else{
-                                stringBuilder.append((fValue == null ? "" : fValue) + "|");
-                            }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
+                    try {
+                        Object fValue = field.get(this);
+                        if (!StringUtils.isNullOrEmpty(this.DOCID) && i == 48) {
+                            stringBuilder.append("02" + "|");
+                        } else {
+                            stringBuilder.append(fValue == null ? "" : fValue).append("|");
                         }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
@@ -991,203 +1357,115 @@ public class AssetsCopy extends SugarRecord implements Serializable {
         return stringBuilder.substring(0, stringBuilder.length() - 1);
     }
 
-    // 实现深拷贝
-    public void deepCopyAssets(Assets source) {
-        this.setBARCODEID(source.getBARCODEID());
-        this.setCARDID(source.getCARDID());
-        this.setGETMODE(source.getGETMODE());
-        this.setREMARKS(source.getREMARKS());
-        this.setPROPERTY(source.getPROPERTY());
-        this.setFDJH(source.getFDJH());
-        this.setSZLC(source.getSZLC());
-        this.setCUSTODIAN(source.getCUSTODIAN());
-        this.setCJHM(source.getCJHM());
-        this.setACCTSUITEID(source.getACCTSUITEID());
-        this.setSERIALNUM(source.getSERIALNUM());
-        this.setASSETSTYPE(source.getASSETSTYPE());
-        this.setASSETSSORTCODE(source.getASSETSSORTCODE());
-        this.setASSETSMEASURE(source.getASSETSMEASURE());
-        this.setSERIALCODE(source.getSERIALCODE());
-        this.setASSETSNAME(source.getASSETSNAME());
-        this.setASSETSSTANDARD(source.getASSETSSTANDARD());
-        this.setASSETSUSEDATE(source.getASSETSUSEDATE());
-        this.setASSETSENDUSEDATE(source.getASSETSENDUSEDATE());
-        this.setYEARCOUNT(source.getYEARCOUNT());
-        this.setUSESTATE(source.getUSESTATE());
-        this.setDPRECIATIONTYPE(source.getDPRECIATIONTYPE());
-        this.setASSETSLAYADD(source.getASSETSLAYADD());
-        this.setASSETSUSER(source.getASSETSUSER());
-        this.setKPJE(source.getKPJE());
-        this.setDPRECIATIONADD(source.getDPRECIATIONADD());
-        this.setASSETSCURRPRICE(source.getASSETSCURRPRICE());
-        this.setCURRDPRECIATIONADD(source.getCURRDPRECIATIONADD());
-        this.setLEFTPRICE(source.getLEFTPRICE());
-        this.setGROUNDMANAGEDEPT(source.getGROUNDMANAGEDEPT());
-        this.setASSETSCULGRADE(source.getASSETSCULGRADE());
-        this.setASSETSPRODAREA(source.getASSETSPRODAREA());
-        this.setVEHICLENO(source.getVEHICLENO());
-        this.setASSETSDISPENSEDATE(source.getASSETSDISPENSEDATE());
-        this.setASSETSMANAGER(source.getASSETSMANAGER());
-        this.setASSETSFACTORYNO(source.getASSETSFACTORYNO());
-        this.setVEHEXH(source.getVEHEXH());
-        this.setLONGMILES(source.getLONGMILES());
-        this.setVEHPURPOSE(source.getVEHPURPOSE());
-        this.setASSETSORGANIZATION(source.getASSETSORGANIZATION());
-        this.setASSETSNUM(source.getASSETSNUM());
-        this.setASSETSWRITER(source.getASSETSWRITER());
-        this.setASSETSWRITERDATE(source.getASSETSWRITERDATE());
-        this.setPURCHASINGORGANIZATION(source.getPURCHASINGORGANIZATION());
-        this.setBRAND(source.getBRAND());
-        this.setPDZT(source.getPDZT());
-        this.setZT(source.getZT());
-        this.setISUPLOAD(source.getISUPLOAD());
-        this.setISCZ(source.getISCZ());
-        this.setDOCID(source.getDOCID());
-        this.setASSETSMODEL(source.getASSETSMODEL());
-        this.setASSETSSERIALNUMBER(source.getASSETSSERIALNUMBER());
-        this.setASSETSSUPPLIER(source.getASSETSSUPPLIER());
-        this.setFACTORYNO(source.getFACTORYNO());
-        this.setMANAGENO(source.getMANAGENO());
-        this.setPARAMETERS(source.getPARAMETERS());
-        this.setTRACEABILITY(source.getTRACEABILITY());
-        this.setTRACEABILITYPE(source.getTRACEABILITYPE());
-        this.setCALIBRATIONDATE(source.getCALIBRATIONDATE());
-        this.setVALIDDATE(source.getVALIDDATE());
-        this.setPROBELONG(source.getPROBELONG());
-        this.setPRINTNO(source.getPRINTNO());
-        this.setBOOKKEEPINGTIME(source.getBOOKKEEPINGTIME());
-        this.setVOUCHERNO(source.getVOUCHERNO());
-        this.setPRO(source.getPRO());
-        this.setACCOUNTBOOK(source.getACCOUNTBOOK());
-        this.setDOWNINFO(source.getDOWNINFO());
-        this.setSUMCOMPLETEMONTH(source.getSUMCOMPLETEMONTH());
-        this.setCOMPLETEMONTH(source.getCOMPLETEMONTH());
-        this.setMONDEPREVALUE(source.getMONDEPREVALUE());
-        this.setDEVICETYPE(source.getDEVICETYPE());
-        this.setCLASSIFICATION(source.getCLASSIFICATION());
-        this.setISSUEDATE(source.getISSUEDATE());
-        this.setEMPTY1(source.getEMPTY1());
-        this.setEMPTY2(source.getEMPTY2());
-        this.setASSETSDEPT(source.getASSETSDEPT());
+    public String getCONCENTRATION() {
+        return CONCENTRATION;
     }
 
-    public void toDeepCopyAssets(Assets source) {
-        source.setBARCODEID(this.getBARCODEID());
-        source.setCARDID(this.getCARDID());
-        source.setGETMODE(this.getGETMODE());
-        source.setREMARKS(this.getREMARKS());
-        source.setPROPERTY(this.getPROPERTY());
-        source.setFDJH(this.getFDJH());
-        source.setSZLC(this.getSZLC());
-        source.setCUSTODIAN(this.getCUSTODIAN());
-        source.setCJHM(this.getCJHM());
-        source.setACCTSUITEID(this.getACCTSUITEID());
-        source.setSERIALNUM(this.getSERIALNUM());
-        source.setASSETSTYPE(this.getASSETSTYPE());
-        source.setASSETSSORTCODE(this.getASSETSSORTCODE());
-        source.setASSETSMEASURE(this.getASSETSMEASURE());
-        source.setSERIALCODE(this.getSERIALCODE());
-        source.setASSETSNAME(this.getASSETSNAME());
-        source.setASSETSSTANDARD(this.getASSETSSTANDARD());
-        source.setASSETSUSEDATE(this.getASSETSUSEDATE());
-        source.setASSETSENDUSEDATE(this.getASSETSENDUSEDATE());
-        source.setYEARCOUNT(this.getYEARCOUNT());
-        source.setUSESTATE(this.getUSESTATE());
-        source.setDPRECIATIONTYPE(this.getDPRECIATIONTYPE());
-        source.setASSETSLAYADD(this.getASSETSLAYADD());
-        source.setASSETSUSER(this.getASSETSUSER());
-        source.setKPJE(this.getKPJE());
-        source.setDPRECIATIONADD(this.getDPRECIATIONADD());
-        source.setASSETSCURRPRICE(this.getASSETSCURRPRICE());
-        source.setCURRDPRECIATIONADD(this.getCURRDPRECIATIONADD());
-        source.setLEFTPRICE(this.getLEFTPRICE());
-        source.setGROUNDMANAGEDEPT(this.getGROUNDMANAGEDEPT());
-        source.setASSETSCULGRADE(this.getASSETSCULGRADE());
-        source.setASSETSPRODAREA(this.getASSETSPRODAREA());
-        source.setVEHICLENO(this.getVEHICLENO());
-        source.setASSETSDISPENSEDATE(this.getASSETSDISPENSEDATE());
-        source.setASSETSMANAGER(this.getASSETSMANAGER());
-        source.setASSETSFACTORYNO(this.getASSETSFACTORYNO());
-        source.setVEHEXH(this.getVEHEXH());
-        source.setLONGMILES(this.getLONGMILES());
-        source.setVEHPURPOSE(this.getVEHPURPOSE());
-        source.setASSETSORGANIZATION(this.getASSETSORGANIZATION());
-        source.setASSETSNUM(this.getASSETSNUM());
-        source.setASSETSWRITER(this.getASSETSWRITER());
-        source.setASSETSWRITERDATE(this.getASSETSWRITERDATE());
-        source.setPURCHASINGORGANIZATION(this.getPURCHASINGORGANIZATION());
-        source.setBRAND(this.getBRAND());
-        source.setPDZT(this.getPDZT());
-        source.setZT(this.getZT());
-        source.setISUPLOAD(this.getISUPLOAD());
-        source.setISCZ(this.getISCZ());
-        source.setDOCID(this.getDOCID());
-        source.setASSETSMODEL(this.getASSETSMODEL());
-        source.setASSETSSERIALNUMBER(this.getASSETSSERIALNUMBER());
-        source.setASSETSSUPPLIER(this.getASSETSSUPPLIER());
-        source.setFACTORYNO(this.getFACTORYNO());
-        source.setMANAGENO(this.getMANAGENO());
-        source.setPARAMETERS(this.getPARAMETERS());
-        source.setTRACEABILITY(this.getTRACEABILITY());
-        source.setTRACEABILITYPE(this.getTRACEABILITYPE());
-        source.setCALIBRATIONDATE(this.getCALIBRATIONDATE());
-        source.setVALIDDATE(this.getVALIDDATE());
-        source.setPROBELONG(this.getPROBELONG());
-        source.setPRINTNO(this.getPRINTNO());
-        source.setBOOKKEEPINGTIME(this.getBOOKKEEPINGTIME());
-        source.setVOUCHERNO(this.getVOUCHERNO());
-        source.setPRO(this.getPRO());
-        source.setACCOUNTBOOK(this.getACCOUNTBOOK());
-        source.setDOWNINFO(this.getDOWNINFO());
-        source.setSUMCOMPLETEMONTH(this.getSUMCOMPLETEMONTH());
-        source.setCOMPLETEMONTH(this.getCOMPLETEMONTH());
-        source.setMONDEPREVALUE(this.getMONDEPREVALUE());
-        source.setDEVICETYPE(this.getDEVICETYPE());
-        source.setCLASSIFICATION(this.getCLASSIFICATION());
-        source.setISSUEDATE(this.getISSUEDATE());
-        source.setEMPTY1(this.getEMPTY1());
-        source.setEMPTY2(this.getEMPTY2());
-        source.setASSETSDEPT(this.getASSETSDEPT());
+    public void setCONCENTRATION(String CONCENTRATION) {
+        this.CONCENTRATION = CONCENTRATION;
     }
 
-    public boolean getSELECTED() {
-        if("1".equals(IS_SELECTED)){
-            return true;
-        }
-        return false;
+    public String getPREPARER() {
+        return PREPARER;
     }
 
-    public void setSELECTED(boolean param) {
-        if(param){
-            this.IS_SELECTED = "1";
-        }
-        else{
-            this.IS_SELECTED = "0";
-        }
+    public void setPREPARER(String PREPARER) {
+        this.PREPARER = PREPARER;
     }
 
-    public String getIS_SELECTED() {
-        return IS_SELECTED;
+    public String getSTORAGENEED() {
+        return STORAGENEED;
     }
 
-    public void setIS_SELECTED(String IS_SELECTED) {
-        this.IS_SELECTED = IS_SELECTED;
+    public void setSTORAGENEED(String STORAGENEED) {
+        this.STORAGENEED = STORAGENEED;
     }
 
-    public String getCOPY_DOC_ID() {
-        return COPY_DOC_ID;
+    public String getMEDIA() {
+        return MEDIA;
     }
 
-    public void setCOPY_DOC_ID(String COPY_DOC_ID) {
-        this.COPY_DOC_ID = COPY_DOC_ID;
+    public void setMEDIA(String MEDIA) {
+        this.MEDIA = MEDIA;
     }
 
-
-    public String getCOPY_IMG() {
-        return COPY_IMG;
+    public String getISGWC() {
+        return ISGWC;
     }
 
-    public void setCOPY_IMG(String COPY_IMG) {
-        this.COPY_IMG = COPY_IMG;
+    public void setISGWC(String ISGWC) {
+        this.ISGWC = ISGWC;
+    }
+
+    public String getDEPARTMENT() {
+        return DEPARTMENT;
+    }
+
+    public void setDEPARTMENT(String DEPARTMENT) {
+        this.DEPARTMENT = DEPARTMENT;
+    }
+
+    public String getGROUNDSETPOS() {
+        return GROUNDSETPOS;
+    }
+
+    public void setGROUNDSETPOS(String GROUNDSETPOS) {
+        this.GROUNDSETPOS = GROUNDSETPOS;
+    }
+
+    public String getFACTORYDATE() {
+        return FACTORYDATE;
+    }
+
+    public void setFACTORYDATE(String FACTORYDATE) {
+        this.FACTORYDATE = FACTORYDATE;
+    }
+
+    public String getSPECIALDEVICE() {
+        return SPECIALDEVICE;
+    }
+
+    public void setSPECIALDEVICE(String SPECIALDEVICE) {
+        this.SPECIALDEVICE = SPECIALDEVICE;
+    }
+
+    public String getDEVICECODE() {
+        return DEVICECODE;
+    }
+
+    public void setDEVICECODE(String DEVICECODE) {
+        this.DEVICECODE = DEVICECODE;
+    }
+
+    public String getSPECIALFACTORYNO() {
+        return SPECIALFACTORYNO;
+    }
+
+    public void setSPECIALFACTORYNO(String SPECIALFACTORYNO) {
+        this.SPECIALFACTORYNO = SPECIALFACTORYNO;
+    }
+
+    public String getCERTIFICATENUMBER() {
+        return CERTIFICATENUMBER;
+    }
+
+    public void setCERTIFICATENUMBER(String CERTIFICATENUMBER) {
+        this.CERTIFICATENUMBER = CERTIFICATENUMBER;
+    }
+
+    public String getISPRINTBARCODE() {
+        return ISPRINTBARCODE;
+    }
+
+    public void setISPRINTBARCODE(String ISPRINTBARCODE) {
+        this.ISPRINTBARCODE = ISPRINTBARCODE;
+    }
+
+    public String getMADEINCHINA() {
+        return MADEINCHINA;
+    }
+
+    public void setMADEINCHINA(String MADEINCHINA) {
+        this.MADEINCHINA = MADEINCHINA;
     }
 }

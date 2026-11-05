@@ -1,9 +1,9 @@
+
 package com.gsoft.inventory;
 
 import static com.gsoft.inventory.utils.SysDefine.PROCESS_RESULT_SUCCESS;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
@@ -18,13 +19,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.entities.AssetPhoto;
 import com.gsoft.inventory.entities.DisposeAsset;
 import com.gsoft.inventory.entities.SyncResult;
+import com.gsoft.inventory.service.photo.CleanPendingPhotosTask;
+import com.gsoft.inventory.service.photo.PhotoMigrationTask;
 import com.gsoft.inventory.utils.AccountHelper;
-import com.gsoft.inventory.utils.Accounts;
-import com.gsoft.inventory.utils.Assets;
-import com.gsoft.inventory.utils.AssetsCategory;
+import com.gsoft.inventory.utils.AsyncManager;
+import com.gsoft.inventory.utils.domain.Accounts;
+import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.utils.domain.AssetsCategory;
 import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.DataTransmitHelper;
 import com.gsoft.inventory.utils.FileSearchHelper;
@@ -32,6 +37,8 @@ import com.gsoft.inventory.data.GridMenuItem;
 import com.gsoft.inventory.utils.MenuGridAdapter;
 import com.gsoft.inventory.utils.MenuGridView;
 import com.gsoft.inventory.utils.OkHttpUtils;
+import com.gsoft.inventory.utils.PhotoStorageHelper;
+import com.gsoft.inventory.utils.SecurityUtils;
 import com.gsoft.inventory.utils.StringUtils;
 import com.gsoft.inventory.utils.SysConfig;
 import com.gsoft.inventory.utils.SysDefine;
@@ -57,6 +64,17 @@ public class OfflineHomeActivity extends BaseCompatActivity {
     TextView tv_bottom_copy;
     private int mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog;
     private Gson gson = new Gson();
+
+    /** 进度轮询间隔（毫秒） */
+    private static final long MIGRATION_PROGRESS_INTERVAL = 300L;
+    /** 照片迁移进度遮罩弹窗 */
+    private CustomProgressDialog migrationProgressDialog;
+    /** 照片迁移进度轮询任务 */
+    private Runnable migrationProgressWatcher;
+    /** 本次迁移结果只展示一次 */
+    private boolean migrationResultShown;
+    /** 任务提交时间：避开线程池排队的瞬间误判任务已结束 */
+    private long migrationSubmittedAt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +102,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
         menuItemList.add(new GridMenuItem("导出变动资产", R.drawable.icon_export));
         menuItemList.add(new GridMenuItem("导入分类", R.drawable.icon_import));
         menuItemList.add(new GridMenuItem("导入清查人员", R.drawable.icon_import));
+        menuItemList.add(new GridMenuItem("照片迁移", R.drawable.icon_convert));
         menuItemList.add(new GridMenuItem("照片清除", R.drawable.icon_save));
         menuItemList.add(new GridMenuItem("资产处置", R.drawable.icon_check));
 
@@ -93,6 +112,12 @@ public class OfflineHomeActivity extends BaseCompatActivity {
         menuGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // 迁移进行中任何菜单都不响应，并恢复遮罩，避免用户以为程序卡死
+                if (PhotoMigrationTask.isRunning()) {
+                    showMigrationProgress();
+                    showShortText("照片迁移进行中，请稍候");
+                    return;
+                }
                 GridMenuItem gridMenuItem = menuItemList.get(position);
                 String menuTitle = gridMenuItem.getTitle();
                 if (application.getLoginAccount() == null || StringUtils.isNullOrEmpty(application.getPrinterDevice())) {
@@ -109,7 +134,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                         startActivity(intentScan);
                         break;
                     case "导入资产":
-                        boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{"02"}) > 0;
+                        boolean hasLocalRecord = Assets.count(Assets.class, "ISUPLOAD=?", new String[]{Const.NOT_UPLOAD}) > 0;
                         if (hasLocalRecord) {
                             QMUIDialog.MessageDialogBuilder builder = new QMUIDialog.MessageDialogBuilder(mContext);
                             builder.setTitle("系统提示")
@@ -165,31 +190,11 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                         Intent intentQCY = new Intent(mContext, ImportQCYActivity.class);
                         startActivity(intentQCY);
                         break;
+                    case "照片迁移":
+                        confirmPhotoMigration();
+                        break;
                     case "照片清除":
-                        QMUIDialog.EditTextDialogBuilder builderCleanImg = new QMUIDialog.EditTextDialogBuilder(mContext);
-                        builderCleanImg.setTitle("系统提示")
-                                .setPlaceholder("输入确认码")
-                                .setInputType(InputType.TYPE_CLASS_TEXT)
-                                .addAction("取消", new QMUIDialogAction.ActionListener() {
-                                    @Override
-                                    public void onClick(QMUIDialog dialog, int index) {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .addAction("确定", new QMUIDialogAction.ActionListener() {
-                                    @Override
-                                    public void onClick(QMUIDialog dialog, int index) {
-                                        String text = builderCleanImg.getEditText().getText().toString();
-                                        if (text.equals("123456")) {
-                                            dialog.dismiss();
-                                            // 清除图片上传的数据库
-                                            AssetPhoto.deleteAll(AssetPhoto.class, "STATUS=?", "待上传");
-                                            showShortText("待同步上传照片清除完成！");
-                                        }
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .create(mCurrentDialogStyle).show();
+                        cleanPhoto();
                         break;
                     case "资产处置":
                         Intent intentDispose = new Intent(mContext, AssetsDisposeActivity.class);
@@ -199,6 +204,274 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * 照片迁移：先提示影响范围，确认后在后台把缓存照片迁移到统一照片目录
+     */
+    private void confirmPhotoMigration() {
+        if (PhotoMigrationTask.isRunning()) {
+            showMigrationProgress();
+            showShortText("照片迁移进行中，请稍候");
+            return;
+        }
+        long cacheCount = AssetPhoto.count(AssetPhoto.class, "PATH LIKE ?", new String[]{"%/cache/images/%"});
+        if (cacheCount <= 0) {
+            showShortText("当前没有需要迁移的缓存照片");
+            return;
+        }
+        String message = "该功能会把手机缓存目录中的资产照片迁移到统一照片目录。\n\n"
+                + "注意：\n"
+                + "1. 迁移只挪动文件位置，不会删除照片记录；\n"
+                + "2. 无法确定账套的照片会放入“_待认领”目录，不会强行归到当前账套；\n"
+                + "3. 共检测到 " + cacheCount + " 条缓存照片记录，数据较多时耗时较长；\n"
+                + "4. 迁移过程中请不要退出APP、不要拔线，请保持手机电量充足。\n\n"
+                + "确认开始迁移吗？";
+        new QMUIDialog.MessageDialogBuilder(mContext)
+                .setTitle("照片迁移")
+                .setMessage(message)
+                .addAction("取消", (dialog, index) -> dialog.dismiss())
+                .addAction("开始迁移", (dialog, index) -> {
+                    dialog.dismiss();
+                    startPhotoMigration();
+                })
+                .create(mCurrentDialogStyle)
+                .show();
+    }
+
+    /**
+     * 启动迁移任务：任务只写静态进度，页面轮询刷新，Activity重建不会丢进度
+     */
+    private void startPhotoMigration() {
+        if (PhotoMigrationTask.isRunning()) {
+            showShortText("照片迁移正在进行，请稍候");
+            return;
+        }
+        migrationResultShown = false;
+        migrationSubmittedAt = System.currentTimeMillis();
+        showMigrationProgress();
+        AsyncManager.getInstance().submit(new PhotoMigrationTask(mContext));
+    }
+
+    /**
+     * 显示迁移进度遮罩
+     */
+    private void showMigrationProgress() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        if (migrationProgressDialog == null) {
+            migrationProgressDialog = new CustomProgressDialog(this);
+        }
+        refreshMigrationProgress();
+        if (!migrationProgressDialog.isShowing()) {
+            migrationProgressDialog.show();
+        }
+        // 迁移期间保持屏幕常亮，降低息屏后进程被回收导致任务中断的概率
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        startMigrationProgressWatcher();
+    }
+
+    private void refreshMigrationProgress() {
+        if (migrationProgressDialog == null) {
+            return;
+        }
+        int progress = PhotoMigrationTask.getProgress();
+        String message = PhotoMigrationTask.getProgressMessage();
+        if (StringUtils.isNullOrEmpty(message)) {
+            message = "正在准备迁移...";
+        }
+        migrationProgressDialog.setProgress(progress);
+        migrationProgressDialog.setMessage(message + "（" + progress + "%）");
+    }
+
+    private void startMigrationProgressWatcher() {
+        if (migrationProgressWatcher != null) {
+            return;
+        }
+        migrationProgressWatcher = new Runnable() {
+            @Override
+            public void run() {
+                if (isFinishing() || isDestroyed()) {
+                    return;
+                }
+                // 提交后1秒内任务可能还在线程池排队，不能误判为已结束
+                boolean justSubmitted = System.currentTimeMillis() - migrationSubmittedAt < 1000L;
+                if (PhotoMigrationTask.isRunning() || justSubmitted) {
+                    refreshMigrationProgress();
+                    mainHandler.postDelayed(this, MIGRATION_PROGRESS_INTERVAL);
+                    return;
+                }
+                // 任务结束：先撤掉遮罩，再展示结果
+                hideMigrationProgress();
+                if (migrationResultShown) {
+                    return;
+                }
+                String errorMessage = PhotoMigrationTask.getErrorMessage();
+                if (!StringUtils.isNullOrEmpty(errorMessage)) {
+                    migrationResultShown = true;
+                    showShortText("照片迁移失败：" + errorMessage);
+                    return;
+                }
+                PhotoMigrationTask.Result result = PhotoMigrationTask.consumeLastResult();
+                if (result != null) {
+                    migrationResultShown = true;
+                    showMigrationResult(result);
+                }
+            }
+        };
+        mainHandler.postDelayed(migrationProgressWatcher, MIGRATION_PROGRESS_INTERVAL);
+    }
+
+    /**
+     * 关闭进度遮罩并恢复系统屏幕常亮设置
+     */
+    private void hideMigrationProgress() {
+        if (migrationProgressWatcher != null) {
+            mainHandler.removeCallbacks(migrationProgressWatcher);
+            migrationProgressWatcher = null;
+        }
+        if (migrationProgressDialog != null && migrationProgressDialog.isShowing()) {
+            migrationProgressDialog.dismiss();
+        }
+        if (getWindow() != null) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    /**
+     * 迁移结果统计
+     * <p>
+     * 账套待认领：账套无法确定的照片已存放到“_待认领”目录，不算迁移成功；
+     * 源文件缺失：记录还在但缓存文件已被系统清理，记录保留不删除；
+     * 迁移失败：文件复制或数据库更新失败，源文件保留，可重跑。
+     */
+    private void showMigrationResult(PhotoMigrationTask.Result result) {
+        String message = "共处理 " + result.total + " 条缓存照片记录\n"
+                + "迁移成功：" + result.success + " 张\n"
+                + "账套待认领：" + result.unassigned + " 张（已存到“_待认领”目录）\n"
+                + "源文件缺失：" + result.missing + " 张（记录已保留）\n"
+                + "空文件跳过：" + result.empty + " 张\n"
+                + "迁移失败：" + result.failed + " 张\n\n"
+                + "待认领照片保留了原单据号和条码，不属于当前账套；登录对应账套并同步资产后会自动归位，"
+                + "也可插线到电脑，在“_待认领”目录查看（明细见“待认领清单.txt”）。";
+        new QMUIDialog.MessageDialogBuilder(mContext)
+                .setTitle("照片迁移完成")
+                .setMessage(message)
+                .addAction("知道了", (dialog, index) -> dialog.dismiss())
+                .create(mCurrentDialogStyle)
+                .show();
+    }
+
+    /**
+     * 照片清除：先展示功能说明和待清除数量，再输入登录密码验证身份，
+     * 验证通过后在后台删除待上传照片记录及本地照片文件。
+     */
+    private void cleanPhoto() {
+        if (PhotoMigrationTask.isRunning()) {
+            showShortText("照片迁移进行中，请稍候");
+            return;
+        }
+        long pendingCount = AssetPhoto.count(AssetPhoto.class, "STATUS=?", new String[]{"待上传"});
+        if (pendingCount == 0) {
+            showShortText("当前没有需要清除的待上传照片");
+            return;
+        }
+        String message = "该功能会删除当前设备上所有“待上传”的资产照片记录。\n删除对应的本地照片文件，用于释放手机存储空间。\n\n"
+                + "注意：\n"
+                + "1. 使用该功能前确定照片已经备份或者上传；\n"
+                + "2. 已上传到服务器的照片不会删除；\n"
+                + "3. 清除后本地照片无法恢复；\n"
+                + "4. 当前共有 " + pendingCount + " 张待上传照片。\n\n"
+                + "确认继续清除吗？";
+        new QMUIDialog.MessageDialogBuilder(mContext)
+                .setTitle("照片清除")
+                .setMessage(message)
+                .addAction("取消", (dialog, index) -> dialog.dismiss())
+                .addAction("下一步", (dialog, index) -> {
+                    dialog.dismiss();
+                    showCleanPhotoPasswordDialog();
+                })
+                .create(mCurrentDialogStyle)
+                .show();
+    }
+
+    /**
+     * 输入当前登录密码，验证通过后执行照片清除
+     */
+    private void showCleanPhotoPasswordDialog() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        final QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(mContext);
+        builder.setTitle("重要验证")
+                .setPlaceholder("请输入密码")
+                .setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                .addAction("取消", (dialog, index) -> dialog.dismiss())
+                .addAction(0, "确定", QMUIDialogAction.ACTION_PROP_NEGATIVE, (dialog, index) -> {
+                    String password = builder.getEditText().getText().toString().trim();
+                    if (StringUtils.isNullOrEmpty(password)) {
+                        showShortText("请输入密码");
+                        dialog.dismiss();
+                        mainHandler.postDelayed(this::showCleanPhotoPasswordDialog, 200);
+                        return;
+                    }
+                    if (!verifyLoginPassword(password)) {
+                        showShortText("密码错误，请重新输入");
+                        dialog.dismiss();
+                        mainHandler.postDelayed(this::showCleanPhotoPasswordDialog, 200);
+                        return;
+                    }
+                    dialog.dismiss();
+                    executeCleanPhoto();
+                })
+                .create(mCurrentDialogStyle)
+                .show();
+    }
+
+    /**
+     * 校验当前登录用户密码
+     *
+     * @param inputPassword 用户输入的明文密码
+     * @return true 表示密码正确
+     */
+    private boolean verifyLoginPassword(String inputPassword) {
+        if (application == null || application.getLoginAccount() == null
+                || StringUtils.isNullOrEmpty(inputPassword)) {
+            return false;
+        }
+        String storedPassword = application.getLoginAccount().getDLMM();
+        if (StringUtils.isNullOrEmpty(storedPassword)) {
+            return false;
+        }
+        String encryptedPassword = SecurityUtils.md5(inputPassword.trim()).toUpperCase();
+        return encryptedPassword.equals(storedPassword.toUpperCase());
+    }
+
+    /**
+     * 后台清除待上传照片记录和本地照片文件
+     */
+    private void executeCleanPhoto() {
+        showProgressDialog("", "正在清除照片");
+        AsyncManager.getInstance().submitWithCallback(
+                new CleanPendingPhotosTask(mContext),
+                result -> mainHandler.post(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    hideProgressDialog();
+                    if (!result.isSuccess()) {
+                        showShortText("照片清除失败，请重试");
+                        return;
+                    }
+                    Integer count = result.getData();
+                    int total = count == null ? 0 : count;
+                    if (total == 0) {
+                        showShortText("当前没有需要清除的待上传照片");
+                    } else {
+                        showShortText("照片清除完成，共清除" + total + "张待上传照片");
+                    }
+                }));
     }
 
     private void importAssetsFromFile() {
@@ -470,7 +743,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", "02");
+            List<Assets> assetsList = Assets.find(Assets.class, "ISUPLOAD=?", Const.NOT_UPLOAD);
             StringBuilder stringBuilder = new StringBuilder();
             if (assetsList.size() > 0) {
                 JsonArray jsonArray = new JsonArray();
@@ -494,7 +767,7 @@ public class OfflineHomeActivity extends BaseCompatActivity {
                                 if (ast.getREMARKS().equals("待删除")) {
                                     ast.delete();
                                 } else {
-                                    ast.setISUPLOAD("01");
+                                    ast.setISUPLOAD(Const.UPLOADED);
                                     ast.save();
                                 }
                             }
@@ -588,6 +861,11 @@ public class OfflineHomeActivity extends BaseCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 迁移过程中禁止返回退出，避免任务被中断
+            if (PhotoMigrationTask.isRunning()) {
+                showShortText("照片迁移进行中，请稍候");
+                return true;
+            }
             exit();
             return false;
         }
@@ -618,5 +896,16 @@ public class OfflineHomeActivity extends BaseCompatActivity {
     protected void onResume() {
         super.onResume();
         isExit = false;
+        // 页面重建或从后台切回时恢复进度遮罩
+        if (PhotoMigrationTask.isRunning()) {
+            showMigrationProgress();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        // 只关闭弹窗，迁移任务在后台继续执行，重进首页可继续查看进度
+        hideMigrationProgress();
+        super.onDestroy();
     }
 }

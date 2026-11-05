@@ -60,12 +60,21 @@ public class RfidDeptStatsAdapter extends RecyclerView.Adapter<RfidDeptStatsAdap
         // 重置最小高度：卡片复用时不残留上一行拉平的高度，先按真实内容测量再由LayoutManager统一拉平
         holder.itemView.setMinimumHeight(0);
         holder.tvDeptName.setText(stats.deptName);
-        // 千分位显示，三个数值按最大位数统一字号
-        int uncounted = stats.total - stats.counted;
-        int maxDigits = CountValueHelper.maxDigitsOf(stats.counted, uncounted, stats.total);
-        CountValueHelper.showGroupCardCount(holder.tvCounted, stats.counted, maxDigits);
-        CountValueHelper.showGroupCardCount(holder.tvUncounted, uncounted, maxDigits);
-        CountValueHelper.showGroupCardCount(holder.tvTotal, stats.total, maxDigits);
+        if (stats.isBackup) {
+            // 空白地点（临时）虚拟入口：不展示已盘/未盘/全部三列统计，仅提示点击扫描
+            holder.layoutGroupCounts.setVisibility(View.GONE);
+            holder.tvBackupTip.setVisibility(View.VISIBLE);
+        } else {
+            // 普通地点/部门卡片：展示三列统计
+            holder.layoutGroupCounts.setVisibility(View.VISIBLE);
+            holder.tvBackupTip.setVisibility(View.GONE);
+            // 千分位显示，三个数值按最大位数统一字号
+            int uncounted = stats.total - stats.counted;
+            int maxDigits = CountValueHelper.maxDigitsOf(stats.counted, uncounted, stats.total);
+            CountValueHelper.showGroupCardCount(holder.tvCounted, stats.counted, maxDigits);
+            CountValueHelper.showGroupCardCount(holder.tvUncounted, uncounted, maxDigits);
+            CountValueHelper.showGroupCardCount(holder.tvTotal, stats.total, maxDigits);
+        }
         holder.itemView.setOnClickListener(v -> {
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(stats);
@@ -73,10 +82,14 @@ public class RfidDeptStatsAdapter extends RecyclerView.Adapter<RfidDeptStatsAdap
         });
     }
 
-    /** 分组卡片ViewHolder：分组名称 + 已盘/未盘/全部三列 */
+    /** 分组卡片ViewHolder：分组名称 + 已盘/未盘/全部三列 + 空白地点提示 */
     static class ViewHolder extends RecyclerView.ViewHolder {
         /** 部门/地点名称（不限行数完整折行显示） */
         TextView tvDeptName;
+        /** 三列统计容器（空白地点虚拟卡片隐藏） */
+        View layoutGroupCounts;
+        /** 空白地点提示文案（仅虚拟卡片显示） */
+        TextView tvBackupTip;
         /** 已盘数量（绿） */
         TextView tvCounted;
         /** 未盘数量（红） */
@@ -87,6 +100,8 @@ public class RfidDeptStatsAdapter extends RecyclerView.Adapter<RfidDeptStatsAdap
         ViewHolder(View itemView) {
             super(itemView);
             tvDeptName = itemView.findViewById(R.id.tvDeptName);
+            layoutGroupCounts = itemView.findViewById(R.id.layoutGroupCounts);
+            tvBackupTip = itemView.findViewById(R.id.tvBackupTip);
             tvCounted = itemView.findViewById(R.id.tvCounted);
             tvUncounted = itemView.findViewById(R.id.tvUncounted);
             tvTotal = itemView.findViewById(R.id.tvTotal);
@@ -100,5 +115,7 @@ public class RfidDeptStatsAdapter extends RecyclerView.Adapter<RfidDeptStatsAdap
         public String deptName;
         public int counted;
         public int total;
+        /** 是否空白地点（临时）虚拟入口：不展示三列统计，点击进入不限范围扫描 */
+        public boolean isBackup;
     }
 }

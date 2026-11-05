@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
@@ -94,9 +93,6 @@ public abstract class WebCompatActivity extends BaseCompatActivity {
         androidByJs = new AssetReceiveAndroidByJs(this, webView, null);
         webView.addJavascriptInterface(androidByJs, "AssetsAndroid");
 
-        // 监听网页日志
-        listenWebView();
-
     }
 
     // 处理返回键，避免直接退出应用
@@ -112,6 +108,10 @@ public abstract class WebCompatActivity extends BaseCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (androidByJs != null) {
+            // 转发给附件下载模块，处理存储权限/通知权限的申请结果
+            androidByJs.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
         if (requestCode == CommonPermissionUtils.STORAGE_PERMISSION_REQUEST_CODE) {
             if (!CommonPermissionUtils.checkPermissionResult(grantResults)) {
                 Toast.makeText(this, "需要存储权限才能上传文件", Toast.LENGTH_SHORT).show();
@@ -131,6 +131,10 @@ public abstract class WebCompatActivity extends BaseCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (androidByJs != null) {
+            // 转发给附件下载模块，处理“所有文件访问”设置页返回
+            androidByJs.onActivityResult(requestCode, resultCode, data);
+        }
         // 扫码结果处理
         handleScanCodeCallBack(requestCode, resultCode, data);
         // 拍照结果处理
@@ -138,19 +142,6 @@ public abstract class WebCompatActivity extends BaseCompatActivity {
         // 处理文件、相册选择
         handleTakeFileCallBack(requestCode, resultCode, data);
 
-
-    }
-
-
-    private void listenWebView() {
-        // 监听网页日志输出并打印到日志
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onConsoleMessage(String message, int lineNumber, String sourceID) {
-                // 打印日志到日志
-                Log.d("WebViewConsole", message + " (Line: " + lineNumber + ", Source: " + sourceID + ")");
-            }
-        });
     }
 
 

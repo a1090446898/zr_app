@@ -1,7 +1,7 @@
 package com.gsoft.inventory.service.import_net_assets;
 
 import android.widget.CompoundButton;
-import com.gsoft.inventory.utils.Accounts;
+import com.gsoft.inventory.utils.domain.Accounts;
 
 import java.util.List;
 

@@ -22,6 +22,7 @@
 
     <!-- 三列等分：数值在上(动态字号)标签在下 -->
     <LinearLayout
+        android:id="@+id/layoutGroupCounts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -105,4 +106,17 @@
                 android:textSize="10sp" />
         </LinearLayout>
     </LinearLayout>
+
+    <!-- 空白地点，用于盘点不确定所属位置的资产 -->
+    <TextView
+        android:id="@+id/tvBackupTip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:lineSpacingExtra="2dp"
+        android:text="用于盘点不确定所属位置的资产"
+        android:textColor="#999999"
+        android:textSize="11sp"
+        android:visibility="gone" />
 </LinearLayout>
