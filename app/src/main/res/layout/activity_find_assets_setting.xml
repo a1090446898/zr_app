@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 找资产设置页：选择查找方式/人员/匹配字段/指定资产，结果回传扫描页作为扫描目标过滤条件 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F2F3F5"
+    android:orientation="vertical">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/qmui_topbar_height" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="12dp">
+
+            <!-- 查找方式 -->
+            <LinearLayout style="@style/find_assets_card">
+
+                <TextView
+                    style="@style/find_assets_section_title"
+                    android:text="查找方式" />
+
+                <RadioGroup
+                    android:id="@+id/rgMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/rbModeSelf"
+                        style="@style/find_assets_radio"
+                        android:text="找个人资产" />
+
+                    <RadioButton
+                        android:id="@+id/rbModeOther"
+                        style="@style/find_assets_radio"
+                        android:text="找他人资产" />
+
+                    <RadioButton
+                        android:id="@+id/rbModeTarget"
+                        style="@style/find_assets_radio"
+                        android:text="找特定资产" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/tvModeHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="仅查找管理人或使用人为当前登录人的资产"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- 人员条件：找个人资产/找他人资产时显示 -->
+            <LinearLayout
+                android:id="@+id/layoutPerson"
+                style="@style/find_assets_card">
+
+                <TextView
+                    style="@style/find_assets_section_title"
+                    android:text="查找人员" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+
+                    <EditText
+                        android:id="@+id/editPerson"
+                        style="@style/from_value_picker"
+                        android:layout_width="match_parent"
+                        android:hint="请输入或选择人员姓名"
+                        android:inputType="textPersonName" />
+
+                    <TextView
+                        android:id="@+id/btnPickPerson"
+                        style="@style/from_action"
+                        android:text="选择" />
+                </FrameLayout>
+
+                <TextView
+                    style="@style/find_assets_section_title"
+                    android:layout_marginTop="14dp"
+                    android:text="匹配字段" />
+
+                <RadioGroup
+                    android:id="@+id/rgMatchField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rbMatchCustodian"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="管理人"
+                        android:textColor="@color/primary_text"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/rbMatchAssetsUser"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="使用人"
+                        android:textColor="@color/primary_text"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/rbMatchAll"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="全部"
+                        android:textColor="@color/primary_text"
+                        android:textSize="14sp" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- 指定资产：找特定资产时显示 -->
+            <LinearLayout
+                android:id="@+id/layoutTarget"
+                style="@style/find_assets_card"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/find_assets_section_title"
+                    android:text="指定资产" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvTargetSummary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="尚未选择资产"
+                        android:textColor="#666666"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/btnClearTargets"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="6dp"
+                        android:text="清空"
+                        android:textColor="#3E8EF7"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                    android:id="@+id/btnPickTargets"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_rounded_button"
+                    android:text="选择资产"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <!-- 查找范围说明 -->
+            <LinearLayout style="@style/find_assets_card">
+
+                <TextView
+                    style="@style/find_assets_section_title"
+                    android:text="查找范围" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="全部资产（不受当前盘点部门、存放地点限制）"
+                    android:textColor="@color/primary_text"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="3dp"
+                    android:text="开启后列表中只显示扫描命中的目标资产；非目标资产不提示、不标记、不改变盘点数据。"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.qmuiteam.qmui.layout.QMUIButton
+        android:id="@+id/btnApply"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_rounded_button"
+        android:text="开始查找"
+        android:textColor="@color/colorWhite"
+        android:textSize="16sp" />
+</LinearLayout>

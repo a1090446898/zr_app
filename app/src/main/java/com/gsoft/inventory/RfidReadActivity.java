@@ -204,8 +204,7 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
      * 未授予且无缓存MAC时由适配器返回LOCATION_REQUIRED统一提示
      */
     private void onLocationPermissionResult() {
-        if (!hasLocationPermission()) {
-        }
+        if (!hasLocationPermission()) {}
         connectRfid();
     }
 

@@ -1,5 +1,6 @@
 package com.gsoft.inventory;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -354,6 +355,7 @@ public class RfidStatsActivity extends BaseCompatActivity {
      * 数据库查询放到AsyncManager线程池执行，避免阻塞主线程；
      * 结果通过mainHandler切回主线程更新UI，并做页面销毁防护
      */
+    @SuppressLint("NotifyDataSetChanged")
     private void loadStats() {
         // 统计耗时随数据量增加，先显示转圈提示，避免大数据量时页面长时间空置
         layoutLoading.setVisibility(View.VISIBLE);

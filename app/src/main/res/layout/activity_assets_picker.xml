@@ -321,6 +321,7 @@
                     android:textColor="#666666"
                     android:textSize="15sp"
                     app:qmui_backgroundColor="#F2F3F5"
+                    app:qmui_borderWidth="0dp"
                     app:qmui_radius="22dp" />
 
             <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
