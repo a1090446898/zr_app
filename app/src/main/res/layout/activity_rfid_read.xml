@@ -48,6 +48,22 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+        <!-- 找资产状态：开启查找后显示查找方式与已找到/目标数量，未开启时隐藏 -->
+        <TextView
+            android:id="@+id/tvFindState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_find_state"
+            android:lineSpacingExtra="2dp"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
+            android:textColor="#2F6FD0"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
         <!-- 三列等分统计：数值在上(动态字号)标签在下 -->
         <LinearLayout
             android:layout_width="match_parent"

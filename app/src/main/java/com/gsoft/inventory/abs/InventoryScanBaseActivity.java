@@ -343,15 +343,17 @@ public abstract class InventoryScanBaseActivity extends BaseCompatActivity {
     }
 
     /**
-     * 条码命中处理（识别方式的公共出口，主线程调用）：查资产 → 开关开启时自动标记盘实/已盘 → 加入卡片列表 → 播放提示音
+     * 条码命中处理（识别方式的公共出口，主线程调用）：查资产 → 目标过滤 → 开关开启时自动标记盘实/已盘 → 加入卡片列表 → 播放提示音
      * <p>
-     * 1. 按条码(BARCODEID)查询资产，未登记时提示用户（同条码2秒内只提示一次）
-     * 2. 重复判定口径为"本次页面会话是否已扫到过该条码"（与数据库盘点状态解耦）：
+     * 1. 按条码(BARCODEID)查询资产，未登记时提示用户（同条码2秒内只提示一次）；
+     *    找资产模式下非目标标签（含未入库标签）静默忽略，不提示、不标记、不展示
+     * 2. 找资产模式可通过 {@link #selectScanTarget(List)} 只放行匹配目标的资产
+     * 3. 重复判定口径为"本次页面会话是否已扫到过该条码"（与数据库盘点状态解耦）：
      *    首次命中播扫描成功音，同一会话再次命中才播"重复"
-     * 3. 盘点扫描开关开启时：盘点情况=盘实(PDZT=02)、盘点状态=已盘(ZT=02)，并置ISUPLOAD=02(未同步)；关闭时仅展示卡片不改状态
-     * 4. 刷新顶部统计与该资产卡片（颜色联动）：本次标记成功时走内存增量更新，避免连续扫描反复count查询；
+     * 4. 盘点扫描开关开启时：盘点情况=盘实(PDZT=02)、盘点状态=已盘(ZT=02)，并置ISUPLOAD=02(未同步)；关闭时仅展示卡片不改状态
+     * 5. 刷新顶部统计与该资产卡片（颜色联动）：本次标记成功时走内存增量更新，避免连续扫描反复count查询；
      *    列表尚未包含时才新增卡片（去重）
-     * 5. 按首次/重复及当前扫描节奏播放对应提示音（连扫时成功语音降级短哔）
+     * 6. 按首次/重复及当前扫描节奏播放对应提示音（连扫时成功语音降级短哔）
      *
      * @param barCode 资产条码（BARCODEID）
      * @param epc     标签EPC（RFID扫描时有值，红外扫描传空）
@@ -364,11 +366,18 @@ public abstract class InventoryScanBaseActivity extends BaseCompatActivity {
         List<Assets> assetsList = Assets.find(Assets.class, "BARCODEID=?", barCode);
         if (assetsList.isEmpty()) {
             Log.i(TAG, "该资产未查询到 barCode=" + barCode);
-            // 数据库查不到该条码：明确提示用户（原逻辑仅打印日志，用户无感知）
-            showUnknownTagTip(barCode);
+            // 数据库查不到该条码：明确提示用户（原逻辑仅打印日志，用户无感知）；
+            // 找资产模式下非目标标签一律静默，避免持续提示打断寻找
+            if (!isScanTargetFilterActive()) {
+                showUnknownTagTip(barCode);
+            }
             return;
         }
-        Assets hitAssets = assetsList.get(0);
+        // 找资产模式：同条码多条记录时优先返回匹配目标的那条；非目标直接静默忽略
+        Assets hitAssets = selectScanTarget(assetsList);
+        if (hitAssets == null) {
+            return;
+        }
         // 重复语音判定：本次页面会话内该条码是否已命中过（首次=false，再次=true）；
         // 不再以数据库盘点状态判定，避免历史已盘资产首次扫描就播"重复"
         boolean duplicate = !scannedBarcodeSet.add(barCode);
@@ -402,6 +411,29 @@ public abstract class InventoryScanBaseActivity extends BaseCompatActivity {
         }
         updateListUi();
         playScanResultSound(duplicate);
+    }
+
+    /**
+     * 是否处于扫描目标过滤状态（找资产模式）。
+     * <p>
+     * 默认false：红外/摄像头页保持原逻辑（未入库标签照常提示）；
+     * RFID页开启找资产后覆写为true，非目标标签（含未入库标签）静默忽略。
+     */
+    protected boolean isScanTargetFilterActive() {
+        return false;
+    }
+
+    /**
+     * 从条码命中的候选资产中挑选本次要处理的资产。
+     * <p>
+     * 默认取第一条（普通盘点：扫到什么记什么）；
+     * 找资产模式覆写此方法：只有匹配查找条件的资产才返回，非目标返回null静默忽略。
+     *
+     * @param candidates 同一条码查询到的资产列表（不会为空）
+     * @return 本次处理的资产；返回null表示非目标，本次扫描不产生任何数据变化
+     */
+    protected Assets selectScanTarget(List<Assets> candidates) {
+        return candidates == null || candidates.isEmpty() ? null : candidates.get(0);
     }
 
     /**
@@ -502,6 +534,20 @@ public abstract class InventoryScanBaseActivity extends BaseCompatActivity {
     protected void updateListUi() {
         textTagCount.setText("列表共 " + tagAdapter.getDataList().size() + " 条资产");
         textEmpty.setVisibility(tagAdapter.getDataList().isEmpty() ? View.VISIBLE : View.GONE);
+        onScanListChanged();
+    }
+
+    /**
+     * 扫描列表变化回调：子类可同步刷新与列表相关的提示（如找资产已找到数量）
+     */
+    protected void onScanListChanged() {
+    }
+
+    /**
+     * 清空会话判重集合：切换找资产条件时调用，让此前扫到的标签重新参与首次/重复判定
+     */
+    protected void clearScannedBarcodeSet() {
+        scannedBarcodeSet.clear();
     }
 
     /**

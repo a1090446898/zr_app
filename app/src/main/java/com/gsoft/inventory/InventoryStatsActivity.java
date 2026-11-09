@@ -16,6 +16,7 @@ import com.gsoft.inventory.adapter.RfidTagAdapter;
 import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.utils.AccountHelper;
 import com.gsoft.inventory.utils.AsyncManager;
+import com.gsoft.inventory.utils.domain.Accounts;
 import com.gsoft.inventory.utils.domain.Assets;
 import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.StringUtils;
@@ -35,11 +36,13 @@ import butterknife.ButterKnife;
  * 查询条件由跳转页带入且页面内不可修改（顶部一行文字只读展示）：
  * 1. 状态：全部(FILTER_ALL) / 已盘(FILTER_COUNTED, ZT=02) / 未盘(FILTER_UNCOUNTED, ZT为空或!=02)
  * 2. 范围：管理部门(GROUNDMANAGEDEPT，名称/部门编号/单位编号历史取值兼容) + 存放地点(ASSETSLAYADD)
+ * 3. 个人：管理人(CUSTODIAN，TRIM后匹配当前登录人姓名或编号)，由统计页个人三列点击带入
  * <p>
  * 入口：
  * 1. RFID盘点统计页部门层点击顶部数字 → 全部数据+对应状态
  * 2. RFID盘点统计页存放地点层点击顶部数字 → 该部门+对应状态
- * 3. RFID盘点扫描页点击顶部数字 → 该部门+存放地点+对应状态
+ * 3. RFID盘点统计页个人三列点击 → 管理人=当前登录人（存放地点层再叠加该部门）+对应状态
+ * 4. RFID盘点扫描页点击顶部数字 → 该部门+存放地点+对应状态
  * <p>
  * 数据加载：每页PAGE_SIZE条分页查询（后台线程执行），列表滚到底部自动加载下一页，
  * 底部统计条展示真实总数（count查询），列表尾部提示加载状态
@@ -54,6 +57,8 @@ public class InventoryStatsActivity extends BaseCompatActivity {
     public static final String EXTRA_LOCATION = "extra_location";
     /** Intent参数：部门条件是否同时匹配使用部门（true=管理部门或使用部门命中即可） */
     public static final String EXTRA_DEPT_MATCH_USE = "extra_dept_match_use";
+    /** Intent参数：是否只查个人数据（管理人=当前登录人） */
+    public static final String EXTRA_CUSTODIAN_ONLY = "extra_custodian_only";
 
     /** 状态筛选：全部（不限ZT） */
     public static final int FILTER_ALL = 0;
@@ -87,6 +92,8 @@ public class InventoryStatsActivity extends BaseCompatActivity {
     private String deptName = "";
     /** 部门条件是否同时匹配使用部门（存放地点层顶部统计口径为"管理部门或使用部门"） */
     private boolean deptMatchUse = false;
+    /** 是否只查个人数据（管理人=当前登录人，由统计页个人三列点击带入） */
+    private boolean custodianOnly = false;
     /** 存放地点过滤（空表示不过滤；"未设置存放地点"匹配空值） */
     private String locationName = "";
     /** 部门编号BMBH（进入时预计算，查询与名称一并匹配） */
@@ -127,6 +134,7 @@ public class InventoryStatsActivity extends BaseCompatActivity {
         deptName = getIntent().getStringExtra(EXTRA_DEPT_NAME);
         locationName = getIntent().getStringExtra(EXTRA_LOCATION);
         deptMatchUse = getIntent().getBooleanExtra(EXTRA_DEPT_MATCH_USE, false);
+        custodianOnly = getIntent().getBooleanExtra(EXTRA_CUSTODIAN_ONLY, false);
 
         if (StringUtils.isNullOrEmpty(deptName)) {
             deptName = "";
@@ -300,6 +308,27 @@ public class InventoryStatsActivity extends BaseCompatActivity {
             whereParts.add("(ZT IS NULL OR ZT != ?)");
             args.add("02");
         }
+        // 个人条件：管理人(CUSTODIAN)为当前登录人姓名或编号，TRIM后匹配，与统计卡片口径一致
+        if (custodianOnly) {
+            Accounts loginAccount = application.getLoginAccount();
+            String userName = loginAccount == null ? "" : StringUtils.trim(loginAccount.getYHXM());
+            String userNo = loginAccount == null ? "" : StringUtils.trim(loginAccount.getYHBH());
+            List<String> custodianParts = new ArrayList<>();
+            if (!StringUtils.isNullOrEmpty(userName)) {
+                custodianParts.add("TRIM(CUSTODIAN) = ?");
+                args.add(userName);
+            }
+            if (!StringUtils.isNullOrEmpty(userNo)) {
+                custodianParts.add("TRIM(CUSTODIAN) = ?");
+                args.add(userNo);
+            }
+            if (custodianParts.isEmpty()) {
+                // 登录人姓名与编号均缺失：无匹配数据，与统计卡片显示"-"口径一致
+                whereParts.add("1=0");
+            } else {
+                whereParts.add("(" + TextUtils.join(" OR ", custodianParts) + ")");
+            }
+        }
         // 管理部门条件
         if (!StringUtils.isNullOrEmpty(deptName)) {
             if (RfidTagAdapter.DEPT_NONE_NAME.equals(deptName)) {
@@ -359,7 +388,13 @@ public class InventoryStatsActivity extends BaseCompatActivity {
      */
     private String buildConditionText() {
         StringBuilder builder = new StringBuilder();
+        if (custodianOnly) {
+            builder.append("个人");
+        }
         if (!StringUtils.isNullOrEmpty(deptName)) {
+            if (builder.length() > 0) {
+                builder.append(" / ");
+            }
             builder.append(deptName);
         }
         if (!StringUtils.isNullOrEmpty(locationName)) {

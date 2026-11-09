@@ -18,13 +18,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 选择资产页卡片：勾选框 + 名称/条码/使用部门/存放地点
+ * 公共选择资产页卡片：勾选框 + 名称/条码/使用部门/存放地点。
  * <p>
- * 选中态按资产Id记录，跨搜索/分页不丢失；点击整张卡片切换勾选。
- *
- * @author 10904
+ * 选中态按资产 Id 记录，跨搜索/分页不丢失；点击整张卡片切换勾选。
+ * 单选模式下点新卡片会替换原选中项。
  */
-public class BatchCopySourceAdapter extends BaseAdapter {
+public class AssetsPickerAdapter extends BaseAdapter {
 
     public interface OnSelectionChangedListener {
         void onSelectionChanged(int selectedCount);
@@ -36,9 +35,10 @@ public class BatchCopySourceAdapter extends BaseAdapter {
     private List<Assets> dataList = new ArrayList<>();
     private final Set<Long> selectedIds = new LinkedHashSet<>();
     private int maxSelectCount = Integer.MAX_VALUE;
+    private boolean singleSelect;
     private OnSelectionChangedListener selectionListener;
 
-    public BatchCopySourceAdapter(Context context) {
+    public AssetsPickerAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
     }
 
@@ -51,24 +51,32 @@ public class BatchCopySourceAdapter extends BaseAdapter {
     }
 
     public void setMaxSelectCount(int maxSelectCount) {
-        this.maxSelectCount = maxSelectCount;
+        this.maxSelectCount = maxSelectCount <= 0 ? Integer.MAX_VALUE : maxSelectCount;
     }
 
-    /** 初始化已选（表单页回传的已选资产） */
+    public void setSingleSelect(boolean singleSelect) {
+        this.singleSelect = singleSelect;
+    }
+
+    /** 初始化已选（调用方回传的已选资产） */
     public void setSelectedIds(List<Long> ids) {
         selectedIds.clear();
         if (ids != null) {
             for (Long id : ids) {
-                if (id != null) {
-                    selectedIds.add(id);
+                if (id == null) {
+                    continue;
                 }
+                if (selectedIds.size() >= maxSelectCount) {
+                    break;
+                }
+                selectedIds.add(id);
             }
         }
         notifyDataSetChanged();
         notifySelectionChanged();
     }
 
-    /** 全部已选资产Id（跨搜索结果） */
+    /** 全部已选资产 Id（跨搜索结果） */
     public List<Long> getSelectedIds() {
         return new ArrayList<>(selectedIds);
     }
@@ -92,6 +100,9 @@ public class BatchCopySourceAdapter extends BaseAdapter {
     }
 
     public void selectAll() {
+        if (singleSelect) {
+            return;
+        }
         boolean limitReached = false;
         for (Assets assets : dataList) {
             if (assets.getId() == null || selectedIds.contains(assets.getId())) {
@@ -135,7 +146,7 @@ public class BatchCopySourceAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.item_batch_copy_source, parent, false);
+            convertView = mInflater.inflate(R.layout.item_assets_picker, parent, false);
             holder = new ViewHolder();
             holder.tvAssetsName = convertView.findViewById(R.id.tvAssetsName);
             holder.tvBarcode = convertView.findViewById(R.id.tvBarcode);
@@ -174,6 +185,13 @@ public class BatchCopySourceAdapter extends BaseAdapter {
                 return;
             }
             if (isChecked) {
+                if (singleSelect) {
+                    selectedIds.clear();
+                    selectedIds.add(id);
+                    notifyDataSetChanged();
+                    notifySelectionChanged();
+                    return;
+                }
                 if (selectedIds.size() >= maxSelectCount) {
                     buttonView.setChecked(false);
                     if (selectionListener != null) {

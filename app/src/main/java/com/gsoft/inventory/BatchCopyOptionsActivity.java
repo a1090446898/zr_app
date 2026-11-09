@@ -22,6 +22,10 @@ import com.gsoft.inventory.utils.BaseCompatActivity;
 import com.gsoft.inventory.utils.DataConvert;
 import com.gsoft.inventory.utils.StringUtils;
 import com.gsoft.inventory.utils.domain.Assets;
+import com.gsoft.inventory.view.common.AssetsPickerActivity;
+import com.gsoft.inventory.view.common.AssetsPickerOptions;
+import com.gsoft.inventory.view.common.CommonSelectActivity;
+import com.gsoft.inventory.view.common.query.AssetsQueryCondition;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -40,8 +44,6 @@ import butterknife.ButterKnife;
  * 成功后提示用户前往首页同步上传。
  */
 public class BatchCopyOptionsActivity extends BaseCompatActivity {
-
-    public static final String EXTRA_SELECTED_IDS = "extra_selected_ids";
 
     private static final int REQ_SELECT_ASSETS = 1001;
     private static final int REQ_ASSETS_DEPT = 1002;
@@ -167,13 +169,20 @@ public class BatchCopyOptionsActivity extends BaseCompatActivity {
     // ==================== 选择资产 ====================
 
     private void openSelectPage() {
-        Intent intent = new Intent(mContext, BatchCopySelectActivity.class);
         long[] ids = new long[selectedAssets.size()];
         for (int i = 0; i < selectedAssets.size(); i++) {
             ids[i] = selectedAssets.get(i).getId() == null ? 0 : selectedAssets.get(i).getId();
         }
-        intent.putExtra(EXTRA_SELECTED_IDS, ids);
-        startActivityForResult(intent, REQ_SELECT_ASSETS);
+        AssetsPickerOptions options = AssetsPickerOptions.builder()
+                .title("选择资产")
+                .maxSelectCount(Const.BATCH_COPY_QUERY_LIMIT)
+                .queryLimit(Const.BATCH_COPY_QUERY_LIMIT)
+                .visibleFilters(AssetsPickerOptions.FILTER_ALL)
+                .initialSelectedIds(ids)
+                // 批量复制只允许选择未盘资产：PDZT 为空的历史数据按未盘处理
+                .addCondition(AssetsQueryCondition.notEqIgnoringNull("PDZT", "01"))
+                .build();
+        AssetsPickerActivity.pick(this, REQ_SELECT_ASSETS, options);
     }
 
     @Override
@@ -183,7 +192,7 @@ public class BatchCopyOptionsActivity extends BaseCompatActivity {
             return;
         }
         if (requestCode == REQ_SELECT_ASSETS) {
-            loadSelectedAssets(data == null ? null : data.getLongArrayExtra(EXTRA_SELECTED_IDS));
+            loadSelectedAssets(AssetsPickerActivity.readSelectedIds(data));
             return;
         }
         SelectItem item = CommonSelectActivity.readResult(data);

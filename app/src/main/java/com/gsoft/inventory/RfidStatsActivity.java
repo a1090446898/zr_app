@@ -1,22 +1,23 @@
 package com.gsoft.inventory;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gsoft.inventory.adapter.RfidDeptStatsAdapter;
 import com.gsoft.inventory.adapter.RfidTagAdapter;
 import com.gsoft.inventory.abs.InventoryScanBaseActivity;
+import com.gsoft.inventory.service.rfid_stats.DeptStatsData;
+import com.gsoft.inventory.service.rfid_stats.EqualRowHeightGridLayoutManager;
+import com.gsoft.inventory.service.rfid_stats.GridSpaceItemDecoration;
 
 import com.gsoft.inventory.const_data.Const;
+import com.gsoft.inventory.const_data.UserRoleConst;
 import com.gsoft.inventory.utils.*;
 import com.gsoft.inventory.utils.domain.Accounts;
 import com.gsoft.inventory.utils.domain.Assets;
@@ -44,20 +45,26 @@ import butterknife.ButterKnife;
  * RFID盘点统计页面（一个页面两级复用）
  * <p>
  * 部门层(MODE_DEPT，默认)：
- * 1. 顶部卡片展示全局已盘(绿)/未盘(红)/全部(黑)数量
+ * 1. 顶部卡片两组统计（每列均可点击下钻盘点明细页）：
+ *    左侧个人组 已盘(绿)/未盘(红)/全部(黑)，标题固定"个人"，按管理人(CUSTODIAN)匹配当前登录人；
+ *    右侧单位/部门组 已盘(绿)/未盘(红)/全部(黑)，标题按登录人权限动态显示：
+ *    最高权限"单位"、部门权限"部门"、个人权限整组隐藏；
  * 2. 网格展示有资产的部门（全部数量为0的部门不展示），每个部门显示 已盘/未盘/全部
  * 3. 点击部门 → 复用本页面进入该部门的存放地点层
  * <p>
  * 存放地点层(MODE_LOCATION)：
- * 1. 顶部卡片展示该部门已盘(绿)/未盘(红)/全部(黑)数量（部门相关口径：管理部门或使用部门为当前部门）
+ * 1. 顶部卡片单位/部门组展示该部门已盘(绿)/未盘(红)/全部(黑)数量（部门相关口径：管理部门或使用部门为当前部门），
+ *    该层单位/部门组标题统一显示"部门"（口径固定为该部门，最高权限也不标"单位"）；
+ *    个人三列在本层叠加当前部门条件，与单位/部门组同范围
  * 2. 网格展示该部门涉及的存放地点(按ASSETSLAYADD去重)，每个地点按纯地点口径显示 已盘/未盘/全部
  *    （不加入部门条件，与点击进入后的盘点扫描页统计口径一致）；
  *    首位固定展示"空白地点（临时）"虚拟入口（不显示三列统计），
  *    点击后不限制部门/存放地点扫描，扫到资产后可手动指定实际存放地点并同步使用部门
  * 3. 点击存放地点 → 进入原有RFID盘点扫描页(RfidReadActivity)
  * <p>
- * 下钻：顶部三列统计(已盘/未盘/全部)点击 → 盘点明细页(InventoryStatsActivity)，
- * 部门层查全部数据+对应状态，存放地点层带当前部门(管理或使用)+对应状态
+ * 下钻：顶部统计点击 → 盘点明细页(InventoryStatsActivity)：
+ * 单位/部门组按 部门层全部数据 / 存放地点层当前部门 + 对应状态；
+ * 个人三列在此基础上增加"管理人=当前登录人"条件
  * <p>
  * 功能操作卡片（两级统一显示，位于统计卡片下方）：
  * 资产移交/资产处置/盘亏处理/补打条码/上传数据/数字签名六个入口，
@@ -101,9 +108,24 @@ public class RfidStatsActivity extends BaseCompatActivity {
     /** 全部数量（黑色显示） */
     @BindView(R.id.tvAllTotal)
     TextView tvAllTotal;
-    /** 个人资产数量（"盘点统计"下方，按管理人匹配当前登录人） */
-    @BindView(R.id.tvPersonalAssetTotal)
-    TextView tvPersonalAssetTotal;
+    /** 顶部"单位/部门"分组容器（个人权限时整组隐藏） */
+    @BindView(R.id.layoutScopeGroup)
+    View layoutScopeGroup;
+    /** 顶部"单位/部门"分组标题：最高权限显示单位，部门权限显示部门 */
+    @BindView(R.id.tvScopeTitle)
+    TextView tvScopeTitle;
+    /** 两组统计之间的竖分割线（随"单位/部门"组隐藏） */
+    @BindView(R.id.dividerGroup)
+    View dividerGroup;
+    /** 个人已盘数量（绿色显示） */
+    @BindView(R.id.tvPersonalCounted)
+    TextView tvPersonalCounted;
+    /** 个人未盘数量（红色显示，=个人全部-个人已盘） */
+    @BindView(R.id.tvPersonalUncounted)
+    TextView tvPersonalUncounted;
+    /** 个人全部数量（黑色显示） */
+    @BindView(R.id.tvPersonalTotal)
+    TextView tvPersonalTotal;
     /** 分组列表标题：部门层显示"部门盘点统计"，存放地点层显示"存放地点盘点统计" */
     @BindView(R.id.tvSectionTitle)
     TextView tvSectionTitle;
@@ -123,6 +145,9 @@ public class RfidStatsActivity extends BaseCompatActivity {
     private int mode = MODE_DEPT;
     /** 存放地点层对应的部门名称 */
     private String deptName = "";
+    /** 登录人姓名、编号：个人统计按管理人(CUSTODIAN)匹配，兼容数据源存姓名或存编号 */
+    private String loginUserName = "";
+    private String loginUserNo = "";
 
     /**
      * 访问服务器地址
@@ -156,6 +181,15 @@ public class RfidStatsActivity extends BaseCompatActivity {
         if (StringUtils.isNullOrEmpty(deptName)) {
             deptName = "";
         }
+
+        // 登录人信息：个人统计按管理人(CUSTODIAN)匹配，兼容姓名/编号
+        Accounts loginAccount = application.getLoginAccount();
+        String userName = loginAccount == null ? "" : StringUtils.trim(loginAccount.getYHXM());
+        String userNo = loginAccount == null ? "" : StringUtils.trim(loginAccount.getYHBH());
+        loginUserName = userName == null ? "" : userName;
+        loginUserNo = userNo == null ? "" : userNo;
+        // 顶部"单位/部门"组标题按权限动态显示：单位/部门，个人权限整组隐藏
+        applyScopeGroup(loginAccount == null ? "" : loginAccount.getROLE());
 
         // 标题与分组标题随层级切换
         topBar.setTitle(mode == MODE_LOCATION ? deptName + "盘点统计" : "资产盘点统计");
@@ -195,10 +229,35 @@ public class RfidStatsActivity extends BaseCompatActivity {
         findViewById(R.id.columnCounted).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_COUNTED));
         findViewById(R.id.columnUncounted).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_UNCOUNTED));
         findViewById(R.id.columnAll).setOnClickListener(v -> openInventoryStatsDetail(InventoryStatsActivity.FILTER_ALL));
+        // 个人三列点击：下钻盘点明细页查看个人数据（存放地点层同时带当前部门条件）
+        findViewById(R.id.columnPersonalCounted).setOnClickListener(v -> openPersonalStatsDetail(InventoryStatsActivity.FILTER_COUNTED));
+        findViewById(R.id.columnPersonalUncounted).setOnClickListener(v -> openPersonalStatsDetail(InventoryStatsActivity.FILTER_UNCOUNTED));
+        findViewById(R.id.columnPersonalAll).setOnClickListener(v -> openPersonalStatsDetail(InventoryStatsActivity.FILTER_ALL));
 
         // 初始化功能操作卡片入口点击
         initToolsPage();
 
+    }
+
+    /**
+     * 顶部"单位/部门"组（位于个人组右侧）标题与显隐：
+     * 最高权限显示"单位"，部门权限显示"部门"，个人权限整组隐藏（只显示个人三列）；
+     * 存放地点层三列口径固定为该部门，标题统一显示"部门"，避免最高权限误标为"单位"
+     *
+     * @param role 账号ROLE字段
+     */
+    private void applyScopeGroup(String role) {
+        String scopeTitle = UserRoleConst.getScopeTitle(role);
+        if (!StringUtils.isNullOrEmpty(scopeTitle) && mode == MODE_LOCATION) {
+            scopeTitle = "部门";
+        }
+        boolean visible = !StringUtils.isNullOrEmpty(scopeTitle);
+        layoutScopeGroup.setVisibility(visible ? View.VISIBLE : View.GONE);
+        dividerGroup.setVisibility(visible ? View.VISIBLE : View.GONE);
+        tvScopeTitle.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible) {
+            tvScopeTitle.setText(scopeTitle);
+        }
     }
 
     /**
@@ -213,6 +272,21 @@ public class RfidStatsActivity extends BaseCompatActivity {
         if (mode == MODE_LOCATION && !StringUtils.isNullOrEmpty(deptName)) {
             intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_NAME, deptName);
             // 存放地点层顶部统计按"管理部门或使用部门"口径，明细页需同口径
+            intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_MATCH_USE, true);
+        }
+        startActivity(intent);
+    }
+
+    /**
+     * 个人统计点击下钻：明细页在状态条件基础上增加"管理人=当前登录人"条件；
+     * 存放地点层与顶部个人口径保持一致，同时带入当前部门（管理部门或使用部门）
+     */
+    private void openPersonalStatsDetail(int filter) {
+        Intent intent = new Intent(mContext, InventoryStatsActivity.class);
+        intent.putExtra(InventoryStatsActivity.EXTRA_FILTER, filter);
+        intent.putExtra(InventoryStatsActivity.EXTRA_CUSTODIAN_ONLY, true);
+        if (mode == MODE_LOCATION && !StringUtils.isNullOrEmpty(deptName)) {
+            intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_NAME, deptName);
             intent.putExtra(InventoryStatsActivity.EXTRA_DEPT_MATCH_USE, true);
         }
         startActivity(intent);
@@ -299,11 +373,22 @@ public class RfidStatsActivity extends BaseCompatActivity {
                 // 刷新顶部统计：已盘数量(绿)/未盘数量(红)/全部数量(黑)，千分位显示并按最大位数统一字号
                 int uncountedTotal = data.totalCount - data.countedTotal;
                 int maxDigits = CountValueHelper.maxDigitsOf(data.countedTotal, uncountedTotal, data.totalCount);
-                CountValueHelper.showTopCardCount(tvCountedTotal, data.countedTotal, maxDigits);
-                CountValueHelper.showTopCardCount(tvUncountedTotal, uncountedTotal, maxDigits);
-                CountValueHelper.showTopCardCount(tvAllTotal, data.totalCount, maxDigits);
-                // 个人资产数量：按管理人(CUSTODIAN)匹配当前登录人，千分位显示
-                tvPersonalAssetTotal.setText(String.format(Locale.CHINA, "个人资产数量 %,d", data.personalCount));
+                CountValueHelper.showTopCardSixCount(tvCountedTotal, data.countedTotal, maxDigits);
+                CountValueHelper.showTopCardSixCount(tvUncountedTotal, uncountedTotal, maxDigits);
+                CountValueHelper.showTopCardSixCount(tvAllTotal, data.totalCount, maxDigits);
+                // 个人三列：管理人=当前登录人，未盘=个人全部-个人已盘
+                int personalUncounted = data.personalTotal - data.personalCounted;
+                if (StringUtils.isNullOrEmpty(loginUserName) && StringUtils.isNullOrEmpty(loginUserNo)) {
+                    // 登录人姓名与编号都缺失时无法匹配管理人，显示"-"避免误读为0
+                    tvPersonalCounted.setText("-");
+                    tvPersonalUncounted.setText("-");
+                    tvPersonalTotal.setText("-");
+                } else {
+                    int personalMaxDigits = CountValueHelper.maxDigitsOf(data.personalCounted, personalUncounted, data.personalTotal);
+                    CountValueHelper.showTopCardSixCount(tvPersonalCounted, data.personalCounted, personalMaxDigits);
+                    CountValueHelper.showTopCardSixCount(tvPersonalUncounted, personalUncounted, personalMaxDigits);
+                    CountValueHelper.showTopCardSixCount(tvPersonalTotal, data.personalTotal, personalMaxDigits);
+                }
                 // 刷新分组网格数据
                 statsAdapter.setData(data.deptList);
                 statsAdapter.notifyDataSetChanged();
@@ -315,43 +400,29 @@ public class RfidStatsActivity extends BaseCompatActivity {
 
     /**
      * 统计入口（后台线程执行）：按层级分发到部门统计或存放地点统计
+     * <p>
+     * 个人三列与单位/部门组同范围，在两次遍历中一并累加，避免额外查库
      *
      * @return 顶部统计与分组明细数据
      */
     private DeptStatsData buildStats() {
-        DeptStatsData data = mode == MODE_LOCATION ? buildLocationStats() : buildDeptStats();
-        // 个人资产数量：按管理人匹配当前登录人，两级页面取同一口径
-        data.personalCount = countPersonalAssets();
-        return data;
+        return mode == MODE_LOCATION ? buildLocationStats() : buildDeptStats();
     }
 
     /**
-     * 统计个人资产数量（后台线程执行）：按管理人(CUSTODIAN)匹配当前登录人，
-     * 兼容数据源存姓名或存用户编号两种情况
+     * 个人资产判定：管理人(CUSTODIAN)为当前登录人姓名或编号（去首尾空格后比较），
+     * 与明细页 TRIM(CUSTODIAN) 条件同一口径
      *
-     * @return 本人管理人的本机资产条数
+     * @param assets 资产记录
+     * @return true=属于当前登录人
      */
-    private int countPersonalAssets() {
-        Accounts loginAccount = application.getLoginAccount();
-        if (loginAccount == null) {
-            return 0;
+    private boolean isPersonalAsset(Assets assets) {
+        String custodian = StringUtils.trim(assets.getCUSTODIAN());
+        if (StringUtils.isNullOrEmpty(custodian)) {
+            return false;
         }
-        String userName = StringUtils.trim(loginAccount.getYHXM());
-        String userNo = StringUtils.trim(loginAccount.getYHBH());
-        List<String> whereParts = new ArrayList<>();
-        List<String> args = new ArrayList<>();
-        if (!StringUtils.isNullOrEmpty(userName)) {
-            whereParts.add("CUSTODIAN = ?");
-            args.add(userName);
-        }
-        if (!StringUtils.isNullOrEmpty(userNo)) {
-            whereParts.add("CUSTODIAN = ?");
-            args.add(userNo);
-        }
-        if (whereParts.isEmpty()) {
-            return 0;
-        }
-        return (int) Assets.count(Assets.class, TextUtils.join(" OR ", whereParts), args.toArray(new String[0]));
+        return (!StringUtils.isNullOrEmpty(loginUserName) && custodian.equals(loginUserName))
+                || (!StringUtils.isNullOrEmpty(loginUserNo) && custodian.equals(loginUserNo));
     }
 
     /**
@@ -420,6 +491,9 @@ public class RfidStatsActivity extends BaseCompatActivity {
         List<Assets> allAssets = Assets.listAll(Assets.class);
         // 全局已盘累计数量
         int countedTotal = 0;
+        // 个人资产累计：管理人=当前登录人的全部/已盘数量
+        int personalTotal = 0;
+        int personalCounted = 0;
         for (Assets assets : allAssets) {
             // 管理部门归一化为中文名称（编号转名称、空值归"未分配部门"）
             String dept = normalizeDeptName(StringUtils.trim(assets.getGROUNDMANAGEDEPT()), codeToNameMap, nameSet);
@@ -436,12 +510,21 @@ public class RfidStatsActivity extends BaseCompatActivity {
                 stat[0]++;
                 countedTotal++;
             }
+            // 个人资产：管理人=当前登录人
+            if (isPersonalAsset(assets)) {
+                personalTotal++;
+                if ("02".equals(assets.getZT())) {
+                    personalCounted++;
+                }
+            }
         }
 
         // 组装统计结果载体
         DeptStatsData data = new DeptStatsData();
         data.totalCount = allAssets.size();
         data.countedTotal = countedTotal;
+        data.personalCounted = personalCounted;
+        data.personalTotal = personalTotal;
         data.deptList = buildSortedList(deptMap, deptCodeMap);
         // 全部数量为0的部门不展示：部门字典中存在但本地未导入任何资产的部门
         removeEmptyDeptStats(data.deptList);
@@ -513,10 +596,20 @@ public class RfidStatsActivity extends BaseCompatActivity {
         List<Assets> deptAssets = findDeptRelatedAssets(deptName);
         // 部门相关资产已盘累计数量与涉及的存放地点集合
         int countedTotal = 0;
+        // 个人资产累计：管理人=当前登录人，范围与第一组一致（管理部门或使用部门为当前部门）
+        int personalCounted = 0;
+        int personalTotal = 0;
         Set<String> relatedLocations = new HashSet<>();
         for (Assets assets : deptAssets) {
             if ("02".equals(assets.getZT())) {
                 countedTotal++;
+            }
+            // 个人资产：管理人=当前登录人
+            if (isPersonalAsset(assets)) {
+                personalTotal++;
+                if ("02".equals(assets.getZT())) {
+                    personalCounted++;
+                }
             }
             relatedLocations.add(normalizeLocationName(assets.getASSETSLAYADD()));
         }
@@ -546,6 +639,8 @@ public class RfidStatsActivity extends BaseCompatActivity {
         DeptStatsData data = new DeptStatsData();
         data.totalCount = deptAssets.size();
         data.countedTotal = countedTotal;
+        data.personalCounted = personalCounted;
+        data.personalTotal = personalTotal;
         data.deptList = buildSortedList(locationMap, null);
         // 空白地点（临时）：每个部门固定展示的虚拟入口，不参与真实地点统计，固定排在第一位
         RfidDeptStatsAdapter.DeptStats backupStats = new RfidDeptStatsAdapter.DeptStats();
@@ -662,107 +757,6 @@ public class RfidStatsActivity extends BaseCompatActivity {
             return Long.compare(Long.parseLong(code1), Long.parseLong(code2));
         } catch (NumberFormatException e) {
             return code1.compareTo(code2);
-        }
-    }
-
-    /**
-     * 盘点统计数据载体
-     * <p>
-     * 承载一次统计的全部结果：总数、已盘数、分组明细列表
-     */
-    static class DeptStatsData {
-        /** 全部资产总数 */
-        int totalCount;
-        /** 已盘数量 */
-        int countedTotal;
-        /** 个人资产数量（管理人=当前登录人的本机资产条数） */
-        int personalCount;
-        /** 分组明细列表（部门层为部门列表，存放地点层为地点列表） */
-        List<RfidDeptStatsAdapter.DeptStats> deptList;
-    }
-
-    /**
-     * 两列等高网格LayoutManager：
-     * 每次布局完成后把同一行卡片的最小高度拉平为该行最高卡片，
-     * 实现"同一行卡片随最长名称自动等高"（RecyclerView本身不会同行等高）
-     */
-    private static class EqualRowHeightGridLayoutManager extends GridLayoutManager {
-
-        EqualRowHeightGridLayoutManager(Context context, int spanCount) {
-            super(context, spanCount);
-        }
-
-        @Override
-        public void onLayoutCompleted(RecyclerView.State state) {
-            super.onLayoutCompleted(state);
-            equalizeRowHeights();
-        }
-
-        /** 同行卡片按行内最大高度统一最小高度，保证卡片底部对齐；高度一致后不再触发重排 */
-        private void equalizeRowHeights() {
-            int childCount = getChildCount();
-            if (childCount == 0) {
-                return;
-            }
-            // 行号 → 行内最大卡片高度
-            Map<Integer, Integer> rowMaxHeights = new HashMap<>();
-            for (int i = 0; i < childCount; i++) {
-                View child = getChildAt(i);
-                int position = getPosition(child);
-                if (position == RecyclerView.NO_POSITION) {
-                    continue;
-                }
-                int row = position / getSpanCount();
-                Integer max = rowMaxHeights.get(row);
-                if (max == null || child.getHeight() > max) {
-                    rowMaxHeights.put(row, child.getHeight());
-                }
-            }
-            // 低于行最大高度的卡片拉平（setMinimumHeight值不变时不会再触发布局，不会循环）
-            for (int i = 0; i < childCount; i++) {
-                View child = getChildAt(i);
-                int position = getPosition(child);
-                if (position == RecyclerView.NO_POSITION) {
-                    continue;
-                }
-                Integer max = rowMaxHeights.get(position / getSpanCount());
-                if (max != null && child.getHeight() < max && child.getMinimumHeight() != max) {
-                    child.setMinimumHeight(max);
-                }
-            }
-        }
-    }
-
-    /**
-     * 网格间距装饰：列间距左右各半保证两列卡片间距均匀，行间距加在非首行卡片顶部（首行与标题自然衔接），
-     * 左右/底部边距由RecyclerView的padding提供（与原GridView参数一致：边距12dp、间距10dp）
-     */
-    private static class GridSpaceItemDecoration extends RecyclerView.ItemDecoration {
-
-        /** 列数（与LayoutManager的spanCount一致） */
-        private final int spanCount;
-        /** 列间距(px) */
-        private final int columnSpace;
-        /** 行间距(px) */
-        private final int rowSpace;
-
-        GridSpaceItemDecoration(int spanCount, int columnSpace, int rowSpace) {
-            this.spanCount = spanCount;
-            this.columnSpace = columnSpace;
-            this.rowSpace = rowSpace;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            int position = parent.getChildAdapterPosition(view);
-            if (position == RecyclerView.NO_POSITION) {
-                return;
-            }
-            int column = position % spanCount;
-            int row = position / spanCount;
-            outRect.left = column == 0 ? 0 : columnSpace / 2;
-            outRect.right = column == 0 ? columnSpace / 2 : 0;
-            outRect.top = row == 0 ? 0 : rowSpace;
         }
     }
 

@@ -20,6 +20,8 @@ public class CountValueHelper {
 
     /** 顶部统计卡片数值字号下限(sp) */
     private static final int TOP_CARD_MIN_SP = 10;
+    /** 顶部六列并排数值字号下限(sp) */
+    private static final int TOP_CARD_SIX_MIN_SP = 8;
     /** 分组卡片数值字号下限(sp) */
     private static final int GROUP_CARD_MIN_SP = 8;
 
@@ -43,6 +45,28 @@ public class CountValueHelper {
             return 18;
         }
         return 16;
+    }
+
+    /**
+     * 顶部六列并排统计卡片：按位数取字号（基准18sp，列宽更窄逐档下调）
+     *
+     * @param digits 一组数值中的最大位数
+     * @return 字号(sp)
+     */
+    public static int topCardSixFontSizeSp(int digits) {
+        if (digits <= 4) {
+            return 18;
+        }
+        if (digits == 5) {
+            return 16;
+        }
+        if (digits == 6) {
+            return 14;
+        }
+        if (digits == 7) {
+            return 12;
+        }
+        return 10;
     }
 
     /**
@@ -83,6 +107,13 @@ public class CountValueHelper {
      */
     public static void showTopCardCount(TextView textView, int value, int maxDigits) {
         showCount(textView, value, topCardFontSizeSp(maxDigits), TOP_CARD_MIN_SP);
+    }
+
+    /**
+     * 顶部六列并排统计卡片数值显示：千分位文本 + 统一字号 + AutoSize兜底
+     */
+    public static void showTopCardSixCount(TextView textView, int value, int maxDigits) {
+        showCount(textView, value, topCardSixFontSizeSp(maxDigits), TOP_CARD_SIX_MIN_SP);
     }
 
     /**

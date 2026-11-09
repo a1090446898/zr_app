@@ -155,9 +155,11 @@
 
         <activity android:name=".BatchCopyActivity" android:exported="false"  />
         <activity android:name=".BatchCopyOptionsActivity" android:exported="false" />
-        <activity android:name=".BatchCopySelectActivity" android:exported="false" />
+        <activity android:name=".view.common.AssetsPickerActivity" android:exported="false" />
+        <!-- RFID找资产设置页（查找方式/人员/指定资产） -->
+        <activity android:name=".view.rfidfind.FindAssetsSettingActivity" android:exported="false" />
         <!-- 公共选择页：使用部门/管理部门/人员 -->
-        <activity android:name=".CommonSelectActivity" android:exported="false" />
+        <activity android:name=".view.common.CommonSelectActivity" android:exported="false" />
         <activity android:name=".InventoryStatsActivity" android:exported="false" />
         <activity android:name=".ReprintBarcodeActivity" android:exported="false" />
 

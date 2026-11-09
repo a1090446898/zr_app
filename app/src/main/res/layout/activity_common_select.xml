@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 公共选择页：部门 / 人员，靠 type 区分数据源 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#F2F3F5"
+              android:orientation="vertical">
+
+    <com.qmuiteam.qmui.widget.QMUITopBar
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/qmui_topbar_height" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="12dp">
+
+        <EditText
+                android:id="@+id/editKeyword"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="#F7F8FA"
+                android:hint="搜索"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:singleLine="true"
+                android:textColor="#333333"
+                android:textColorHint="#BBBBBB"
+                android:textSize="14sp" />
+    </LinearLayout>
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+        <ListView
+                android:id="@+id/listItems"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="#F0F0F0"
+                android:dividerHeight="1px"
+                android:scrollbars="none" />
+
+        <LinearLayout
+                android:id="@+id/layoutEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="没有匹配的数据"
+                    android:textColor="#999999"
+                    android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/layoutLoading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80000000"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+            <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminateTint="@color/primary_color" />
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="正在加载…"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <TextView
+            android:id="@+id/tvCount"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@color/white"
+            android:gravity="center"
+            android:textColor="#999999"
+            android:textSize="12sp" />
+</LinearLayout>

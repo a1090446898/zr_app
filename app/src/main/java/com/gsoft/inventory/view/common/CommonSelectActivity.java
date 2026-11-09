@@ -1,4 +1,4 @@
-package com.gsoft.inventory;
+package com.gsoft.inventory.view.common;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.gsoft.inventory.R;
 import com.gsoft.inventory.adapter.CommonSelectAdapter;
 import com.gsoft.inventory.data.SelectItem;
 import com.gsoft.inventory.utils.AccountHelper;
@@ -34,7 +35,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * 公共选择页：使用部门、管理部门、人员三种模式共用一个页面
+ * 公共选择页：使用部门、管理部门、人员三种模式共用一个页面。
  * <p>
  * 调用方只需静态方法 + 请求码，结果通过 {@link #readResult(Intent)} 统一解析：
  * <pre>

@@ -19,6 +19,7 @@ import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.data.SelectItem;
 import com.gsoft.inventory.pojo.JumPagePojo;
 import com.gsoft.inventory.pojo.QueryResutlPojo;
+import com.gsoft.inventory.view.common.CommonSelectActivity;
 import com.gsoft.inventory.utils.*;
 import com.gsoft.inventory.utils.domain.Accounts;
 import com.gsoft.inventory.utils.domain.Assets;

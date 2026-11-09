@@ -99,9 +99,9 @@ public class BatchCopyActivity extends BaseCompatActivity {
         ztbH = application.getLoginAccount() == null ? "" : application.getLoginAccount().getZTBH();
         topBar.setTitle("批量复制");
         topBar.addLeftBackImageButton().setOnClickListener(v -> finish());
-        tvClear = topBar.addRightTextButton("清空列表", R.id.topbar_right_about_button);
+        tvClear = topBar.addRightTextButton("清空", R.id.topbar_right_about_button);
         tvClear.setOnClickListener(v -> confirmClear());
-        tvDeleteMode = topBar.addRightTextButton("批量删除", R.id.topbar_right_query_button);
+        tvDeleteMode = topBar.addRightTextButton("删除", R.id.topbar_right_query_button);
         tvDeleteMode.setOnClickListener(v -> toggleDeleteMode());
 
         tvSelectedCount.setText("");

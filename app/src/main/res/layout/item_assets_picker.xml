@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 选择资产卡片项：勾选框 + 名称/条码/使用部门/存放地点 -->
+<!-- 公共选择资产页卡片项：勾选框 + 名称/条码/使用部门/存放地点 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"

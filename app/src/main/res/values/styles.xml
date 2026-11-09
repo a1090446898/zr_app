@@ -136,6 +136,35 @@
         <item name="android:paddingEnd">62dp</item>
     </style>
 
+    <!-- 找资产设置页：白色分组卡片 -->
+    <style name="find_assets_card">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:background">@drawable/bg_card_white</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <!-- 找资产设置页：分组标题 -->
+    <style name="find_assets_section_title">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/primary_text</item>
+    </style>
+
+    <!-- 找资产设置页：竖排选项（查找方式） -->
+    <style name="find_assets_radio">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/primary_text</item>
+    </style>
+
     <!-- 资产新增/编辑表单：与详情页统一的标签、输入框、分组标题 -->
     <style name="assets_form_label" parent="TextAppearance.AppCompat.Body1">
         <item name="android:layout_width">0dp</item>

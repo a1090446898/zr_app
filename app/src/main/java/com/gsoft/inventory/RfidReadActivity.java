@@ -6,10 +6,13 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +38,8 @@ import com.gsoft.inventory.utils.DownloadZrFileManager;
 import com.gsoft.inventory.utils.RfidEpcUtils;
 import com.gsoft.inventory.utils.SharedPreferencesUtils;
 import com.gsoft.inventory.utils.StringUtils;
+import com.gsoft.inventory.view.rfidfind.FindAssetsCriteria;
+import com.gsoft.inventory.view.rfidfind.FindAssetsSettingActivity;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
@@ -50,8 +55,9 @@ import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
  * 1. 硬件访问经统一接口IRfidReader由厂家适配器实现（优博讯com.ubx.usdk / 东集com.seuic.uhf），
  *    本页保留设备按键触发盘点、功率/区域/会话/频率设置等业务交互
  * 2. EPC编码处理：判断EPC是否为ASCII编码（是则转码为条码，不是则用EPC原值），随后交由基类公共命中处理
- * 3. 顶部"设置"菜单：功率/盘点区域(仅支持TID的机型)/会话/频率区域/重置当前地点盘点状态
- * 4. 扫描开停：按钮与设备RFID硬件按键均可触发，适配器负责会话启停
+ * 3. 顶部"设置"菜单：找资产/功率/盘点区域(仅支持TID的机型)/会话/频率区域/提示音/重置当前地点盘点状态
+ * 4. 找资产：开启后只认查找目标，非目标标签静默忽略（不提示、不标记、不加入列表）
+ * 5. 扫描开停：按钮与设备RFID硬件按键均可触发，适配器负责会话启停
  * @author 10904
  */
 public class RfidReadActivity extends InventoryScanBaseActivity {
@@ -67,6 +73,7 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
     public static final int REGION_USA = RfidConfig.REGION_USA;           // 美国902~928MHz
 
     /** 设置菜单项标识：用 tag 分发，避免增删条目后行号错位 */
+    private static final String SETTING_FIND = "find";
     private static final String SETTING_POWER = "power";
     private static final String SETTING_MODE = "mode";
     private static final String SETTING_SESSION = "session";
@@ -80,6 +87,9 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
     /** 开始/停止扫描按钮 */
     @BindView(R.id.buttonScan)
     QMUIButton buttonScan;
+    /** 找资产状态行：开启查找后展示查找方式与已找到/目标数量 */
+    @BindView(R.id.tvFindState)
+    TextView tvFindState;
 
     /** RFID读取器统一接口（厂家适配器由工厂按设备型号创建，本页不感知具体SDK） */
     private IRfidReader rfidReader;
@@ -94,6 +104,15 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
     private static final int REQ_RFID_STORAGE = 9001;
     /** 定位权限请求码（优博讯BLE枪柄首次搜索需要） */
     private static final int REQ_RFID_LOCATION = 9002;
+    /** 找资产设置页请求码 */
+    private static final int REQ_FIND_ASSETS = 9003;
+
+    /** 当前找资产条件：null表示未开启，扫描按普通盘点处理 */
+    private FindAssetsCriteria findCriteria;
+    /** 查找目标总数（人员方式按姓名count查询，指定资产方式取选择时统计值） */
+    private int findTargetTotal = 0;
+    /** 目标总数是否已统计完成：未完成时状态行先不展示目标数 */
+    private boolean findTargetTotalReady = false;
 
     /** UHF功率(dBm)（从未手动设置过时为适配器默认值：优博讯=设备最大功率，其他厂家33） */
     private int uhfPower;
@@ -151,6 +170,8 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_RFID_STORAGE) {
             onStoragePermissionResult();
+        } else if (requestCode == REQ_FIND_ASSETS && resultCode == RESULT_OK) {
+            applyFindCriteria(FindAssetsSettingActivity.readResult(data));
         }
     }
 
@@ -240,6 +261,131 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
     @Override
     protected void onMarkStatusEnabled() {
         readEpcSet.clear();
+    }
+
+    // ==================== 找资产 ====================
+
+    /**
+     * 是否处于找资产模式：基类据此静默忽略未入库标签
+     */
+    @Override
+    protected boolean isScanTargetFilterActive() {
+        return findCriteria != null && findCriteria.isEnabled();
+    }
+
+    /**
+     * 扫描目标过滤：找资产模式下只放行匹配查找条件的资产，
+     * 非目标返回null由基类静默忽略（不提示、不标记、不加入列表）；
+     * 未开启找资产时保持基类原有逻辑
+     */
+    @Override
+    protected Assets selectScanTarget(List<Assets> candidates) {
+        if (!isScanTargetFilterActive()) {
+            return super.selectScanTarget(candidates);
+        }
+        for (Assets assets : candidates) {
+            if (findCriteria.matches(assets)) {
+                return assets;
+            }
+        }
+        return null;
+    }
+
+    /** 列表变化（扫描命中/清空）时刷新找资产状态行 */
+    @Override
+    protected void onScanListChanged() {
+        updateFindStateUi();
+    }
+
+    /** 打开找资产设置页：携带当前条件，便于回显与修改 */
+    private void openFindAssetsSetting() {
+        FindAssetsSettingActivity.open(this, REQ_FIND_ASSETS, findCriteria);
+    }
+
+    /**
+     * 应用找资产设置页回传的条件。
+     * <p>
+     * 条件发生变化时先停止扫描，再清空卡片列表与两处去重集合：
+     * 否则旧目标会继续显示，且新条件的目标可能因EPC/条码已扫过而被去重。
+     * 条件未变化时保留当前列表，仅刷新状态行。
+     */
+    private void applyFindCriteria(FindAssetsCriteria criteria) {
+        boolean newEnabled = criteria != null && criteria.isEnabled();
+        String oldKey = findCriteria == null ? "" : findCriteria.configKey();
+        String newKey = newEnabled ? criteria.configKey() : "";
+        findCriteria = newEnabled ? criteria : null;
+        if (oldKey.equals(newKey)) {
+            refreshFindTargetTotal();
+            showShortText(newEnabled ? "查找条件未变化" : "未开启找资产");
+            return;
+        }
+        if (scanning) {
+            stopScan();
+        }
+        readEpcSet.clear();
+        clearScannedBarcodeSet();
+        tagAdapter.setDataList(new ArrayList<RfidTagAdapter.RfidTagItem>());
+        updateScanUi();
+        showShortText(newEnabled ? "已开启找资产：" + findCriteria.getModeName() : "已关闭找资产");
+        refreshFindTargetTotal();
+    }
+
+    /**
+     * 刷新查找目标总数：人员方式在后台按姓名count查询，
+     * 指定资产方式直接取选择时统计的有条码数量，避免每次开启都查库
+     */
+    private void refreshFindTargetTotal() {
+        final FindAssetsCriteria criteria = findCriteria;
+        if (criteria == null) {
+            findTargetTotal = 0;
+            findTargetTotalReady = true;
+            updateFindStateUi();
+            return;
+        }
+        if (criteria.getMode() == FindAssetsCriteria.MODE_TARGET) {
+            findTargetTotal = criteria.getScannableTargetCount();
+            findTargetTotalReady = true;
+            updateFindStateUi();
+            return;
+        }
+        findTargetTotal = 0;
+        findTargetTotalReady = false;
+        updateFindStateUi();
+        AsyncManager.getInstance().submitWithCallback(criteria::countTargets,
+                result -> mainHandler.post(() -> {
+                    if (isFinishing() || isDestroyed() || findCriteria != criteria) {
+                        return;
+                    }
+                    findTargetTotalReady = true;
+                    findTargetTotal = result.isSuccess() && result.getData() != null
+                            ? result.getData().intValue() : 0;
+                    updateFindStateUi();
+                }));
+    }
+
+    /**
+     * 刷新找资产状态行与空列表提示：
+     * 开启查找时展示查找方式与已找到/目标数量，列表为空时提示对准目标扫描
+     */
+    private void updateFindStateUi() {
+        if (tvFindState == null) {
+            return;
+        }
+        if (!isScanTargetFilterActive()) {
+            tvFindState.setVisibility(View.GONE);
+            textEmpty.setText("按下设备RFID按键或点击下方按钮开始扫描\n扫描到的标签将显示在卡片列表中");
+            return;
+        }
+        int found = tagAdapter.getDataList().size();
+        String totalText = findTargetTotalReady ? " / 目标 " + findTargetTotal + " 项" : "";
+        tvFindState.setText("找资产：" + findCriteria.getSummary() + "\u3000已找到 " + found + totalText);
+        tvFindState.setVisibility(View.VISIBLE);
+        textEmpty.setText("尚未扫描到目标资产\n请对准目标资产标签扫描");
+    }
+
+    /** 设置菜单“找资产”项文案 */
+    private String findAssetsSettingText() {
+        return "找资产：" + (findCriteria == null ? "未开启" : findCriteria.getSummary());
     }
 
     /**
@@ -447,11 +593,12 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
     // ==================== 设置 ====================
 
     /**
-     * 弹出UHF设置底部菜单：功率 / 盘点区域(仅支持TID的机型) / 会话 / 频率区域 / 重置当前地点盘点状态
+     * 弹出UHF设置底部菜单：找资产 / 功率 / 盘点区域(仅支持TID的机型) / 会话 / 频率区域 / 提示音 / 重置当前地点盘点状态
      */
     private void showSettingSheet() {
         QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(mContext)
                 .setTitle("扫描设置")
+                .addItem(findAssetsSettingText(), SETTING_FIND)
                 .addItem("功率：" + uhfPower + "dBm", SETTING_POWER);
         // 不支持EPC+TID的机型（东集）隐藏盘点区域设置项
         if (rfidReader.supportsTid()) {
@@ -466,7 +613,9 @@ public class RfidReadActivity extends InventoryScanBaseActivity {
         }
         builder.setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
             dialog.dismiss();
-            if (SETTING_RESET.equals(tag)) {
+            if (SETTING_FIND.equals(tag)) {
+                openFindAssetsSetting();
+            } else if (SETTING_RESET.equals(tag)) {
                 confirmResetScopeStatus();
             } else if (SETTING_POWER.equals(tag)) {
                 showPowerDialog();

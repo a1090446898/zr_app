@@ -94,6 +94,8 @@ public class InventoryStatsAdapter extends BaseAdapter {
             holder.tvZT = convertView.findViewById(R.id.tvZT);
             holder.tvASSETSDEPT = convertView.findViewById(R.id.tvASSETSDEPT);
             holder.tvGROUNDMANAGEDEPT = convertView.findViewById(R.id.tvGROUNDMANAGEDEPT);
+            holder.tvCUSTODIAN = convertView.findViewById(R.id.tvCUSTODIAN);
+            holder.tvASSETSUSER = convertView.findViewById(R.id.tvASSETSUSER);
             holder.tvASSETSLAYADD = convertView.findViewById(R.id.tvASSETSLAYADD);
             holder.tvISPRINTBARCODE = convertView.findViewById(R.id.tvISPRINTBARCODE);
             holder.btnMarkReprint = convertView.findViewById(R.id.btnMarkReprint);
@@ -107,7 +109,9 @@ public class InventoryStatsAdapter extends BaseAdapter {
         holder.tvPDZT.setText("盘点情况：" + pdztName(assets.getPDZT()));
         holder.tvZT.setText("盘点状态：" + ztName(assets.getZT()));
         holder.tvASSETSDEPT.setText("使用部门：" + deptDisplayName(assets.getASSETSDEPT()));
+        holder.tvCUSTODIAN.setText("管理人：" + safeText(assets.getCUSTODIAN()));
         holder.tvGROUNDMANAGEDEPT.setText("管理部门：" + manageDeptDisplayName(assets.getGROUNDMANAGEDEPT()));
+        holder.tvASSETSUSER.setText("使用人：" + safeText(assets.getASSETSUSER()));
         holder.tvASSETSLAYADD.setText("存放地点：" + locationDisplayName(assets.getASSETSLAYADD()));
         holder.tvISPRINTBARCODE.setText("补打标记：" + printStateName(assets.getISPRINTBARCODE()));
         // 已标记待补打(01)的条目按钮置灰防重复；已打印(02)与未标记(空)均可再次标记补打
@@ -192,6 +196,8 @@ public class InventoryStatsAdapter extends BaseAdapter {
         TextView tvZT;
         TextView tvASSETSDEPT;
         TextView tvGROUNDMANAGEDEPT;
+        TextView tvCUSTODIAN;
+        TextView tvASSETSUSER;
         TextView tvASSETSLAYADD;
         TextView tvISPRINTBARCODE;
         QMUIButton btnMarkReprint;

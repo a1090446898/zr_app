@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "选择"按钮的浅蓝圆角背景，视觉比主按钮弱，适合表单行内 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:shape="rectangle">
+    <solid android:color="#E8F1FE" />
+    <corners android:radius="8dp" />
+</shape>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    选择资产页：主内容是资产列表，查询条件放在右侧抽屉面板里。
+    公共选择资产页：主内容是资产列表，查询条件放在右侧抽屉面板里。
     顶栏"搜索"→ openDrawer 从右侧滑出；抽屉内为标签+输入框的表单，
     底部固定"重置""搜索"两个按钮（不随表单滚动）。
+    各查询字段由 AssetsPickerOptions.visibleFilters 控制显隐。
 -->
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
                                            xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -22,8 +23,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/qmui_topbar_height" />
 
-        <!-- 全选条 -->
+        <!-- 全选条：只全选已加载的数据；单选/关闭全选时隐藏 -->
         <LinearLayout
+                android:id="@+id/layoutSelectAll"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:background="@color/white"
@@ -37,7 +39,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:focusable="false"
-                    android:text="全选"
+                    android:text="全选已加载"
                     android:textColor="#333333"
                     android:textSize="14sp" />
 
@@ -74,6 +76,7 @@
                     android:visibility="gone">
 
                 <TextView
+                        android:id="@+id/tvEmpty"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="没有符合条件的资产"
@@ -139,6 +142,7 @@
                     android:paddingBottom="10dp">
 
                 <LinearLayout
+                        android:id="@+id/rowFilterAssetsName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -162,6 +166,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:id="@+id/rowFilterBarcode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -185,6 +190,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:id="@+id/rowFilterAssetsDept"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -208,6 +214,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:id="@+id/rowFilterManageDept"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -245,6 +252,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:id="@+id/rowFilterAssetsUser"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -268,6 +276,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                        android:id="@+id/rowFilterLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"

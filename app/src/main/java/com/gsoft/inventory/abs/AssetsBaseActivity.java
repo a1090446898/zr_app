@@ -18,7 +18,7 @@ import butterknife.BindDrawable;
 import butterknife.BindView;
 import com.bigkoo.pickerview.builder.OptionsPickerBuilder;
 import com.bigkoo.pickerview.view.OptionsPickerView;
-import com.gsoft.inventory.CommonSelectActivity;
+import com.gsoft.inventory.view.common.CommonSelectActivity;
 import com.gsoft.inventory.R;
 import com.gsoft.inventory.const_data.Const;
 import com.gsoft.inventory.data.CategoryData;
